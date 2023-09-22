@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.Python
+.vscode/
+
+# Flask
+instance/
+*.log
+.env
+
+# Node.js / npm
+node_modules/
+dist/
+package-lock.json
+
+# Angular
+/frontend/node_modules/
+/frontend/dist/
+
+# IDE-specific files (optional, based on your IDE)
+.idea/
+.vscode/
