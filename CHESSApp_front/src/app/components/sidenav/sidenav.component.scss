@@ -1,0 +1,28 @@
+:host {
+    // the styles below were moved from the .sidenav class in app.component.scss
+    height: 100vh;
+    width: var(--sidenav-width);
+  
+    box-sizing: border-box;
+  
+    // makes the sidenav stay in place, even when content is scrollable
+    position: sticky;
+    top: 0;
+    
+    background-color: rgb(237, 241, 243);
+  
+    border-right: 2px solid rgb(192, 192, 192);
+  }
+
+  // :current {
+  //   .settings-panel {
+  //     width: 250px;
+  //     padding: 20px;
+  //     background-color: #f1f1f1;
+  //   }
+    
+  //   .setting-item {
+  //     margin-bottom: 10px;
+  //   }
+  // }
+  

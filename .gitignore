@@ -16,8 +16,8 @@ dist/
 package-lock.json
 
 # Angular
-/frontend/node_modules/
-/frontend/dist/
+/CHESSApp_front/node_modules/
+/CHESSApp_front/dist/
 
 # IDE-specific files (optional, based on your IDE)
 .idea/
