@@ -1,0 +1,12 @@
+<div class="settings-panel">
+    <ng-container *ngFor="let seqid of seqids">
+        <div class="setting-item">
+            <label for="seqid-{{ seqid }}">Seq ID {{ seqid }}:</label>
+            <input type="text" id="seqid-{{ seqid }}" [(ngModel)]="seqidValues[seqid]">
+        </div>
+      </ng-container>
+      <div class="submit-button">
+        <button (click)="submitForm()">Submit</button>
+      </div>
+</div>
+  
