@@ -1,3 +1,11 @@
+# main application file
+# this file is the entry point for the CHESS Web App
+# this file should not be modified unless you know what you are doing
+# this file is responsible for starting the server and registering blueprints
+# this file is responsible for handling errors
+# this file is responsible for rendering the index.html template
+
+
 from CHESSApp_back import models, app, db
 from sqlalchemy import text, func
 from flask import jsonify, request, render_template
