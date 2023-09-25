@@ -1,7 +1,16 @@
+# Defines the database models for the CHESSApp_back Flask app
+# Please put all database models in this file
+# A database model is a class that represents a table in the database
+# Please provide documentation for each database model
+# Please provide a __repr__ method for each database model
+# Please provide a comment for each database model that explains what it represents
+
 from CHESSApp_back import db
 from sqlalchemy.sql import text, func
 
 from sqlalchemy.dialects.sqlite import *
+
+# Current database is the direct adoptation of the gffutils database
 
 class Feature(db.Model):
     __tablename__ = 'features'

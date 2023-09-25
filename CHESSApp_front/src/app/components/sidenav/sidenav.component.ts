@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Injectable } from "@angular/core";
 import { CommonModule } from '@angular/common';
+import { FormControl } from '@angular/forms';
 
 import { DataService } from '../../services/data/data.service';
 
@@ -14,6 +15,7 @@ import { DataService } from '../../services/data/data.service';
 export class SidenavComponent implements OnInit{
   seqids: any = [];
   seqidValues: { [key: string]: string } = {};
+  seqidControl = new FormControl(); // Define the seqidControl property
 
   constructor(private http: HttpClient, private dataService: DataService) {
     this.seqids.forEach((seqid: string) => {
