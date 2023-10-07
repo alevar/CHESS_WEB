@@ -2,6 +2,7 @@ import os
 
 # reusable components
 
+
 def extract_attributes(attribute_str:str,gff=False)->dict: # extract attribute key values into dictionary
     attrs = attribute_str.rstrip().rstrip(";").split(";")
     attrs = [x.strip() for x in attrs]
@@ -48,3 +49,68 @@ def is_gff(fname) -> bool:
             else:
                 continue
     return gff
+
+
+
+class TX:
+    def __init__(self,transcript_lines:list):
+        self.seqid = None
+        self.strand = None
+        self.start = None
+        self.end = None
+        self.tid = None
+        self.gid = None
+        self.exons = None
+        self.cds = None
+        self.attributes = None
+        self.class_code = None
+        self.gene_name = None
+        self.gene_type = None
+        self.transcript_type = None
+        self.cmp_ref = None
+        self.score = None
+
+        self.from_strlist(transcript_lines)
+
+    def check_valid_transcript_attributes(self,attributes:dict):
+        assert "transcript_id" in attributes,"transcript_id attribute not found"
+        assert "gene_id" in attributes,"gene_id attribute not found"
+        assert "class_code" in attributes,"class_code attribute not found"
+
+    def from_strlist(self,transcript_lines:list):
+        tx_lcs = transcript_lines[0].rstrip().split("\t")
+        assert tx_lcs[2]=="transcript","wrong record type found when parsing normalized input GTF. Expected type transcript, found type "+tx_lcs[2]+" for record: "+"\n".join(transcript)
+        
+        self.attributes = extract_attributes(tx_lcs[8],gff=False)
+        self.check_valid_transcript_attributes(self.attributes)
+
+        self.seqid = tx_lcs[0]
+        self.strand = 1 if tx_lcs[6]=="+" else 0
+        self.start = tx_lcs[3]
+        self.end = tx_lcs[4]
+        self.score = 0 if tx_lcs[5]=="." else tx_lcs[5]
+
+        self.tid = self.attributes["transcript_id"]
+        self.gid = self.attributes["gene_id"]
+
+        self.class_code = self.attributes["class_code"]
+        self.cmp_ref = self.attributes.get("cmp_ref",None)
+
+        self.gene_name = self.attributes.get("gene_name",None)
+        self.gene_type = self.attributes.get("gene_type",None)
+        self.transcript_type = self.attributes.get("transcript_type",None)
+
+        # get exon chain (and cds if available)
+        self.exons = ""
+        self.cds = ""
+        for line in transcript_lines:
+            lcs = line.split("\t")
+            if lcs[2]=="exon":
+                self.exons += lcs[3]+"-"+lcs[4]+","
+            elif lcs[2]=="CDS":
+                self.cds += lcs[3]+"-"+lcs[4]+","
+            else:
+                continue
+        # remove trailing comma
+        self.exons = self.exons.rstrip(",")
+        self.cds = self.cds.rstrip(",")

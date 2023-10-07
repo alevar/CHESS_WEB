@@ -5,18 +5,57 @@
 import os
 import sys
 import copy
+import json
 import argparse
 import subprocess
 
-def load_assembly_config(assembly_config_fname:str) -> dict:
-    config = dict()
+import mysql.connector
 
+from definitions import *
+import api
+
+##############################
+########   ORGANISM   ########
+##############################
+def addOrganisms(api_connection,config, args):
+    for organism,data in config.items():
+        api_connection.insert_organism(data)
+
+
+##############################
+########   ASSEMBLY   ########
+##############################
+def parse_fai(fai_fname:str) -> dict:
+    assert os.path.exists(fai_fname),"fai file does not exist: "+fai_fname
+
+    fai_dict = {}
+    with open(fai_fname, 'r') as fai_fp:
+        for line in fai_fp:
+            line = line.strip().split('\t')
+            fai_dict[line[0]] = int(line[1])
+    
+    return fai_dict
+
+def addAssemblies(api_connection,config,args):
+    for assembly,data in config.items():
+        api_connection.insert_assembly(data)
+
+        # now also write contig information from the index file into SequenceIDs table
+        for contig,length in parse_fai(data["fastaIndex"]).items():
+            api_connection.insert_contig(contig,length,data)
+
+
+##############################
+#########   SOURCE   #########
+##############################
 # reads GTF file (assumes gffreat -T output) and combines all records into transcript structures (one per transcript)
 # storing associated exons and cds records
 # yields transcripts one by one
 def read_gffread_gtf(infname:str):
+    assert os.path.exists(infname),"input file does not exist: "+infname
     transcript_lines = [] # lines associated with a transcript
     current_tid = None
+    prev_tid = None
     
     with open(infname) as inFP:
         for line in inFP:
@@ -29,230 +68,236 @@ def read_gffread_gtf(infname:str):
             tid = lcs[8].split("transcript_id \"", 1)[1].split("\"", 1)[0]
 
             if lcs[2]=="transcript":
-                if current_tid is not None:
-                    assert not len(transcript_lines)==0,"empty transcript lines for: "+current_tid
-                    old_transcript_lines = copy.deepcopy(transcript_lines)
-                    transcript_lines = [line.rstrip()]
-                    yield transcript_lines
+                to_yield = current_tid is not None
+                prev_tid = current_tid
+                current_tid = tid
+                old_transcript_lines = copy.deepcopy(transcript_lines)
+                transcript_lines = [line.rstrip()]
+                if to_yield:
+                    assert not len(old_transcript_lines)==0,"empty transcript lines for: "+prev_tid
+                    yield old_transcript_lines
             else:
                 assert tid==current_tid,"records out of order: "+current_tid+" > "+tid
                 transcript_lines.append(line.rstrip())
 
-    if not current_tid is None:
+    if current_tid is not None:
         assert not len(transcript_lines)==0,"empty transcript lines for: "+current_tid
         yield transcript_lines 
 
-# extract all transcripts stored in the database into a GTF file
-def db_to_gtf(db_connection:mysql,assembly:str,outfname:str):
-    with open(outfname,"w") as outFP:
-        for transcript in db[db["assembly"]==assembly].Transcripts: # use PK_tid as the transcript_id for unique identification in the output
-            transcript_str = ""
-            
-            outFP.write(transcript_str)
+def run_gffread(infname:str,outfname:str,gffread:str,genome:str,log:str):
+        assert os.path.exists(infname),"input file does not exist: "+infname
+        assert os.path.exists(genome),"genome file does not exist: "+genome
 
-def insert_transcript(db:mysql,transcript:list,assembly:str):
-    unimplemented()
+        cmd = [gffread,"--adj-stop","-T","-F",
+               "-g",genome,
+               "-o",outfname,
+               infname]
 
-def update_transcript(db:mysql,transcript:list):
-    unimplemented()
+        print("Executing gffread to normalize the input annotation file")
+        print(" ".join(cmd))
+        logFP = open(log, 'a') if log else None
+        logFP.write(" ".join(cmd)+"\n") if logFP else None
 
-def add_gtf(args):
-    assert os.path.exists(args.db)==False, "Database already exists. Please remove it manually before proceeding. This is done to prevent accidental overwriting of existing databases."
-    assert os.path.exists(args.input), "Input file does not exist. Please check the path and try again."
+        proc = subprocess.Popen(cmd,stderr=subprocess.PIPE)
 
-    # create database connection
-    db = None
-    try:
-        db = mysql.connect(args.db)
-    except e:
-        print("Exception occured when trying to connect to the database: "+e)
-        exit(1)
+        for line in proc.stderr:
+            logFP.write(str(line)) if logFP else sys.stderr.write(str(line))
+        proc.wait()
 
-    # TODO: get source information:
-    # All information should be provided by the user instead of parsing it out of GTF files
-    # This avoids uncertainty over the order of the comment lines, etc
-    # creation/modification timestamp is autoupdated
+        logFP.close() if logFP else None
 
-    # create or update the database information (sorce, assembly, etc tables)
+def run_gffcompare(query:str,reference:str,outfname:str,gffcompare:str,log:str):
+    assert os.path.exists(query),"query file does not exist: "+query
+    assert os.path.exists(reference),"reference file does not exist: "+reference
 
-    # prep parameters
+    cmd = [gffcompare,
+           "-r",reference,
+           "-o",outfname,
+           query]
+
+    print("Executing gffcompare to build transcript map")
+    print(" ".join(cmd))
+    logFP = open(log, 'a') if log else None
+    logFP.write(" ".join(cmd)+"\n") if logFP else None
+
+    proc = subprocess.Popen(cmd,stderr=subprocess.PIPE)
+
+    for line in proc.stderr:
+        logFP.write(str(line)) if logFP else sys.stderr.write(str(line))
+    proc.wait()
+
+    logFP.close() if logFP else None
+
+def addSources(api_connection,config,args):
+    if not os.path.exists(args.temp):
+        os.makedirs(args.temp)
+        
+    api_connection.check_table("Sources")
+    api_connection.check_table("Genes")
+    api_connection.check_table("TranscriptToGene")
+    api_connection.check_table("TxDBXREF")
+    api_connection.check_table("Attributes")
+    api_connection.check_table("Transcripts")
+
     logFP = open(args.log, 'w') if args.log else None
     logFP.close()
 
-    # run gffread to standardize the transcript set before importing into the database
-    norm_input_gtf = args.temp_dir+"/input.gffread.gtf" # stores temporary file with the normalized input gtf to be added to the database
-    cmd = [args.gffread,"--adj-stop","-T","-F",
-           "-o",norm_input_gtf,
-           args.input]
+    for source,data in config.items():
+        print(source,data)
+        sourceName = data["name"].replace("'","\\'")
+        assemblyName = data["assemblyName"].replace("'","\\'")
+        genome = data["assemblyFasta"]
+        filename = data["file"]
+        link = data["link"]
+        information = data["information"].replace("'","\\'")
 
-    print("Executing gffread to normalize the input annotation file")
-    print(" ".join(cmd))
-    logFP = open(args.log, 'a') if args.log else None
-    logFP.write(" ".join(cmd)+"\n") if logFP
+        # extract current GTF for the database
+        db_gtf_fname = os.path.abspath(args.temp)+"/db.before_"+sourceName+".gtf"
+        print("Extracting gtf from the current database before adding "+sourceName)
+        api_connection.to_gtf(assemblyName,db_gtf_fname)     
 
-    proc = subprocess.Popen(cmd,stderr=subprocess.PIPE)
+        # gffread/gffcompare/etc
+        source_format = "gff" if is_gff(filename) else "gtf"
 
-    for line in proc.stderr:
-        logFP.write(line) if logFP else sys.stderr.write(line)
-    proc.wait()
+        # run gffread to standardize the transcript set before importing into the database
+        norm_input_gtf = os.path.abspath(args.temp)+"/input.gffread.gtf" # stores temporary file with the normalized input gtf to be added to the database
+        run_gffread(filename,norm_input_gtf,args.gffread,genome,args.log)
 
-    logFP.close() if logFP else None
+        # run gffcompare between the database GTF and the normalized input file
+        gffcmp_gtf_fname = os.path.abspath(args.temp)+"/input.gffread.gffcmp"
+        run_gffcompare(norm_input_gtf,db_gtf_fname,gffcmp_gtf_fname,args.gffcompare,args.log)
 
-    # extract the current database GTF for the provided genome assembly
-    db_gtf_fname = args.temp_dir+"db.gtf"
-    print("Extracting gtf from the current database")
-    db_to_gtf(db_connection,args.assembly,db_gtf_fname)
+        # insert source data into Sources table
+        working_sourceID = api_connection.insert_source(data,source_format)
 
-    # run gffcompare between the database GTF and the normalized input file
-    gffcmp_gtf_fname = args.temp_dir+"input.gffread.gffcmp.gtf"
-    cmd = [args.gffcompare,
-    "-r",db_gtf_fname,
-    "-o",gffcmp_gtf_fname,
-    norm_input_gtf]
+        # iterate over the contents of the file and add them to the database
+        for transcript_lines in read_gffread_gtf(gffcmp_gtf_fname+".annotated.gtf"):
+            transcript = TX(transcript_lines)
+            working_tid = None # tid PK of the transcript being worked on as it appears in the Transcripts table
+            if transcript.class_code == "=":
+                working_tid = transcript.cmp_ref
+            else:
+                working_tid = api_connection.insert_transcript(transcript,data)
 
-    print("Executing gffread to normalize the input annotation file")
-    print(" ".join(cmd))
-    logFP = open(args.log, 'a') if args.log else None
-    logFP.write(" ".join(cmd)+"\n") if logFP
+            # add transcript source pairing to the TxDBXREF table
+            api_connection.insert_dbxref(transcript,working_tid,working_sourceID)
 
-    proc = subprocess.Popen(cmd,stderr=subprocess.PIPE)
+            for attribute_key,attribute_value in transcript.attributes.items():
+                api_connection.insert_attribute(working_tid,working_sourceID,transcript.tid,attribute_key,attribute_value)
 
-    for line in proc.stderr:
-        logFP.write(line) if logFP else sys.stderr.write(line)
-    proc.wait()
+def establish_connection(args,main_fn):
+    assert os.path.exists(args.configuration),"configuration file does not exist"
+    assert os.path.exists(args.db_configuration),"database configuration file does not exist"
     
-    logFP.close() if logFP else None
+    db_config = None
+    with open(args.db_configuration, 'r') as db_configFP:
+        db_config = json.load(db_configFP)
+    
+    try:
+        db_host = db_config["CHESSDB_HOST"]
+        db_port = db_config["CHESSDB_PORT"]
+        db_user = db_config["CHESSDB_USER"]
+        db_password = db_config["CHESSDB_PASSWORD"]
+        db_name = db_config["CHESSDB_NAME"]
+    except KeyError as err:
+        print(f"Key {err} not found in database configuration file.")
+        exit(1)
 
-    # iterate over the contents of the file and add them to the database
-    for transcript in read_gffread_gtf(gffcmp_gtf_fname):
-        tx_lcs = lcs[0].split("\t")
-        assert tx_lcs[2]=="transcript","wrong record type found when parsing normalized input GTF. Expected type transcript, found type "+tx_lcs[2]+" for record: "+"\n".join(transcript)
-
-        attributes = definitions.extract_attributes(tx_lcs[8],gff=False)
+    chessApi = None
+    try:
+        chessApi = api.CHESS_DB_API(db_host, db_user, db_password, db_name, db_port)
+        chessApi.connect()
         
-        if attributes["cmp"] == "=":
-            update_transcript(db,transcript)
-        else:
-            insert_transcript(db,transcript,assembly)
+        config = None
+        with open(args.configuration, 'r') as configFP:
+            config = json.load(configFP)
 
+        main_fn(chessApi,config,args)
 
-def update(args):
-    # run gffread to standardize the transcript set before importing into the database
-    # run gffcompare to find duplicate transcripts
-    # add transcripts to the database
-    print(test)
+    except mysql.connector.Error as error:
+        print("Failed to connect to the database.")
+        print(error)
+        exit(1)
+    finally:
+        if chessApi is not None and chessApi.is_connected():
+            chessApi.disconnect()
+            print("Connection to the database closed.")
+
+    return
 
 def main(args):
     parser = argparse.ArgumentParser(description='''Help Page''')
     subparsers = parser.add_subparsers(help='sub-command help')
 
-    # should we be adding assembly, organism, etc separately not part of this script or create submodules here for everythin?
-    # 1. easier to have separate in sql
-    # 2. is more consistend
-
-
     ##############################
-    #######   EXPRESSION   #######
+    ########   ORGANISM   ########
     ##############################
-    parser_update=subparsers.add_parser('assembly',
-                                        help='assembly help')
-    parser_update.add_argument('--configuration',
+    parser_addOrganisms=subparsers.add_parser('addOrganisms',
+                                        help='addOrganisms help')
+    parser_addOrganisms.add_argument('--configuration',
                               required=True,
                               type=str,
-                              help='Path to the configuration file. Configuration is provided in ')
-    parser_update.add_argument('--db',
+                              help='Path to the configuration file. Configuration is provided in JSON format. See example in CHESSApp_DB/data/organisms.json')
+    parser_addOrganisms.add_argument('--db_configuration',
                               required=True,
                               type=str,
-                              help='Name of the database to be created')
-    parser_update.add_argument("--temp",
+                              help='Path to the configuration file for connecting to the mysql database. Configuration is provided in JSON format. See example in CHESSApp_DB/data/mysql.json')
+    parser_addOrganisms.set_defaults(func=establish_connection,main_fn=addOrganisms)
+
+    ##############################
+    ########   ASSEMBLY   ########
+    ##############################
+    parser_addAssemblies=subparsers.add_parser('addAssemblies',
+                                        help='addAssemblies help')
+    parser_addAssemblies.add_argument('--configuration',
+                              required=True,
+                              type=str,
+                              help='Path to the configuration file. Configuration is provided in JSON format. See example in CHESSApp_DB/data/assemblies.json')
+    parser_addAssemblies.add_argument('--db_configuration',
+                              required=True,
+                              type=str,
+                              help='Path to the configuration file for connecting to the mysql database. Configuration is provided in JSON format. See example in CHESSApp_DB/data/mysql.json')
+    parser_addAssemblies.set_defaults(func=establish_connection,main_fn=addAssemblies)
+
+    ##############################
+    #########   SOURCE   #########
+    ##############################
+    parser_addSources=subparsers.add_parser('addSources',
+                                        help='addSources help')
+    parser_addSources.add_argument('--configuration',
+                              required=True,
+                              type=str,
+                              help='Path to the configuration file. Configuration is provided in JSON format. See example in CHESSApp_DB/data/sources.json')
+    parser_addSources.add_argument('--db_configuration',
+                              required=True,
+                              type=str,
+                              help='Path to the configuration file for connecting to the mysql database. Configuration is provided in JSON format. See example in CHESSApp_DB/data/mysql.json')
+    parser_addSources.add_argument("--temp",
                               required=True,
                               type=str,
                               help="Path to a temporary directory to store intermediate files")
-    parser_update.add_argument("--gffread",
+    parser_addSources.add_argument("--log",
                               required=False,
-                              default="gffread",
-                              type=str,
-                              help="Path to gffread binary")
-    parser_update.add_argument("--keep_temp",
-                              required=False,
-                              action="store_true",
-                              help="Keep temporary files after the database is built")
-    parser_update.set_defaults(func=update)
-    args=parser.parse_args()
-    args.func(args)
-
-
-    ##############################
-    #######     ADDGTF     #######
-    # adds a gtf to the database #
-    ##############################
-    parser_addgtf=subparsers.add_parser('addgtf',
-                                        help='addgtf help')
-    parser_addgtf.add_argument('--gtf',
-                              required=True,
-                              type=str,
-                              help='GTF/GFF file to initiate the database')
-    parser_addgtf.add_argument('--db',
-                              required=True,
-                              type=str,
-                              help='Name of the database to be modified. The database must exist and be created with the latest SQL schema file.')
-    parser_addgtf.add_argument("--temp",
-                              required=True,
-                              type=str,
-                              help="Path to a temporary directory to store intermediate files")
-    parser_addgtf.add_argument("--log",
-                              rquired=False,
                               type=str,
                               help="Path to the file where to write log information")
-    parser_addgtf.add_argument("--gffread",
+    parser_addSources.add_argument("--gffread",
                               required=False,
                               default="gffread",
                               type=str,
                               help="Path to gffread executable")
-    parser_addgtf.add_argument("--gffcompare",
+    parser_addSources.add_argument("--gffcompare",
                                required=False,
                                default="gffcompare",
                                type=str,
                                help="Path to the gffcompare executable")
-    parser_addgtf.add_argument("--keep_temp",
+    parser_addSources.add_argument("--keep_temp",
                               required=False,
                               action="store_true",
                               help="Keep temporary files after the database is built")
-    parser_addgtf.set_defaults(func=build)
+    parser_addSources.set_defaults(func=establish_connection,main_fn=addSources)
 
-
-
-    ##############################
-    #######     DELETE     #######
-    # Deletes a source from the  #
-    # database                   #
-    ##############################
-    parser_update=subparsers.add_parser('update',
-                                        help='update help')
-    parser_update.add_argument('--input',
-                              required=True,
-                              type=str,
-                              help='GTF/GFF file to initiate the database')
-    parser_update.add_argument('--db',
-                              required=True,
-                              type=str,
-                              help='Name of the database to be created')
-    parser_update.add_argument("--temp",
-                              required=True,
-                              type=str,
-                              help="Path to a temporary directory to store intermediate files")
-    parser_update.add_argument("--gffread",
-                              required=False,
-                              default="gffread",
-                              type=str,
-                              help="Path to gffread binary")
-    parser_update.add_argument("--keep_temp",
-                              required=False,
-                              action="store_true",
-                              help="Keep temporary files after the database is built")
-    parser_update.set_defaults(func=update)
     args=parser.parse_args()
-    args.func(args)
+    args.func(args,args.main_fn)
 
 
 if __name__ == "__main__":

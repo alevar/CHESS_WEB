@@ -1,0 +1,27 @@
+# gffcompare v0.12.6 | Command line was:
+#gffcompare -r /home/sparrow/JHU/chess_web/CHESSApp_DB/example/temp/db.before_CHESS.3.0.1.gtf -o /home/sparrow/JHU/chess_web/CHESSApp_DB/example/temp/input.gffread.gffcmp /home/sparrow/JHU/chess_web/CHESSApp_DB/example/temp/input.gffread.gtf
+#
+
+#= Summary for dataset: /home/sparrow/JHU/chess_web/CHESSApp_DB/example/temp/input.gffread.gtf 
+#     Query mRNAs :   11227 in    3695 loci  (9716 multi-exon transcripts)
+#            (1750 multi-transcript loci, ~3.0 transcripts per locus)
+# Reference mRNAs :       1 in       1 loci  (0 multi-exon)
+# Super-loci w/ reference transcripts:        0
+#-----------------| Sensitivity | Precision  |
+        Base level:     0.0     |     0.0    |
+        Exon level:     0.0     |     0.0    |
+  Transcript level:     0.0     |     0.0    |
+       Locus level:     0.0     |     0.0    |
+
+     Matching intron chains:       0
+       Matching transcripts:       0
+              Matching loci:       0
+
+          Missed exons:       1/1	(100.0%)
+           Novel exons:   26876/26876	(100.0%)
+         Novel introns:   21975/21975	(100.0%)
+           Missed loci:       1/1	(100.0%)
+            Novel loci:    3695/3695	(100.0%)
+
+ Total union super-loci across all input datasets: 3695 
+11227 out of 11227 consensus transcripts written in /home/sparrow/JHU/chess_web/CHESSApp_DB/example/temp/input.gffread.gffcmp.annotated.gtf (0 discarded as redundant)

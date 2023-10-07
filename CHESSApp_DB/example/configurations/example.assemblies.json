@@ -1,0 +1,26 @@
+{
+    "GRCh38": {
+        "name":"GRCh38",
+        "organismScienceName": "HomoSapiens",
+        "fastaIndex":"./data/HomoSapiens/GRCh38/grch38.18.19.fa.fai",
+        "nomenclature":"UCSC",
+        "link":"http:web.com",
+        "information": "it's ok."
+    },
+    "CHM13": {
+        "name":"CHM13",
+        "organismScienceName": "HomoSapiens",
+        "fastaIndex":"./data/HomoSapiens/CHM13/chm13.18.19.fa.fai",
+        "nomenclature":"UCSC",
+        "link":"http:web.com",
+        "information": "it's old."
+    },
+    "SIV239": {
+        "name":"SIV239",
+        "organismScienceName": "SIV",
+        "fastaIndex":"./data/SIV/M33262.1.fasta.fai",
+        "nomenclature":"RefSeq",
+        "link":"http:web.com",
+        "information": "It's standard"
+    }    
+}
