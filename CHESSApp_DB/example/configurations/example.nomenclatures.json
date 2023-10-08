@@ -1,0 +1,32 @@
+{
+    "GRCh38_UCSC": {
+        "assemblyName":"GRCh38",
+        "nomenclature": "UCSC",
+        "file": "./data/HomoSapiens/GRCh38/ucsc.nomenclature.tsv"
+    },
+    "GRCh38_RefSeq": {
+        "assemblyName":"GRCh38",
+        "nomenclature": "RefSeq",
+        "file": "./data/HomoSapiens/GRCh38/refseq.nomenclature.tsv"
+    },
+    "GRCh38_GENBANK": {
+        "assemblyName":"GRCh38",
+        "nomenclature": "GENBANK",
+        "file": "./data/HomoSapiens/GRCh38/genbank.nomenclature.tsv"
+    },
+    "CHM13_UCSC": {
+        "assemblyName":"CHM13",
+        "nomenclature": "UCSC",
+        "file": "./data/HomoSapiens/CHM13/ucsc.nomenclature.tsv"
+    },
+    "CHM13_RefSeq": {
+        "assemblyName":"CHM13",
+        "nomenclature": "RefSeq",
+        "file": "./data/HomoSapiens/CHM13/refseq.nomenclature.tsv"
+    },
+    "CHM13_GENBANK": {
+        "assemblyName":"CHM13",
+        "nomenclature": "GENBANK",
+        "file": "./data/HomoSapiens/CHM13/genbank.nomenclature.tsv"
+    }
+}

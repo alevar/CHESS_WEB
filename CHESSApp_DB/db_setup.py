@@ -225,6 +225,34 @@ def establish_connection(args,main_fn):
 
     return
 
+##############################
+#######  NOMENCLATURE  #######
+##############################
+def addNomeclatures(api_connection,config, args):
+
+    for nomecnclature,data in config.items():
+        # assert that all sequenceIDs for the assembly exist in the provided map
+        sids = api_connection.get_sequenceIDs(data["assemblyName"])
+        sids = set([x[0] for x in sids])
+        assert len(sids)>0,"No sequenceIDs found for assembly: "+data["assemblyName"]
+
+        # load the map
+        map = dict()
+        with open(data["file"], 'r') as inFP:
+            for line in inFP:
+                lcs = line.strip().split("\t")
+                assert len(lcs)==2,"Invalid line in the nomenclature file: "+line
+
+                if lcs[0] in sids:
+                    assert lcs[0] not in map,"Duplicate sequenceID in the nomenclature file: "+lcs[0]
+                    map[lcs[0]] = lcs[1]
+
+        assert len(map)==len(sids),"Not all sequenceIDs have been mapped to the nomenclature: "+data["file"]
+
+        # insert the nomenclature
+        for sequenceID,altID in map.items():
+            api_connection.insert_nomenclature(sequenceID,altID,data)
+
 def main(args):
     parser = argparse.ArgumentParser(description='''Help Page''')
     subparsers = parser.add_subparsers(help='sub-command help')
@@ -295,6 +323,21 @@ def main(args):
                               action="store_true",
                               help="Keep temporary files after the database is built")
     parser_addSources.set_defaults(func=establish_connection,main_fn=addSources)
+
+    ##############################
+    #######  NOMENCLATURE  #######
+    ##############################
+    parser_addNomeclatures=subparsers.add_parser('addNomenclatures',
+                                        help='addNomenclatures help')
+    parser_addNomeclatures.add_argument('--configuration',
+                              required=True,
+                              type=str,
+                              help='Path to the configuration file. Configuration is provided in JSON format. See example in CHESSApp_DB/data/assemblies.json')
+    parser_addNomeclatures.add_argument('--db_configuration',
+                              required=True,
+                              type=str,
+                              help='Path to the configuration file for connecting to the mysql database. Configuration is provided in JSON format. See example in CHESSApp_DB/data/mysql.json')
+    parser_addNomeclatures.set_defaults(func=establish_connection,main_fn=addNomeclatures)
 
     args=parser.parse_args()
     args.func(args,args.main_fn)

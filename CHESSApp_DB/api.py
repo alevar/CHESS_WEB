@@ -13,6 +13,18 @@ class CHESS_DB_API:
         self.port = port
         self.connection = None
 
+        self.commit_interval = 1000
+        self.commit_counter = 0
+
+    # commits after every n invocations or immediately if requested
+    def commit(self,force=False):
+        if force or self.commit_counter % self.commit_interval == 0:
+            self.connection.commit()
+            self.commit_counter = 0
+        else:
+            self.commit_counter += 1
+
+
     def connect(self):
         try:
             self.connection = mysql.connector.connect(
@@ -58,7 +70,7 @@ class CHESS_DB_API:
             print(query)
             exit(-1)
         
-        self.connection.commit()
+        self.commit()
         cursor.close()
         return result
     
@@ -144,9 +156,25 @@ class CHESS_DB_API:
         return self.execute_query(query, values)
     
 
+    ##############################
+    #######  NOMENCLATURE  #######
+    ##############################
+    def insert_nomenclature(self, sequenceID:str, altID:str, data:dict):
+        assemblyName = data["assemblyName"]
+        nomecnclature = data["nomenclature"]
+
+        # no need to check assemblyName and sequenceID, they are primary keys
+        query = f"INSERT INTO SequenceIDMap (assemblyName, sequenceID, alternativeID, nomenclature) VALUES ('{assemblyName}', '{sequenceID}', '{altID}', '{nomecnclature}')"
+        return self.execute_query(query)
+        
+
     ###############################
     ##########  GENERAL  ##########
     ###############################
+    def get_sequenceIDs(self, assemblyName:str):
+        query = f"SELECT sequenceID FROM SequenceIDs WHERE assemblyName='{assemblyName}'"
+        return self.execute_query(query)
+    
     def check_table(self, table_name:str):
         cursor = self.connection.cursor()
         cursor.execute(f"SHOW TABLES LIKE '{table_name}'")
