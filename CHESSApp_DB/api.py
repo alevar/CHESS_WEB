@@ -166,6 +166,24 @@ class CHESS_DB_API:
         # no need to check assemblyName and sequenceID, they are primary keys
         query = f"INSERT INTO SequenceIDMap (assemblyName, sequenceID, alternativeID, nomenclature) VALUES ('{assemblyName}', '{sequenceID}', '{altID}', '{nomecnclature}')"
         return self.execute_query(query)
+    
+
+    ##############################
+    #########   DATASET   ########
+    ##############################
+    def insert_dataset(self, data:dict):
+        datasetName = data["name"].replace("'","\\'")
+        sampleCount = int(data["sampleCount"])
+        information = data["information"].replace("'","\\'")
+
+        query = f"INSERT INTO Datasets (name,sampleCOunt,information) VALUES ('{datasetName}','{sampleCount}','{information}')"
+        return self.execute_query(query)
+    
+    def insert_transcriptEvidence(self, tid:int, datasetID:int, evidence:dict):
+        query = f"INSERT INTO TranscriptToDataset (tid, datasetID, sampleCount, expressionMean, expressionStd) VALUES (%s, %s, %s, %s, %s)"
+
+        values = (tid, datasetID, evidence["sampleCount"], evidence["expressionMean"], evidence["expressionStd"])
+        return self.execute_query(query, values)
         
 
     ###############################

@@ -84,12 +84,10 @@ def read_gffread_gtf(infname:str):
         assert not len(transcript_lines)==0,"empty transcript lines for: "+current_tid
         yield transcript_lines 
 
-def run_gffread(infname:str,outfname:str,gffread:str,genome:str,log:str):
+def run_gffread(infname:str,outfname:str,gffread:str,log:str):
         assert os.path.exists(infname),"input file does not exist: "+infname
-        assert os.path.exists(genome),"genome file does not exist: "+genome
 
-        cmd = [gffread,"--adj-stop","-T","-F",
-               "-g",genome,
+        cmd = [gffread,"-T","-F",
                "-o",outfname,
                infname]
 
@@ -140,10 +138,8 @@ def addSources(api_connection,config,args):
     api_connection.check_table("Transcripts")
 
     logFP = open(args.log, 'w') if args.log else None
-    logFP.close()
 
     for source,data in config.items():
-        print(source,data)
         sourceName = data["name"].replace("'","\\'")
         assemblyName = data["assemblyName"].replace("'","\\'")
         genome = data["assemblyFasta"]
@@ -154,14 +150,14 @@ def addSources(api_connection,config,args):
         # extract current GTF for the database
         db_gtf_fname = os.path.abspath(args.temp)+"/db.before_"+sourceName+".gtf"
         print("Extracting gtf from the current database before adding "+sourceName)
-        api_connection.to_gtf(assemblyName,db_gtf_fname)     
+        api_connection.to_gtf(assemblyName,db_gtf_fname)
 
         # gffread/gffcompare/etc
         source_format = "gff" if is_gff(filename) else "gtf"
 
         # run gffread to standardize the transcript set before importing into the database
         norm_input_gtf = os.path.abspath(args.temp)+"/input.gffread.gtf" # stores temporary file with the normalized input gtf to be added to the database
-        run_gffread(filename,norm_input_gtf,args.gffread,genome,args.log)
+        run_gffread(filename,norm_input_gtf,args.gffread,args.log)
 
         # run gffcompare between the database GTF and the normalized input file
         gffcmp_gtf_fname = os.path.abspath(args.temp)+"/input.gffread.gffcmp"
@@ -184,6 +180,9 @@ def addSources(api_connection,config,args):
 
             for attribute_key,attribute_value in transcript.attributes.items():
                 api_connection.insert_attribute(working_tid,working_sourceID,transcript.tid,attribute_key,attribute_value)
+
+
+    logFP.close()
 
 def establish_connection(args,main_fn):
     assert os.path.exists(args.configuration),"configuration file does not exist"
@@ -252,6 +251,90 @@ def addNomeclatures(api_connection,config, args):
         # insert the nomenclature
         for sequenceID,altID in map.items():
             api_connection.insert_nomenclature(sequenceID,altID,data)
+
+##############################
+#########   DATASET   ########
+##############################
+def load_quant_data(fname:str) -> dict:
+    # parse evidence file and load a dictionary with transcript id map to the evidence
+    # assumes the following format
+    # col1 : transcript id - must be in the corresponding annotation file provided in the configuration alongside this evidence file
+    # col2 : sampleCount
+    # col3 : expressionMean
+    # col4 : expressionStdDev
+
+    res = dict()
+    with open(fname, 'r') as inFP:
+        for line in inFP:
+            lcs = line.strip().split("\t")
+            assert len(lcs)==4,"Invalid line in the evidence file: "+line
+            assert lcs[0] not in res,"Duplicate transcript id in the evidence file: "+lcs[0]
+            res[lcs[0]] = {
+                            "sampleCount": int(lcs[1]),
+                            "expressionMean": float(lcs[2]),
+                            "expressionStd": float(lcs[3])
+                            }
+
+    return res
+
+def addDatasets(api_connection,config, args):
+    if not os.path.exists(args.temp):
+        os.makedirs(args.temp)
+        
+    api_connection.check_table("Sources")
+    api_connection.check_table("Genes")
+    api_connection.check_table("TranscriptToGene")
+    api_connection.check_table("TxDBXREF")
+    api_connection.check_table("Attributes")
+    api_connection.check_table("Transcripts")
+
+    logFP = open(args.log, 'w') if args.log else None
+
+    for dataset,data in config.items():
+        assemblyName = data["assemblyName"].replace("'","\\'")
+        datasetName = data["name"].replace("'","\\'")
+        sampleCount = int(data["sampleCount"])
+        gtf_fname = data["gtf_file"]
+        quant_data_file = data["data_file"]
+
+        assert os.path.exists(gtf_fname),"gtf file does not exist: "+gtf_fname
+        assert os.path.exists(quant_data_file),"data file does not exist: "+quant_data_file
+
+        # load the data file
+        quant_data = load_quant_data(quant_data_file)
+
+        # run gffread followed by gffcompare against the current database to establish transcript compatibility
+        
+        # extract current GTF for the database
+        db_gtf_fname = os.path.abspath(args.temp)+"/db.before_"+datasetName+".gtf"
+        print("Extracting gtf from the current database before adding "+datasetName)
+        api_connection.to_gtf(assemblyName,db_gtf_fname)
+
+        # gffread/gffcompare/etc
+        source_format = "gff" if is_gff(gtf_fname) else "gtf"
+
+        # run gffread to standardize the transcript set before importing into the database
+        norm_input_gtf = os.path.abspath(args.temp)+"/input.gffread.gtf" # stores temporary file with the normalized input gtf to be added to the database
+        run_gffread(gtf_fname,norm_input_gtf,args.gffread,args.log)
+
+        # run gffcompare between the database GTF and the normalized input file
+        gffcmp_gtf_fname = os.path.abspath(args.temp)+"/input.gffread.gffcmp" 
+        run_gffcompare(norm_input_gtf,db_gtf_fname,gffcmp_gtf_fname,args.gffcompare,args.log)
+
+        # insert dataset data into Datasets table
+        working_datasetID = api_connection.insert_dataset(data)
+
+        # iterate over the contents of the file and add them to the database
+        for transcript_lines in read_gffread_gtf(gffcmp_gtf_fname+".annotated.gtf"):
+            transcript = TX(transcript_lines)
+            working_tid = transcript.cmp_ref if transcript.class_code == "=" else None # tid PK of the transcript being worked on as it appears in the Transcripts table
+            if working_tid is None: # skip transcripts that are not compatible with the current database
+                continue
+
+            # add dataset
+            api_connection.insert_transcriptEvidence(working_tid,working_datasetID,quant_data[transcript.tid])
+
+    logFP.close()
 
 def main(args):
     parser = argparse.ArgumentParser(description='''Help Page''')
@@ -338,6 +421,43 @@ def main(args):
                               type=str,
                               help='Path to the configuration file for connecting to the mysql database. Configuration is provided in JSON format. See example in CHESSApp_DB/data/mysql.json')
     parser_addNomeclatures.set_defaults(func=establish_connection,main_fn=addNomeclatures)
+
+    ##############################
+    #########   DATASET   ########
+    ##############################
+    parser_addDatasets=subparsers.add_parser('addDatasets',
+                                        help='addDatasets help')
+    parser_addDatasets.add_argument('--configuration',
+                              required=True,
+                              type=str,
+                              help='Path to the configuration file. Configuration is provided in JSON format. See example in CHESSApp_DB/data/assemblies.json')
+    parser_addDatasets.add_argument('--db_configuration',
+                              required=True,
+                              type=str,
+                              help='Path to the configuration file for connecting to the mysql database. Configuration is provided in JSON format. See example in CHESSApp_DB/data/mysql.json')
+    parser_addDatasets.add_argument("--temp",
+                              required=True,
+                              type=str,
+                              help="Path to a temporary directory to store intermediate files")
+    parser_addDatasets.add_argument("--log",
+                              required=False,
+                              type=str,
+                              help="Path to the file where to write log information")
+    parser_addDatasets.add_argument("--gffread",
+                              required=False,
+                              default="gffread",
+                              type=str,
+                              help="Path to gffread executable")
+    parser_addDatasets.add_argument("--gffcompare",
+                               required=False,
+                               default="gffcompare",
+                               type=str,
+                               help="Path to the gffcompare executable")
+    parser_addDatasets.add_argument("--keep_temp",
+                              required=False,
+                              action="store_true",
+                              help="Keep temporary files after the database is built")
+    parser_addDatasets.set_defaults(func=establish_connection,main_fn=addDatasets)
 
     args=parser.parse_args()
     args.func(args,args.main_fn)
