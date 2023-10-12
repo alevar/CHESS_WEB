@@ -1,7 +1,10 @@
 import { Component } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { DataService } from '../../services/data/data.service';
+<<<<<<< HEAD
 import * as d3 from 'd3';
+=======
+>>>>>>> 1225b3da46b40bfdaf1e29b771d93d9e782770c0
 
 @Component({
   selector: 'app-main',
@@ -9,6 +12,7 @@ import * as d3 from 'd3';
   styleUrls: ['./main.component.scss']
 })
 export class MainComponent {
+<<<<<<< HEAD
   view: any[] = [700, 400];
   colorScheme = {
     domain: ['#5AA454', '#A10A28', '#C7B42C', '#AAAAAA']
@@ -93,4 +97,15 @@ export class MainComponent {
     .attr("fill", "#69b3a2")
 
   }
+=======
+  data: any = {};
+
+  constructor(private http: HttpClient, private dataService: DataService) {
+    this.dataService.seqidValuesUpdated.subscribe((seqidValues) => {
+      this.http.post('http://localhost:5000/api/main/getAttrCountsBySeqid', this.dataService.seqidValues).subscribe((response) => {
+        this.data = response;
+      });
+    });
+  }
+>>>>>>> 1225b3da46b40bfdaf1e29b771d93d9e782770c0
 }
