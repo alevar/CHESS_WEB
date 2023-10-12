@@ -357,7 +357,7 @@ def addDatasets(api_connection,config, args):
         seen_transcripts = set() # working_tids already matched in this dataset. Currently used to bypass duplicates. TODO: need a better solution
         for transcript_lines in read_gffread_gtf(gffcmp_gtf_fname+".annotated.gtf"):
             transcript = TX(transcript_lines)
-            working_tid = transcript.cmp_ref if transcript.class_code == "=" else None # tid PK of the transcript being worked on as it appears in the Transcripts table
+            working_tid = transcript.attributes["cmp_ref"] if transcript.attributes["class_code"] == "=" else None # tid PK of the transcript being worked on as it appears in the Transcripts table
             if working_tid in seen_transcripts:
                 logFP.write("Duplicate transcript in the dataset: "+working_tid+"\n")
                 continue
