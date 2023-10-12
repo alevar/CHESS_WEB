@@ -19,21 +19,27 @@ export class AppComponent implements OnInit {
 
   constructor(private http: HttpClient) {}
 
+<<<<<<< HEAD
   // Logic:
   // 1. Get global data from the server (such as tissues, seqids, etc). Store in the data service to be shared with everyone
   // 2. populate settings based on the global data
   // 3. listen for submitted form
   // 4. process submission to dislay stuff
 
+=======
+>>>>>>> 1225b3da46b40bfdaf1e29b771d93d9e782770c0
   ngOnInit() {
     this.http.get('http://localhost:5000/api/main/seqids').subscribe((response) => {
       this.data = response;
     });
   }
+<<<<<<< HEAD
 
   get_global_data() {
     this.http.get('http://localhost:5000/api/main/globalData').subscribe((response) => {
       this.data = response;
     });
   }
+=======
+>>>>>>> 1225b3da46b40bfdaf1e29b771d93d9e782770c0
 }

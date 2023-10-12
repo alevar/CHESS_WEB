@@ -9,7 +9,10 @@ import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+<<<<<<< HEAD
 import { NgxChartsModule } from '@swimlane/ngx-charts'; // Import the NgxChartsModule
+=======
+>>>>>>> 1225b3da46b40bfdaf1e29b771d93d9e782770c0
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -37,8 +40,12 @@ import { MainComponent } from './components/main/main.component';
     MatListModule,
     MatFormFieldModule,
     ReactiveFormsModule,
+<<<<<<< HEAD
     BrowserAnimationsModule,
     NgxChartsModule
+=======
+    BrowserAnimationsModule
+>>>>>>> 1225b3da46b40bfdaf1e29b771d93d9e782770c0
   ],
   exports: [SidenavComponent],
   providers: [],
