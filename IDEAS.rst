@@ -30,3 +30,4 @@ DB:
 23. Assign transcript type based on the gene type.
 24. for now - represent GTEx as a source itself and datasets can be the individual bodysites.
 25. polycistronic ..... AAAAAAAAAAAAAAAAAAAAAAA!!!!YYYYYYYYYY!!!!!!!!!!!!
+26. can we add an annotate mode? User submits a gtf file and the database compares it and annotates with available info (dbxref for all sources at least, but some attributes as well)
