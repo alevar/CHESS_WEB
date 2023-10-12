@@ -13,7 +13,7 @@ class CHESS_DB_API:
         self.port = port
         self.connection = None
 
-        self.commit_interval = 1000
+        self.commit_interval = 10000
         self.commit_counter = 0
 
     # commits after every n invocations or immediately if requested
@@ -63,6 +63,10 @@ class CHESS_DB_API:
                 result = cursor.fetchall()
             elif query.lower().startswith('insert'):
                 result = cursor.lastrowid
+            elif query.lower().startswith('drop'):
+                result = True
+            elif query.lower().startswith('create'):
+                result = True
             else:
                 assert False,"Invalid query type. Only select and insert queries are currently supported."
         except mysql.connector.Error as err:
@@ -102,9 +106,8 @@ class CHESS_DB_API:
     
     def insert_contig(self,contig,length,data:dict):
         assemblyName = data["name"].replace("'","\\'")
-        nomenclature = data["nomenclature"].replace("'","\\'")
 
-        query = f"INSERT INTO SequenceIDs (assemblyName, sequenceID, length, nomenclature) VALUES ('{assemblyName}', '{contig}', {length}, '{nomenclature}')"
+        query = f"INSERT INTO SequenceIDs (assemblyName, sequenceID, length) VALUES ('{assemblyName}', '{contig}', {length})"
         return self.execute_query(query)
 
     ##############################
@@ -129,13 +132,17 @@ class CHESS_DB_API:
         return self.execute_query(query)
     
     def insert_dbxref(self, transcript:TX, tid:int, sourceID:int):
-        query = f"INSERT INTO TxDBXREF (tid, sourceID, transcript_id, start, end" 
+        query = f"INSERT INTO TxDBXREF (tid, sourceID, transcript_id, start, end"
+        values = (tid, sourceID, transcript.tid, transcript.start, transcript.end)
         if transcript.cds is not None and transcript.cds != "":
             query += ", cds"
+            values += (transcript.cds,)
         if transcript.score is not None:
             query += ", score"
+            values += (transcript.score,)
         if transcript.transcript_type is not None:
             query += ", type"
+            values += (transcript.transcript_type,)
         query += ") VALUES (%s, %s, %s, %s, %s"
         if transcript.cds is not None and transcript.cds != "":
             query += ", %s"
@@ -144,14 +151,6 @@ class CHESS_DB_API:
         if transcript.transcript_type is not None:
             query += ", %s"
         query += ")"
-
-        values = (tid, sourceID, transcript.tid, transcript.start, transcript.end)
-        if transcript.cds is not None and transcript.cds != "":
-            values += (transcript.cds,)
-        if transcript.score is not None:
-            values += (transcript.score,)
-        if transcript.transcript_type is not None:
-            values += (transcript.transcript_type,)
 
         return self.execute_query(query, values)
     
@@ -228,3 +227,116 @@ class CHESS_DB_API:
                     outFP.write(gtf_str)
         
         return
+    
+    def drop_table(self,table_name:str):
+        query = f"DROP TABLE IF EXISTS {table_name} "
+        return self.execute_query(query)
+    
+    def build_AllCountSummaryTable(self):
+        self.drop_table("AllCountSummary")
+        query = """CREATE TABLE AllCountSummary 
+                        SELECT
+                            O.scientificName AS OrganismName,
+                            A.assemblyName AS AssemblyName,
+                            COALESCE(S.name, 'Total') AS SourceName,
+                            MAX(DISTINCT S.lastUpdated) as lastupdated,
+                            COUNT(DISTINCT T.tid) AS TotalTranscripts,
+                            COUNT(DISTINCT G.gid) AS TotalGenes
+                        FROM
+                            Organisms O
+                        LEFT JOIN
+                            Assemblies A ON O.scientificName = A.organismName
+                        LEFT JOIN
+                            SequenceIDs SI ON A.assemblyName = SI.assemblyName
+                        LEFT JOIN
+                            Transcripts T ON SI.sequenceID = T.sequenceID AND SI.assemblyName = T.assemblyName
+                        LEFT JOIN
+                            TxDBXREF TX ON T.tid = TX.tid
+                        LEFT JOIN
+                            Sources S ON TX.sourceID = S.sourceID
+                        LEFT JOIN
+                            TranscriptToGene TG ON T.tid = TG.tid
+                        LEFT JOIN
+                            Genes G ON TG.gid = G.gid
+                        GROUP BY
+                            O.scientificName, A.assemblyName, S.name WITH ROLLUP
+                        HAVING
+                            (O.scientificName IS NOT NULL AND A.assemblyName IS NOT NULL AND S.name IS NOT NULL)
+                        ORDER BY
+                            O.scientificName, A.assemblyName, S.name;"""
+        return self.execute_query(query)
+    
+    def get_AllCountSummaryTable(self) -> dict:
+        query = "SELECT * FROM AllCountSummary"
+        res = self.execute_query(query)
+
+        # parse the summary list into a dictionary
+        summary = {"speciesName":dict()}
+        for row in res:
+            summary["speciesName"].setdefault(row[0],{"assemblyName":dict()})
+            summary["speciesName"][row[0]]["assemblyName"].setdefault(row[1],{"sourceName":dict()})
+            assert row[2] not in summary["speciesName"][row[0]]["assemblyName"][row[1]]["sourceName"],"Duplicate source name found in AllCountSummary table: "+row[2]
+            summary["speciesName"][row[0]]["assemblyName"][row[1]]["sourceName"][row[2]] = {
+                "lastUpdated":row[3],
+                "totalTranscripts":row[4],
+                "totalGenes":row[5]
+                }
+
+        return summary
+    
+    def get_sources(self):
+        query = "SELECT * FROM Sources"
+        res = self.execute_query(query)
+
+        # parse list into a dictionary
+        sources = dict()
+        for row in res:
+            sources[row[0]] = {
+                "name":row[1],
+                "link":row[2],
+                "information":row[3],
+                "originalFormat":row[4],
+                "lastUpdated":row[5]
+            }
+        return sources
+
+    def get_source_combination_count(self,sources:list):
+        query = """SELECT COUNT(tidCount) 
+                    FROM (
+                        SELECT COUNT(DISTINCT tid) AS tidCount
+                        FROM TxDBXREF AS t1
+                        LEFT JOIN Sources s1 on t1.sourceID = s1.sourceID
+                        WHERE s1.name IN (%s)
+                        AND NOT EXISTS (
+                            SELECT 1
+                            FROM TxDBXREF AS t2
+                            LEFT JOIN Sources s2 on t2.sourceID = s2.sourceID
+                            WHERE t2.tid = t1.tid
+                            AND s2.name NOT IN (%s)
+                        )
+                        GROUP BY t1.tid
+                        HAVING COUNT(DISTINCT s1.name) = %s
+                    ) AS C1;"""
+        
+        combo_str = ", ".join([str(s) for s in sources])
+        values = tuple([combo_str,combo_str,len(sources)])
+        return self.execute_query(query,values)
+    
+    def build_upsetDataTable(self,upset_data):
+        self.drop_table("UpsetData")
+
+        query = """CREATE TABLE UpsetData (organism TEXT, assembly TEXT, sourcesAll TEXT, sourcesSub TEXT, transcriptCount INT)"""
+        self.execute_query(query)
+
+        for row in upset_data:
+            query = "INSERT INTO UpsetData (organism, assembly, sourcesAll, sourcesSub, transcriptCount) VALUES (%s,%s,%s,%s,%s)"
+            self.execute_query(query,row)
+
+
+    def custom_transcript_set(self,settings):
+        return
+        
+
+
+# let's run a couple of queries
+# 1. get transcript stats across datasets (organism, assembly, source, date modified, total transcripts, total genes, source information, source link)

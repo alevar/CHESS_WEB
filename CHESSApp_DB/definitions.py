@@ -58,16 +58,14 @@ class TX:
         self.strand = None
         self.start = None
         self.end = None
-        self.tid = None
-        self.gid = None
+        self.tid = None # not kept in attributes
+        self.gid = None # not kept in attributes
         self.exons = None
         self.cds = None
         self.attributes = None
-        self.class_code = None
-        self.gene_name = None
-        self.gene_type = None
-        self.transcript_type = None
-        self.cmp_ref = None
+        self.gene_name = None # not kept in attributes
+        self.gene_type = None # not kept in attributes
+        self.transcript_type = None # not kept in attributes
         self.score = None
 
         self.from_strlist(transcript_lines)
@@ -75,13 +73,13 @@ class TX:
     def check_valid_transcript_attributes(self,attributes:dict):
         assert "transcript_id" in attributes,"transcript_id attribute not found"
         assert "gene_id" in attributes,"gene_id attribute not found"
-        assert "class_code" in attributes,"class_code attribute not found"
 
     def from_strlist(self,transcript_lines:list):
         tx_lcs = transcript_lines[0].rstrip().split("\t")
         assert tx_lcs[2]=="transcript","wrong record type found when parsing normalized input GTF. Expected type transcript, found type "+tx_lcs[2]+" for record: "+"\n".join(transcript)
         
         self.attributes = extract_attributes(tx_lcs[8],gff=False)
+        self.attributes = {k:v.replace("'","\\").replace("\"","\\") for k,v in self.attributes.items()}
         self.check_valid_transcript_attributes(self.attributes)
 
         self.seqid = tx_lcs[0]
@@ -93,12 +91,8 @@ class TX:
         self.tid = self.attributes["transcript_id"]
         self.gid = self.attributes["gene_id"]
 
-        self.class_code = self.attributes["class_code"]
-        self.cmp_ref = self.attributes.get("cmp_ref",None)
-
         self.gene_name = self.attributes.get("gene_name",None)
         self.gene_type = self.attributes.get("gene_type",None)
-        self.transcript_type = self.attributes.get("transcript_type",None)
 
         # get exon chain (and cds if available)
         self.exons = ""
