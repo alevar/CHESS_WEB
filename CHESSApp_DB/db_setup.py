@@ -23,6 +23,8 @@ def addOrganisms(api_connection,config, args):
     for organism,data in config.items():
         api_connection.insert_organism(data)
 
+    api_connection.commit(True)
+
 
 ##############################
 ########   ASSEMBLY   ########
@@ -45,6 +47,8 @@ def addAssemblies(api_connection,config,args):
         # now also write contig information from the index file into SequenceIDs table
         for contig,length in parse_fai(data["fastaIndex"]).items():
             api_connection.insert_contig(contig,length,data)
+
+    api_connection.commit(True)
 
 
 ##############################
@@ -200,6 +204,7 @@ def addSources(api_connection,config,args):
                 api_connection.insert_attribute(working_tid,working_sourceID,transcript.tid,attribute_key,attribute_value)
 
 
+    api_connection.commit(True)
     logFP.close()
 
 def establish_connection(args,main_fn):
@@ -273,6 +278,8 @@ def addNomeclatures(api_connection,config, args):
         # insert the nomenclature
         for sequenceID,altID in map.items():
             api_connection.insert_nomenclature(sequenceID,altID,data)
+
+    api_connection.commit(True)
 
 ##############################
 #########   DATASET   ########
@@ -362,6 +369,7 @@ def addDatasets(api_connection,config, args):
             # add dataset
             api_connection.insert_transcriptEvidence(working_tid,working_datasetID,quant_data[transcript.tid])
 
+    api_connection.commit(True)
     logFP.close()
 
 ##############################
@@ -409,6 +417,7 @@ def compile(api_connection,args):
 
     api_connection.build_upsetDataTable(upset_data)
 
+    api_connection.commit(True)
     return
 
 def main(args):
