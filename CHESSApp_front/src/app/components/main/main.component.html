@@ -1,7 +1,11 @@
 <div>
-    <ng-container *ngFor="let data of data | keyvalue">
+    <ng-container *ngFor="let user_requested_data of user_requested_data | keyvalue">
       <div class="setting-item">
-        <p>{{ data.key }}: {{ data.value }}</p>
+        <p>{{ user_requested_data.key }}: {{ user_requested_data.value }}</p>
       </div>
     </ng-container>
+    <div class="container">
+      <button mat-raised-button color="primary" (click)="downloadData()">Generate GTF</button>
+    </div>
+    <div id="my_dataviz"></div>
 </div>

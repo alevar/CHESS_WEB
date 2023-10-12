@@ -4,7 +4,12 @@ import { Injectable, EventEmitter } from '@angular/core';
   providedIn: 'root'
 })
 export class DataService {
-  seqidValues: { [key: string]: string } = {};
-  seqidValuesUpdated = new EventEmitter<{ [key: string]: string }>();
+  settings: { [key: string]: string } = {};
+  settingsUpdated = new EventEmitter<{ [key: string]: string }>();
   constructor() { }
 }
+
+// We need two data storages
+// one is loaded at the app launch and stores all global values such as sequences, tissues, etc
+
+// the other one stores all user requested settings

@@ -13,25 +13,25 @@ import { DataService } from '../../services/data/data.service';
   styleUrls: ['./sidenav.component.scss']
 })
 export class SidenavComponent implements OnInit{
-  seqids: any = [];
-  seqidValues: { [key: string]: string } = {};
-  seqidControl = new FormControl(); // Define the seqidControl property
+  setting_names: any = [];
+  settings: { [key: string]: string } = {};
+  settingsControl = new FormControl();
 
   constructor(private http: HttpClient, private dataService: DataService) {
-    this.seqids.forEach((seqid: string) => {
-       this.seqidValues[seqid] = '';
+    this.setting_names.forEach((seqid: string) => {
+       this.settings[seqid] = '';
     });
   }
 
   ngOnInit() {
     this.http.get('http://localhost:5000/api/main/seqids').subscribe((response) => {
-      this.seqids = response;
+      this.setting_names = response;
     });
   }
 
   submitForm() {
-    this.dataService.seqidValues = this.seqidValues;
-    this.dataService.seqidValuesUpdated.emit(this.seqidValues);
+    this.dataService.settings = this.settings;
+    this.dataService.settingsUpdated.emit(this.settings);
     // console.log(this.seqidValues);
   }
 }

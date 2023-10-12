@@ -1,8 +1,8 @@
 <div class="settings-panel">
-    <ng-container *ngFor="let seqid of seqids">
+    <ng-container *ngFor="let setting_name of setting_names">
         <div class="setting-item">
-            <label for="seqid-{{ seqid }}">Seq ID {{ seqid }}:</label>
-            <input type="text" id="seqid-{{ seqid }}" [(ngModel)]="seqidValues[seqid]">
+            <label for="seqid-{{ setting_name }}">Seq ID {{ setting_name }}:</label>
+            <input type="text" id="setting_name-{{ setting_name }}" [(ngModel)]="settings[setting_name]">
         </div>
       </ng-container>
       <div class="submit-button">
