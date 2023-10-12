@@ -14,13 +14,14 @@ class CHESS_DB_API:
         self.connection = None
 
         self.commit_interval = 10000
-        self.commit_counter = 0
+        self.commit_counter = 1
 
     # commits after every n invocations or immediately if requested
     def commit(self,force=False):
         if force or self.commit_counter % self.commit_interval == 0:
+            print("committing")
             self.connection.commit()
-            self.commit_counter = 0
+            self.commit_counter = 1
         else:
             self.commit_counter += 1
 
