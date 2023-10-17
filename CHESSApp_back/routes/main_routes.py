@@ -19,7 +19,6 @@ def get_seqids():
     results = db.session.execute(query)
     return jsonify([x.seqid for x in results])
 
-<<<<<<< HEAD
 # Route: /globalData
 # Fetches data about the database required for building the user interface and all interactions
 # Data object:
@@ -73,13 +72,10 @@ def fetch_data():
 
     return jsonify(data)
 
-=======
->>>>>>> 1225b3da46b40bfdaf1e29b771d93d9e782770c0
 # Route: /getAttrCountsBySeqid
 # Route implemeted for testing purposes only
 # Accepts a JSON object with seqid values as keys and featuretype values as values
 # Returns: JSON object with seqid values as keys and a list of featuretype and count as values
-<<<<<<< HEAD
 # Illustrates how to parse data from the user and query the database
 @main_blueprint.route('/getAttrCountsBySeqid', methods=['POST'])
 def get_attribute_counts():
@@ -110,16 +106,3 @@ def get_chart_data():
     query = text("SELECT seqid, featuretype, COUNT(*) FROM features GROUP BY seqid, featuretype")
     results = db.session.execute(query)
     return jsonify([{'seqid': x.seqid, 'featuretype': x.featuretype, 'count': x.count} for x in results])
-=======
-@main_blueprint.route('/getAttrCountsBySeqid', methods=['POST'])
-def get_attr_counts_by_seqid():
-    seqid_values = request.get_json()
-
-    counts = {}
-    for key, value in seqid_values.items():
-        query = text("SELECT COUNT(*) FROM features WHERE seqid = :seqid AND featuretype = :featuretype")
-        result = db.session.execute(query, {'seqid': key, 'featuretype': value}).scalar()
-        counts[key] = [value,result]
-
-    return jsonify(counts)
->>>>>>> 1225b3da46b40bfdaf1e29b771d93d9e782770c0
