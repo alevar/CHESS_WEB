@@ -266,40 +266,6 @@ class CHESS_DB_API:
                         ORDER BY
                             O.scientificName, A.assemblyName, S.name;"""
         return self.execute_query(query)
-    
-    def get_AllCountSummaryTable(self) -> dict:
-        query = "SELECT * FROM AllCountSummary"
-        res = self.execute_query(query)
-
-        # parse the summary list into a dictionary
-        summary = {"speciesName":dict()}
-        for row in res:
-            summary["speciesName"].setdefault(row[0],{"assemblyName":dict()})
-            summary["speciesName"][row[0]]["assemblyName"].setdefault(row[1],{"sourceName":dict()})
-            assert row[2] not in summary["speciesName"][row[0]]["assemblyName"][row[1]]["sourceName"],"Duplicate source name found in AllCountSummary table: "+row[2]
-            summary["speciesName"][row[0]]["assemblyName"][row[1]]["sourceName"][row[2]] = {
-                "lastUpdated":row[3],
-                "totalTranscripts":row[4],
-                "totalGenes":row[5]
-                }
-
-        return summary
-    
-    def get_sources(self):
-        query = "SELECT * FROM Sources"
-        res = self.execute_query(query)
-
-        # parse list into a dictionary
-        sources = dict()
-        for row in res:
-            sources[row[0]] = {
-                "name":row[1],
-                "link":row[2],
-                "information":row[3],
-                "originalFormat":row[4],
-                "lastUpdated":row[5]
-            }
-        return sources
 
     def get_source_combination_count(self,sources:list):
         query = """SELECT COUNT(tidCount) 
@@ -338,6 +304,65 @@ class CHESS_DB_API:
         return
         
 
+    ######################
+    ######   GETS   ######
+    ######################
 
-# let's run a couple of queries
-# 1. get transcript stats across datasets (organism, assembly, source, date modified, total transcripts, total genes, source information, source link)
+    # get summary table
+    def get_AllCountSummaryTable(self) -> dict:
+        query = "SELECT * FROM AllCountSummary"
+        res = self.execute_query(query)
+
+        # parse the summary list into a dictionary
+        summary = {"speciesName":dict()}
+        for row in res:
+            summary["speciesName"].setdefault(row[0],{"assemblyName":dict()})
+            summary["speciesName"][row[0]]["assemblyName"].setdefault(row[1],{"sourceName":dict()})
+            assert row[2] not in summary["speciesName"][row[0]]["assemblyName"][row[1]]["sourceName"],"Duplicate source name found in AllCountSummary table: "+row[2]
+            summary["speciesName"][row[0]]["assemblyName"][row[1]]["sourceName"][row[2]] = {
+                "lastUpdated":row[3],
+                "totalTranscripts":row[4],
+                "totalGenes":row[5]
+                }
+
+        return summary
+    
+    # get full source information
+    def get_sources(self):
+        query = "SELECT * FROM Sources"
+        res = self.execute_query(query)
+
+        # parse list into a dictionary
+        sources = dict()
+        for row in res:
+            sources[row[0]] = {
+                "name":row[1],
+                "link":row[2],
+                "information":row[3],
+                "originalFormat":row[4],
+                "lastUpdated":row[5]
+            }
+        return sources
+    
+    def get_upsetData(self):
+        query = "SELECT * FROM UpsetData"
+        res = self.execute_query(query)
+
+        # parse list into a dictionary
+        upsetData = dict()
+        for row in res:
+            upsetData["speciesName"].setdefault(row[0],{"assemblyName":dict()})
+            upsetData["speciesName"][row[0]]["assemblyName"].setdefault(row[1],{"sources":dict()})
+            sub_sources = tuple(row[3].split(","))
+            assert sub_sources not in upsetData["speciesName"][row[0]]["assemblyName"][row[1]]["sources"],"Duplicate source name found in upsetData table: "+sub_sources
+            upsetData["speciesName"][row[0]]["assemblyName"][row[1]]["sources"][sub_sources] = int(row[4])
+
+    def get_Datasets(self):
+        query = "SELECT * FROM Datasets"
+        res = self.execute_query(query)
+
+        res = [x[1:] for x in res] # this is simple data - just output the list instead of the dict
+        return res
+    
+    def get_sequeceData(self):
+        return
