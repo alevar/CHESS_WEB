@@ -7,7 +7,6 @@
 
 
 from CHESSApp_back import models, app, db
-from sqlalchemy import text, func
 from flask import jsonify, request, render_template
 
 from CHESSApp_back.routes.main_routes import main_blueprint
