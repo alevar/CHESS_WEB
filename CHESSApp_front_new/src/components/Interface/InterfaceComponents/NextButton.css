@@ -1,0 +1,13 @@
+/* Add this to your CSS file */
+.page-transition {
+    animation: swipe 0.5s ease-in-out;
+  }
+  
+  @keyframes swipe {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0%);
+    }
+  }
