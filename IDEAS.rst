@@ -16,7 +16,7 @@ DB:
 9. currently many assertions which strongly terminate execution. Need to handle more gracefully on a case-by-case basis.
 10. Should we do enums differently? Currently stored as enum type, but what if separated out into a different table?
 11. make it so transactions are only committed if the entire operation succeeded (such as adding an entire resource)
-12. instead of defining queries inside functions inside modules - develop and API which can connect to DB and has a set of queries which it knows how to handle (insert record, update record, etc)
+12. <DONE> instead of defining queries inside functions inside modules - develop and API which can connect to DB and has a set of queries which it knows how to handle (insert record, update record, etc)
 13. Need to make sure the attributes are non-redundant. Say 2 sources share an attribute key-value (or are very similar). Should be deduplciate them somehow?
 14. Need much better error handling and propagation - for example, if an entry can not be inserted into the dbxref - should remove the corresponding modification to the transcript and elsewhere. Basically, do not commit until sure it is correct. This should be possible to do with the new api interface
 15. change the code so that commit is issued after n records are inserted, not after each record. This should speed up the process.
