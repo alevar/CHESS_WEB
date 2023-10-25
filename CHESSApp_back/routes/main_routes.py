@@ -10,6 +10,19 @@ from flask import jsonify, request
 
 main_blueprint = Blueprint('main', __name__)
 
+# Route: /getSources
+# Route implemented for testing purposes only
+# Returns a JSON object with all sources in the database
+@main_blueprint.route('/getSources')
+def get_sources():
+    query = text("SELECT name, information, link, lastUpdated FROM Sources")
+    results = db.session.execute(query)
+    json_res = [{"name":x.name,
+                     "description":x.information,
+                     "link":x.link,
+                     "lastUpdated":x.lastUpdated} for x in results]
+    return jsonify(json_res)
+
 # Route: /seqids
 # Route implemented for testing purposes only
 # Returns: JSON object with all seqids in the database
