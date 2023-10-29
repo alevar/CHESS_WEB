@@ -178,3 +178,19 @@ class SequenceIDMap(Base):
         # return '<Project %r>' % (self.title)
         # formats/manually creates the JSON object
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+    
+class AllCountSummary (Base):
+    __tablename__ = 'AllCountSummary'
+
+    OrganismName = Column(String(45), primary_key=True)
+    AssemblyName = Column(String(45), primary_key=True)
+    SourceName = Column(String(45), primary_key=True)
+    lastupdated = Column(TIMESTAMP)
+    TotalTranscripts = Column(Integer)
+    TotalGenes = Column(Integer)
+
+    def __repr__(self):
+        # return '<Project %r>' % (self.title)
+        # formats/manually creates the JSON object
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+    
