@@ -356,6 +356,8 @@ class CHESS_DB_API:
             sub_sources = tuple(row[3].split(","))
             assert sub_sources not in upsetData["speciesName"][row[0]]["assemblyName"][row[1]]["sources"],"Duplicate source name found in upsetData table: "+sub_sources
             upsetData["speciesName"][row[0]]["assemblyName"][row[1]]["sources"][sub_sources] = int(row[4])
+        
+        return upsetData
 
     def get_Datasets(self):
         query = "SELECT * FROM Datasets"

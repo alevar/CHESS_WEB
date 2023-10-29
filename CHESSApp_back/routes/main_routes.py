@@ -5,7 +5,7 @@
 
 from flask import Blueprint
 from sqlalchemy import text, func
-from CHESSApp_back import db
+from CHESSApp_back import db, db_methods
 from flask import jsonify, request
 
 main_blueprint = Blueprint('main', __name__)
@@ -35,6 +35,7 @@ def get_seqids():
 # Route: /globalData
 # Fetches data about the database required for building the user interface and all interactions
 # Data object:
+#   organisms
 #   seqid: list of all seqids in the database.
 #        - transcript: transcript counts
 #        - gene: gene counts
@@ -48,23 +49,9 @@ def get_seqids():
 def globalData():
     data = dict()
 
-    query = text("SELECT DISTINCT(seqids), COUNT(*) FROM features WHERE featuretype = 'transcript' GROUP BY seqids")
-    results = db.session.execute(query)
-    data["seqid"] = {x.seqid: {"transcript": x.count} for x in results}
+    data = db_methods.get_sources()
 
-    query = text("SELECT DISTINCT(source), COUNT(*) FROM features WHERE featuretype = 'transcript' GROUP BY source")
-    results = db.session.execute(query)
-    data["source"] = {x.source: {"transcript": x.count} for x in results}
-
-    query = text("SELECT DISTINCT(tissue), COUNT(*) FROM features WHERE featuretype = 'transcript' GROUP BY tissue")
-    results = db.session.execute(query)
-    data["tissue"] = {x.tissue: {"transcript": x.count} for x in results}
-
-    for res in results:
-        if res.seqid not in data:
-            data[res.seqid] = []
-        data[res.seqid].append(res.source)
-    return jsonify([x.seqid for x in results])
+    return jsonify(data)
 
 # Route: /fetchData
 # Fetches all data based on user defined settings

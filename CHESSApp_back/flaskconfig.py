@@ -2,9 +2,12 @@ import os
 
 DEBUG = True
 
-# export CHESSDB_NAME="CHESS_DB"                                                                                                    ✔ │ base Py 
-# export CHESSDB_PASS="qwerty"                                                                                                      ✔ │ base Py 
-# export CHESSDB_USER="chess_master"
+'''
+export CHESSDB_NAME="CHESS_DB"
+export CHESSDB_PASS="qwerty"
+export CHESSDB_USER="chess_master"
+'''
+
 db_name = os.environ["CHESSDB_NAME"]
 db_user = os.environ["CHESSDB_USER"]
 db_pass = os.environ["CHESSDB_PASS"]

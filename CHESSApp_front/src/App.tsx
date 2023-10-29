@@ -1,5 +1,7 @@
+import React, { useState, useEffect } from 'react';
+
 import Header from "./components/Header/Header";
-import Home from "./components/Home/Home";
+import SPA from "./components/SPA/SPA";
 import Interface from "./components/Interface/Interface";
 import TissueType from "./components/Interface/InterfaceComponents/TissueType";
 import ScaffoldType from "./components/Interface/InterfaceComponents/ScaffoldType";
@@ -9,21 +11,16 @@ import { Routes, Route } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css'
 
-import { useEffect } from "react";
-
-
 function App() {
 
-  // -----------------------------------------------------------------------------
-  // For Testing Purposes! -- making API call in App() to retrieve all data at once
-  // -----------------------------------------------------------------------------
+  const [jsonData, setJsonData] = useState(null);
+
   useEffect(() => {
-    console.log("made it here")
-
-
     const fetchData = async () => {
-      const result = await fetch("http://localhost:5000/api/main")
-      console.log(result.json())
+      const response = await fetch("http://localhost:5000/api/main/globalData");
+      const data = await response.json();
+      console.log("this is data",data);
+      setJsonData(data);
     }
     fetchData();
   }, [])
@@ -37,7 +34,7 @@ function App() {
     <div>
       <Header/>
       <Routes>
-        <Route path="/" element={<Home/>} />
+        <Route path="/" element={<SPA/>} />
         <Route path="/interface" element={<Interface/>} />
         <Route path="/interface/tissue" element={<TissueType/>} />
         <Route path="/interface/scaffold" element={<ScaffoldType/>} />
