@@ -33,6 +33,6 @@ DB:
 26. can we add an annotate mode? User submits a gtf file and the database compares it and annotates with available info (dbxref for all sources at least, but some attributes as well)
 27. Should create a user to be used by the backend. The user should not have any privileges besides reading the data to avoid accidental DB modifications.
 
-
 Functionality:
 1. When we generate a GTF/GFF file, how do we describe which parameters were used? Should we add a comment to the file? or should we also provide a metadata file?
+2. Should suggest citations when fetching an annotation depending on which sources are being used so that everyone gets credit. Can be stored in the GTF comments and in the metadatafile.
