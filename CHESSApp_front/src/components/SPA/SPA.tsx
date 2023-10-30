@@ -13,12 +13,10 @@ const SPA = () => {
   const [selection_types, setSelectionTypes] = useState('');
 
   const handleNextSlide = () => {
-    console.log(slideIndex);
     setSlideIndex(slideIndex + 1);
   };
 
   const handlePreviousSlide = () => {
-    console.log(slideIndex);
     setSlideIndex(slideIndex - 1);
   };
 
@@ -50,7 +48,7 @@ const SPA = () => {
             onSelectionChange={handleSelectionOrganismChange}
             onNextSlide={handleNextSlide}
             onPreviousSlide={handlePreviousSlide}
-            className="slide"
+            prop_className="SPA"
           />
         );
       case 2:
@@ -60,7 +58,7 @@ const SPA = () => {
             onSelectionChange={handleSelectionAssemblyChange}
             onNextSlide={handleNextSlide}
             onPreviousSlide={handlePreviousSlide}
-            className="slide"
+            prop_className="SPA"
           />
         );
       default:
