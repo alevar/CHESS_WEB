@@ -5,15 +5,14 @@ interface Props {
   onSelectionChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onNextSlide: () => void;
   onPreviousSlide: () => void;
-  className?: string;
+  prop_className?: string;
 }
 
 function SelectAssembly(props: Props) {
-  const { selection, onSelectionChange, onNextSlide, onPreviousSlide, className } = props;
-
+  const { selection, onSelectionChange, onNextSlide, onPreviousSlide, prop_className } = props;
 
   return (
-    <div className="container">
+    <div className={`${prop_className}`}>
       <div className="row">
         <div className="col-md-6 pr-md-5">
           <div className="form-check">
