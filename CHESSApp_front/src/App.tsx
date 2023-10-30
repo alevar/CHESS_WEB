@@ -22,7 +22,7 @@ function App() {
 
 
     const fetchData = async () => {
-      const result = await fetch("http://localhost:5000/api/main")
+      const result = await fetch("http://localhost:5000/api/main/sequences")
       console.log(result.json())
     }
     fetchData();
