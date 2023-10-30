@@ -6,6 +6,9 @@ DEBUG = True
 export CHESSDB_NAME="CHESS_DB"
 export CHESSDB_PASS="qwerty"
 export CHESSDB_USER="chess_master"
+export EMAIL_FROM_ADDRESS="dummy_from@gmail.com"
+export EMAIL_TO_ADDRESS="dummy_to@gmail.com"
+export EMAIL_FROM_PASSWORD="qwerty"
 '''
 
 db_name = os.environ["CHESSDB_NAME"]
