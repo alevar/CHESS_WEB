@@ -3,12 +3,50 @@
 # A route is a URL that the user can visit
 # Please provide documentation for each route
 
+import os
+import smtplib
+from email.mime.text import MIMEText
 from flask import Blueprint
 from sqlalchemy import text, func
 from CHESSApp_back import db, db_methods
 from flask import jsonify, request
 
 main_blueprint = Blueprint('main', __name__)
+
+# Route: /send-email
+# Handles sending emails from the contact form
+# expects a JSON object with email and message keys
+# Returns: JSON object with success key
+@main_blueprint.route('/send-email', methods=['POST'])
+def send_email():
+    data = request.get_json()
+    email = data['email']
+    message = data['message']
+
+    try:
+        # Set up SMTP server
+        smtp_server = 'smtp.gmail.com'
+        smtp_port = 587
+        smtp_username = os.environ.get('EMAIL_FROM_ADDRESS')
+        smtp_password = os.environ.get('EMAIL_FROM_PASSWORD')
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(smtp_username, smtp_password)
+
+        # Create message
+        msg = MIMEText(message)
+        msg['Subject'] = 'Message from {}'.format(email)
+        msg['From'] = smtp_username
+        msg['To'] = os.environ.get('EMAIL_TO_ADDRESS')
+
+        # Send message
+        server.sendmail(smtp_username, [os.environ.get('EMAIL_TO_ADDRESS')], msg.as_string())
+        server.quit()
+
+        return jsonify({'success': True})
+    except Exception as e:
+        print(e)
+        return jsonify({'success': False})
 
 # Route: /getSources
 # Route implemented for testing purposes only

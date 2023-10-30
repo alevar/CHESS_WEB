@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 
 import Header from "./components/Header/Header";
 import SPA from "./components/SPA/SPA";
+import About from "./components/About/About";
+import ContactUs from "./components/ContactUs/ContactUs";
 import Interface from "./components/Interface/Interface";
 import TissueType from "./components/Interface/InterfaceComponents/TissueType";
 import ScaffoldType from "./components/Interface/InterfaceComponents/ScaffoldType";
@@ -35,6 +37,8 @@ function App() {
       <Header/>
       <Routes>
         <Route path="/" element={<SPA/>} />
+        <Route path="/about" element={<About/>} />
+        <Route path="/contact" element={<ContactUs/>} />
         <Route path="/interface" element={<Interface/>} />
         <Route path="/interface/tissue" element={<TissueType/>} />
         <Route path="/interface/scaffold" element={<ScaffoldType/>} />
