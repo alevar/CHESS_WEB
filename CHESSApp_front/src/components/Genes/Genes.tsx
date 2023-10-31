@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import './SPA.css';
+import './Genes.css';
 import ButtonPrecompiled from './components/ButtonPrecompiled/ButtonPrecompiled';
 import ButtonCustom from './components/ButtonCustom/ButtonCustom';
 import SelectOrganism from './components/SelectOrganism/SelectOrganism';
 import SelectAssembly from './components/SelectAssembly/SelectAssembly';
 
-const SPA = () => {
+const Genes = () => {
   const [slideIndex, setSlideIndex] = useState(0);
   const [selection_organism, setSelectionOrganism] = useState('');
   const [selection_assembly, setSelectionAssembly] = useState('');
@@ -32,7 +32,7 @@ const SPA = () => {
     switch (slideIndex) {
       case 0:
         return (
-          <div className="SPA">
+          <div className="Genes">
             <h1 className="display-4">CHESS2 Web Interface</h1>
             <p className="lead">CHESS2 is a comprehensive set of human genes based on nearly 10,000 RNA sequencing experiments produced by the GTEx project.</p>
             <hr className="my-4"/>
@@ -48,7 +48,7 @@ const SPA = () => {
             onSelectionChange={handleSelectionOrganismChange}
             onNextSlide={handleNextSlide}
             onPreviousSlide={handlePreviousSlide}
-            prop_className="SPA"
+            prop_className="Genes"
           />
         );
       case 2:
@@ -58,7 +58,7 @@ const SPA = () => {
             onSelectionChange={handleSelectionAssemblyChange}
             onNextSlide={handleNextSlide}
             onPreviousSlide={handlePreviousSlide}
-            prop_className="SPA"
+            prop_className="Genes"
           />
         );
       default:
@@ -73,4 +73,4 @@ const SPA = () => {
   );
 };
 
-export default SPA;
+export default Genes;
