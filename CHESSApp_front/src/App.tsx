@@ -1,28 +1,28 @@
 import React, { useState, useEffect } from 'react';
 
 import Header from "./components/Header/Header";
-import SPA from "./components/SPA/SPA";
+import Annotations from "./components/Annotations/Annotations";
+import Genes from "./components/Genes/Genes";
+import Home from "./components/Home/Home";
 import About from "./components/About/About";
 import ContactUs from "./components/ContactUs/ContactUs";
-import Interface from "./components/Interface/Interface";
-import TissueType from "./components/Interface/InterfaceComponents/TissueType";
-import ScaffoldType from "./components/Interface/InterfaceComponents/ScaffoldType";
-
 
 import { Routes, Route } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css'
 
+import GlobalContext from './components/GlobalContext';
+
 function App() {
 
-  const [jsonData, setJsonData] = useState(null);
+  const [globalData, setGlobalData] = useState<{ [key: string]: { [key: string]: any } }>({});
 
   useEffect(() => {
     const fetchData = async () => {
       const response = await fetch("http://localhost:5000/api/main/globalData");
       const data = await response.json();
-      console.log("this is data",data);
-      setJsonData(data);
+      setGlobalData(data);
+
     }
     fetchData();
   }, [])
@@ -33,18 +33,18 @@ function App() {
 
 
   return (
-    <div>
-      <Header/>
-      <Routes>
-        <Route path="/" element={<SPA/>} />
-        <Route path="/about" element={<About/>} />
-        <Route path="/contact" element={<ContactUs/>} />
-        <Route path="/interface" element={<Interface/>} />
-        <Route path="/interface/tissue" element={<TissueType/>} />
-        <Route path="/interface/scaffold" element={<ScaffoldType/>} />
-      </Routes>
-
-    </div>
+    <GlobalContext.Provider value={globalData}>
+      <div>
+        <Header/>
+        <Routes>
+          <Route path="/" element={<Home/>} />
+          <Route path="/annotations" element={<Annotations/>} />
+          <Route path="/genes" element={<Genes/>} />
+          <Route path="/about" element={<About/>} />
+          <Route path="/contact" element={<ContactUs/>} />
+        </Routes>
+      </div>
+    </GlobalContext.Provider>
   );
 }
 

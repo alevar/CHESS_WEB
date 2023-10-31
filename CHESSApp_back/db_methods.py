@@ -2,7 +2,7 @@ from sqlalchemy import func, text
 from CHESSApp_back import db
 
 # GETTER FUNCTIONS
-def get_all_organsims():
+def get_all_organisms():
     query = text("SELECT * FROM Organisms")
     res = db.session.execute(query)
     json_res = dict()
@@ -20,7 +20,7 @@ def get_all_assemblies():
     res = db.session.execute(query)
     json_res = dict()
     for row in res:
-        json_res[(row.organismName,row.assemblyName)] = {
+        json_res[row.assemblyName] = {
             "assemblyName":row.assemblyName,
             "organismName":row.organismName,
             "link":row.link,
@@ -29,7 +29,7 @@ def get_all_assemblies():
     return json_res
 
 # get full source information
-def get_sources():
+def get_all_sources():
     query = text("SELECT * FROM Sources")
     res = db.session.execute(query)
 
@@ -67,16 +67,16 @@ def get_AllCountSummaryTable() -> dict:
 
 
 def get_upsetData():
-    query = "SELECT * FROM UpsetData"
+    query = text("SELECT * FROM UpsetData")
     res = db.session.execute(query)
 
     # parse list into a dictionary
     upsetData = dict()
     for row in res:
-        upsetData["species"].setdefault(row[0],{"assembly":dict()})
-        upsetData["species"][row[0]]["assembly"].setdefault(row[1],{"sources":dict()})
+        upsetData["species"].setdefault(row.organism,{"assembly":dict()})
+        upsetData["species"][row.organism]["assembly"].setdefault(row[1],{"sources":dict()})
         sub_sources = tuple(row[3].split(","))
-        assert sub_sources not in upsetData["species"][row[0]]["assembly"][row[1]]["sources"],"Duplicate source name found in upsetData table: "+sub_sources
-        upsetData["species"][row[0]]["assembly"][row[1]]["sources"][sub_sources] = int(row[4])
+        assert sub_sources not in upsetData["species"][row.organism]["assembly"][row[1]]["sources"],"Duplicate source name found in upsetData table: "+sub_sources
+        upsetData["species"][row.organism]["assembly"][row[1]]["sources"][sub_sources] = int(row[4])
 
     return upsetData

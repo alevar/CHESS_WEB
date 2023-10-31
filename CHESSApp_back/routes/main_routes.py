@@ -87,7 +87,11 @@ def get_seqids():
 def globalData():
     data = dict()
 
-    data = db_methods.get_sources()
+    data["organisms"] = db_methods.get_all_organisms()
+    data["assemblies"] = db_methods.get_all_assemblies()
+    data["sources"] = db_methods.get_all_sources()
+    data["counts"] = db_methods.get_AllCountSummaryTable()
+    # data["upset"] = db_methods.get_upsetData()
 
     return jsonify(data)
 
