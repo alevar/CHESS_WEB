@@ -11,7 +11,10 @@ const SPA = () => {
   const [selection_organism, setSelectionOrganism] = useState('');
   const [selection_assembly, setSelectionAssembly] = useState('');
   const [selection_sources, setSelectionSources] = useState('');
+  const [exclusion_sources, setExclusionSources] = useState('');
   const [selection_types, setSelectionTypes] = useState('');
+
+
 
   const handleNextSlide = () => {
     setSlideIndex(slideIndex + 1);
@@ -31,7 +34,10 @@ const SPA = () => {
 
   const handleSelectionDataSourceChange = (event: any) => {
     setSelectionSources(event.target.textContent);
+  }
 
+  const handleExclusionDataSourceChange = (event: any) => {
+    setExclusionSources(event.target.textContent);
   }
 
   const renderSlide = () => {
@@ -71,7 +77,9 @@ const SPA = () => {
           return (
             <SelectDataSource
               selection={selection_sources}
+              exclusion={exclusion_sources}
               onSelectionChange={handleSelectionDataSourceChange}
+              onExclusionChange={handleExclusionDataSourceChange}
               onNextSlide={handleNextSlide}
               onPreviousSlide={handlePreviousSlide}
               prop_className="SPA"
