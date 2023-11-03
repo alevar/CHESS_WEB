@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './SPA.css';
 import ButtonPrecompiled from './components/ButtonPrecompiled/ButtonPrecompiled';
 import ButtonCustom from './components/ButtonCustom/ButtonCustom';
@@ -8,11 +8,13 @@ import SelectDataSource from './components/SelectDataSource/SelectDataSource';
 
 const SPA = () => {
   const [slideIndex, setSlideIndex] = useState(0);
-  const [selection_organism, setSelectionOrganism] = useState('');
-  const [selection_assembly, setSelectionAssembly] = useState('');
-  const [selection_sources, setSelectionSources] = useState('');
-  const [exclusion_sources, setExclusionSources] = useState('');
-  const [selection_types, setSelectionTypes] = useState('');
+  const [selection_organism, setSelectionOrganism] = useState<string>('');
+  const [selection_assembly, setSelectionAssembly] = useState<string>('');
+
+  const [selection_sources, setSelectionSources] = useState<string[]>([]);
+  const [exclusion_sources, setExclusionSources] = useState<string[]>([]);
+
+//  const [selection_types, setSelectionTypes] = useState('');
 
 
 
@@ -33,12 +35,27 @@ const SPA = () => {
   };
 
   const handleSelectionDataSourceChange = (event: any) => {
-    setSelectionSources(event.target.textContent);
+    const selectedValue = event.target.textContent;
+    if (selection_sources.includes(selectedValue)) {
+      const updatedSelectionSources = selection_sources.filter(item => item !== selectedValue);
+      setSelectionSources(updatedSelectionSources);
+    } else {
+      const newSelectionSources = [...selection_sources, selectedValue];
+      setSelectionSources(newSelectionSources);
+    }
   }
-
+  
   const handleExclusionDataSourceChange = (event: any) => {
-    setExclusionSources(event.target.textContent);
+    const excludedValue = event.target.textContent;
+    if (exclusion_sources.includes(excludedValue)) {
+      const updatedExclusionSources = exclusion_sources.filter(item => item !== excludedValue);
+      setExclusionSources(updatedExclusionSources);
+    } else {
+      const newExclusionSources = [...exclusion_sources, excludedValue];
+      setExclusionSources(newExclusionSources);
+    }
   }
+  
 
   const renderSlide = () => {
     switch (slideIndex) {
@@ -78,8 +95,10 @@ const SPA = () => {
             <SelectDataSource
               selection={selection_sources}
               exclusion={exclusion_sources}
+
               onSelectionChange={handleSelectionDataSourceChange}
               onExclusionChange={handleExclusionDataSourceChange}
+
               onNextSlide={handleNextSlide}
               onPreviousSlide={handlePreviousSlide}
               prop_className="SPA"
