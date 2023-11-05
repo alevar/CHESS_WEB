@@ -5,6 +5,7 @@ import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
 import ToggleButton from 'react-bootstrap/ToggleButton';
 import { Row, Col, Form } from 'react-bootstrap';
 import { Scaffolds }from './Scaffolds';
+import GeneTranscriptTable from './GeneTranscriptTable';
 
 
 
@@ -145,6 +146,7 @@ function SelectDataSource(props: Props) {
         {/* INFORMATIONAL SLIDE (on the right)*/}
         <div className="col-md-6 pl-md-5 border-left">
           <p>General information goes here</p>
+          <GeneTranscriptTable/>
         </div>
       </div>
     </div>
