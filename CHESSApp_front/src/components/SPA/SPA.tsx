@@ -7,6 +7,7 @@ import SelectAssembly from './components/SelectAssembly/SelectAssembly';
 import SelectDataSource from './components/SelectDataSource/SelectDataSource';
 
 const SPA = () => {
+// STATE HOOKS
   const [slideIndex, setSlideIndex] = useState(0);
   const [selection_organism, setSelectionOrganism] = useState<string>('');
   const [selection_assembly, setSelectionAssembly] = useState<string>('');
@@ -14,10 +15,13 @@ const SPA = () => {
   const [selection_sources, setSelectionSources] = useState<string[]>([]);
   const [exclusion_sources, setExclusionSources] = useState<string[]>([]);
 
-//  const [selection_types, setSelectionTypes] = useState('');
+  const [gene_types, setGeneTypes] = useState<string[]>([]);
+  const [transcript_types, setTranscriptTypes] = useState<string[]>([]);
+  const [selected_scaffolds, setScaffolds] = useState<string[]>([]);
 
 
 
+// DEFINING STATE FUNCTIONS
   const handleNextSlide = () => {
     setSlideIndex(slideIndex + 1);
   };
@@ -56,7 +60,41 @@ const SPA = () => {
     }
   }
   
+  const handleGeneTypeChange = (event: any) => {
+    const gt = event.target.id;
+    if (gene_types.includes(gt)) {
+      const updatedGT = gene_types.filter(item => item !== gt);
+      setGeneTypes(updatedGT);
+    } else {
+      const newExclusionSources = [...gene_types, gt];
+      setGeneTypes(newExclusionSources);
+    }
+  }
 
+  const handleTranscriptTypeChange = (event: any) => {
+    const tt = event.target.id;
+    if (transcript_types.includes(tt)) {
+      const updatedTT = transcript_types.filter(item => item !== tt);
+      setTranscriptTypes(updatedTT);
+    } else {
+      const newExclusionSources = [...transcript_types, tt];
+      setTranscriptTypes(newExclusionSources);
+    }
+  }
+
+  const handleScaffoldTypeChange = (event: any) => {
+    const scaffold = event.target.value;
+    if (selected_scaffolds.includes(scaffold)) {
+      const updatedScaffolds = selected_scaffolds.filter(item => item !== scaffold);
+      setScaffolds(updatedScaffolds);
+    } else {
+      const updatedScaffolds = [...selected_scaffolds, scaffold];
+      setScaffolds(updatedScaffolds);
+    }
+  }
+
+
+// RENDERING THE UI
   const renderSlide = () => {
     switch (slideIndex) {
       case 0:
@@ -95,9 +133,15 @@ const SPA = () => {
             <SelectDataSource
               selection={selection_sources}
               exclusion={exclusion_sources}
+              gene_types={gene_types}
+              transcript_types={transcript_types}
+              selected_scaffolds={selected_scaffolds}
 
               onSelectionChange={handleSelectionDataSourceChange}
               onExclusionChange={handleExclusionDataSourceChange}
+              onGeneTypeChange={handleGeneTypeChange}
+              onTranscriptTypeChange={handleTranscriptTypeChange}
+              setScaffolds={handleScaffoldTypeChange}
 
               onNextSlide={handleNextSlide}
               onPreviousSlide={handlePreviousSlide}
