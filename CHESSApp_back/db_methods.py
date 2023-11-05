@@ -7,7 +7,6 @@ def get_all_organisms():
     res = db.session.execute(query)
     json_res = dict()
     for row in res:
-        print(row)
         json_res[row.scientificName] = {
             "scientificName":row.scientificName,
             "commonName":row.commonName,
@@ -21,8 +20,8 @@ def get_all_assemblies():
     json_res = dict()
     for row in res:
         json_res[row.assemblyName] = {
-            "assemblyName":row.assemblyName,
-            "organismName":row.organismName,
+            "assembly":row.assemblyName,
+            "organism":row.organismName,
             "link":row.link,
             "information":row.information
         }
@@ -48,8 +47,6 @@ def get_all_sources():
 def get_AllCountSummaryTable() -> dict:
     query = text("SELECT * FROM AllCountSummary")
     res = db.session.execute(query)
-
-    print(res)
 
     # parse the summary list into a dictionary
     summary = {"species":dict()}
@@ -80,3 +77,15 @@ def get_upsetData():
         upsetData["species"][row.organism]["assembly"][row[1]]["sources"][sub_sources] = int(row[4])
 
     return upsetData
+
+
+# contents of the json with DB state
+# all counts table (contains mappings between all organisms, assemblies, sources)
+# key attributes: gene_type, transcript_type, 
+# sequence IDs
+
+
+
+# TODOs:
+# DB: add info about the type of sequenceID (alt, random, primary, etc)
+# DB: add table of files and a link to the source. One to many relationship (single source - multiple files). Persistent files should be added and fetched for download
