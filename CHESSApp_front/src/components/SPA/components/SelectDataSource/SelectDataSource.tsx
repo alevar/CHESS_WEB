@@ -42,6 +42,7 @@ function SelectDataSource(props: Props) {
 
             {/* SELECTING A DATA SOURCE*/}
             <div className="font-weight-bold">1. Select data source(s) for your custom annotation.</div>
+
             <ToggleButtonGroup type="checkbox">
                 <ToggleButton variant="secondary" id="chess3" value="CHESS.3.0" onClick={onSelectionChange}>CHESS.3.0</ToggleButton>
                 <ToggleButton variant="secondary" id="chess301" value="CHESS.3.0.1" onClick={onSelectionChange}>CHESS.3.0.1</ToggleButton>
@@ -50,7 +51,6 @@ function SelectDataSource(props: Props) {
                 <ToggleButton variant="secondary" id="mane" value="MANE" onClick={onSelectionChange}>MANE</ToggleButton>
                 <ToggleButton variant="secondary" id="refseq" value="RefSeq" onClick={onSelectionChange}>RefSeq</ToggleButton>
             </ToggleButtonGroup>
-
             <p className="font-italic">Active selection: {selection.length > 0 ? selection.join(", ") : "None"}</p> 
             <div className='p-2'></div>
 
@@ -60,10 +60,10 @@ function SelectDataSource(props: Props) {
                 <Form.Group>
                     <Form.Label className="font-weight-bold">2. Select a gene type(s).</Form.Label>
                     <div className="checkbox justify-content-start">
-                        <Form.Check type="checkbox" label="Protein-coding" id="Protein-coding" onClick={onGeneTypeChange}/>
-                        <Form.Check type="checkbox" label="lncRNA" id="lncRNA" onClick={onGeneTypeChange} />
-                        <Form.Check type="checkbox" label="Pseudogene" id="Pseudogene" onClick={onGeneTypeChange}/>
-                        <Form.Check type="checkbox" label="Other" id="Other" onClick={onGeneTypeChange}/>
+                        <Form.Check type="checkbox" label="Protein-coding" id="Protein-coding (g)" onClick={onGeneTypeChange}/>
+                        <Form.Check type="checkbox" label="lncRNA" id="lncRNA (g)" onClick={onGeneTypeChange} />
+                        <Form.Check type="checkbox" label="Pseudogene" id="Pseudogene (g)" onClick={onGeneTypeChange}/>
+                        <Form.Check type="checkbox" label="Other" id="Other (g)" onClick={onGeneTypeChange}/>
                     </div>
                 </Form.Group>
             </Form>
@@ -76,10 +76,10 @@ function SelectDataSource(props: Props) {
                 <Form.Group>
                     <Form.Label className="font-weight-bold">3. Select a transcript type(s).</Form.Label>
                     <div className="checkbox">
-                        <Form.Check type="checkbox" label="Protein-coding" id="Protein-coding" onClick={onTranscriptTypeChange}/>
-                        <Form.Check type="checkbox" label="lncRNA" id="lncRNA" onClick={onTranscriptTypeChange}/>
-                        <Form.Check type="checkbox" label="Pseudogene" id="Pseudogene" onClick={onTranscriptTypeChange}/>
-                        <Form.Check type="checkbox" label="Other" id="Other" onClick={onTranscriptTypeChange}/>
+                        <Form.Check type="checkbox" label="Protein-coding" id="Protein-coding (t)" onClick={onTranscriptTypeChange}/>
+                        <Form.Check type="checkbox" label="lncRNA" id="lncRNA (t)" onClick={onTranscriptTypeChange}/>
+                        <Form.Check type="checkbox" label="Pseudogene" id="Pseudogene (t)" onClick={onTranscriptTypeChange}/>
+                        <Form.Check type="checkbox" label="Other" id="Other (t)" onClick={onTranscriptTypeChange}/>
                     </div>
                 </Form.Group>
             </Form>

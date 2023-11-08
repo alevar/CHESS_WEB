@@ -5,6 +5,7 @@ import ButtonCustom from './components/ButtonCustom/ButtonCustom';
 import SelectOrganism from './components/SelectOrganism/SelectOrganism';
 import SelectAssembly from './components/SelectAssembly/SelectAssembly';
 import SelectDataSource from './components/SelectDataSource/SelectDataSource';
+import { DownloadAnnotation } from './components/DownloadAnnotation/DownloadAnnotation';
 
 const SPA = () => {
 // STATE HOOKS
@@ -148,6 +149,13 @@ const SPA = () => {
               prop_className="SPA"
             />
           );
+          case 4:
+            return (
+              <DownloadAnnotation
+              onNextSlide={handleNextSlide}
+              onPreviousSlide={handlePreviousSlide}
+              prop_className="SPA"/>
+            );
       default:
         return null;
     }
