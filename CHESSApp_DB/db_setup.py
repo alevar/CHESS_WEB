@@ -147,6 +147,33 @@ def load_tracking(tracking_fname:str) -> dict:
                 res[qry_tid] = ref_tid
     return res
 
+def process_types(fname:str):
+    # ths function parses through the annotation and extracts gene and transcripts types present
+    # afterwards, the function calls the api to lookup which types are already present
+    # the function tries to match the types from the inputs to the ones already in the database
+    # on failure to resolve - the method prompts user input and halts execution until resolved
+    # on success - the method returns a dictionary with the resolved types
+
+    assert os.path.exists(fname),"input file does not exist: "+fname
+
+    gene_types = set()
+    transcript_types = set()
+
+    with open(fname, 'r') as inFP:
+        for line in inFP:
+            if line[0] == "#":
+                continue
+            lcs = line.rstrip().split("\t")
+            if not len(lcs) == 9:
+                continue
+
+            # since we are running this without gffread, we need to check every line.
+            # we can, however, safely discard all lines that are exons and cdss
+            if lcs[2].lower() in ["exon","cds"]:
+                continue
+
+
+
 def addSources(api_connection,config,args):
     if not os.path.exists(args.temp):
         os.makedirs(args.temp)
@@ -159,6 +186,12 @@ def addSources(api_connection,config,args):
     api_connection.check_table("Transcripts")
 
     logFP = open(args.log, 'w') if args.log else None
+
+    # before all else, process types from all sources
+    # this way if the user input is required - it can be handled before the main bulk of the data is processed
+    for source,data in config.items():
+        # process attributes
+        gene_types,transcript_types = process_types(data["file"])
 
     for source,data in config.items():
         sourceName = data["name"].replace("'","\\'")

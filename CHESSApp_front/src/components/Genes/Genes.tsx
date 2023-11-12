@@ -4,6 +4,7 @@ import ButtonPrecompiled from './components/ButtonPrecompiled/ButtonPrecompiled'
 import ButtonCustom from './components/ButtonCustom/ButtonCustom';
 import SelectOrganism from './components/SelectOrganism/SelectOrganism';
 import SelectAssembly from './components/SelectAssembly/SelectAssembly';
+import SelectDataSource from './components/SelectDataSource/SelectDataSource';
 
 const Genes = () => {
   const [slideIndex, setSlideIndex] = useState(0);
@@ -20,13 +21,18 @@ const Genes = () => {
     setSlideIndex(slideIndex - 1);
   };
 
-  const handleSelectionOrganismChange = (event) => {
+  const handleSelectionOrganismChange = (event: any) => {
     setSelectionOrganism(event.target.value);
   };
 
-  const handleSelectionAssemblyChange = (event) => {
+  const handleSelectionAssemblyChange = (event: any) => {
     setSelectionAssembly(event.target.value);
   };
+
+  const handleSelectionDataSourceChange = (event: any) => {
+    setSelectionSources(event.target.textContent);
+
+  }
 
   const renderSlide = () => {
     switch (slideIndex) {
@@ -61,6 +67,16 @@ const Genes = () => {
             prop_className="Genes"
           />
         );
+        case 3:
+          return (
+            <SelectDataSource
+              selection={selection_sources}
+              onSelectionChange={handleSelectionDataSourceChange}
+              onNextSlide={handleNextSlide}
+              onPreviousSlide={handlePreviousSlide}
+              prop_className="SPA"
+            />
+          );
       default:
         return null;
     }
