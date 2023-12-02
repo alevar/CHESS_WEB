@@ -42,6 +42,7 @@ def addOrganisms(api_connection,config, args):
 ########   ASSEMBLY   ########
 ##############################
 def parse_fai(fai_fname:str) -> dict:
+    print(os.getcwd(),fai_fname)
     assert os.path.exists(fai_fname),"fai file does not exist: "+fai_fname
 
     fai_dict = {}
