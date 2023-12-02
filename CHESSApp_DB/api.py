@@ -88,7 +88,7 @@ class CHESS_DB_API:
         information = data["information"].replace("'","\\'")
 
         # no need to check scienceName, it is a primary key
-        query = f"INSERT INTO Organisms (scientificName, commonName, information) VALUES ('{scienceName}', '{commonName}', '{information}')"
+        query = f"INSERT INTO Organism (scientificName, commonName, information) VALUES ('{scienceName}', '{commonName}', '{information}')"
         return self.execute_query(query)
     
 
@@ -102,13 +102,19 @@ class CHESS_DB_API:
         information = data["information"].replace("'","\\'")
 
         # no need to check assemblyName, it is a primary key
-        query = f"INSERT INTO Assemblies (assemblyName, organismName, link, information) VALUES ('{assemblyName}', '{scienceName}', '{link}', '{information}')"
+        query = f"INSERT INTO Assembly (assemblyName, organismName, link, information) VALUES ('{assemblyName}', '{scienceName}', '{link}', '{information}')"
         return self.execute_query(query)
     
     def insert_contig(self,contig,length,data:dict):
         assemblyName = data["name"].replace("'","\\'")
 
-        query = f"INSERT INTO SequenceIDs (assemblyName, sequenceID, length) VALUES ('{assemblyName}', '{contig}', {length})"
+        query = f"INSERT INTO SequenceID (assemblyID, sequenceID, length) SELECT \
+                                                    assemblyID,'{contig}', {length} \
+                                                    FROM \
+                                                        Assembly \
+                                                    WHERE \
+                                                        assemblyName = '{assemblyName}';"
+        print(query)
         return self.execute_query(query)
 
     ##############################
@@ -125,11 +131,11 @@ class CHESS_DB_API:
     def insert_transcript(self, transcript:TX, data:dict):
         assemblyName = data["assemblyName"].replace("'","\\'")
 
-        query = f"INSERT INTO Transcripts (assemblyName,sequenceID,strand,start,end,exons) VALUES ('{assemblyName}','{transcript.seqid}',{transcript.strand},'{transcript.start}','{transcript.end}','{transcript.exons}')"
+        query = f"INSERT INTO Transcript (assemblyName,sequenceID,strand,start,end,exons) VALUES ('{assemblyName}','{transcript.seqid}',{transcript.strand},'{transcript.start}','{transcript.end}','{transcript.exons}')"
         return self.execute_query(query)
     
     def insert_attribute(self, tid:int, sourceID:int, transcriptID:str, attribute_key:str, attribute_value:str):
-        query = f"INSERT INTO Attributes (tid,sourceID,transcript_id,name,value) VALUES ('{tid}','{sourceID}','{transcriptID}','{attribute_key}','{attribute_value}')"
+        query = f"INSERT INTO Attribute (tid,sourceID,transcript_id,name,value) VALUES ('{tid}','{sourceID}','{transcriptID}','{attribute_key}','{attribute_value}')"
         return self.execute_query(query)
     
     def insert_dbxref(self, transcript:TX, tid:int, sourceID:int):
@@ -176,7 +182,7 @@ class CHESS_DB_API:
         sampleCount = int(data["sampleCount"])
         information = data["information"].replace("'","\\'")
 
-        query = f"INSERT INTO Datasets (name,sampleCOunt,information) VALUES ('{datasetName}','{sampleCount}','{information}')"
+        query = f"INSERT INTO Dataset (name,sampleCOunt,information) VALUES ('{datasetName}','{sampleCount}','{information}')"
         return self.execute_query(query)
     
     def insert_transcriptEvidence(self, tid:int, datasetID:int, evidence:dict):
@@ -190,7 +196,7 @@ class CHESS_DB_API:
     ##########  GENERAL  ##########
     ###############################
     def get_sequenceIDs(self, assemblyName:str):
-        query = f"SELECT sequenceID FROM SequenceIDs WHERE assemblyName='{assemblyName}'"
+        query = f"SELECT sequenceID FROM SequenceID WHERE assemblyName='{assemblyName}'"
         return self.execute_query(query)
     
     def check_table(self, table_name:str):
@@ -206,7 +212,7 @@ class CHESS_DB_API:
 
     def to_gtf(self,assembly:str,outfname:str):
         # retrieve transcripts for a given assembly and outputs them as a GTF file
-        query = f"SELECT * FROM Transcripts WHERE assemblyName='{assembly}'"
+        query = f"SELECT * FROM Transcript WHERE assemblyName='{assembly}'"
         select_res = self.execute_query(query)
 
         with open(outfname,"w") as outFP:
@@ -244,13 +250,13 @@ class CHESS_DB_API:
                             COUNT(DISTINCT T.tid) AS TotalTranscripts,
                             COUNT(DISTINCT G.gid) AS TotalGenes
                         FROM
-                            Organisms O
+                            Organism O
                         LEFT JOIN
-                            Assemblies A ON O.scientificName = A.organismName
+                            Assembly A ON O.scientificName = A.organismName
                         LEFT JOIN
-                            SequenceIDs SI ON A.assemblyName = SI.assemblyName
+                            SequenceID SI ON A.assemblyName = SI.assemblyName
                         LEFT JOIN
-                            Transcripts T ON SI.sequenceID = T.sequenceID AND SI.assemblyName = T.assemblyName
+                            Transcript T ON SI.sequenceID = T.sequenceID AND SI.assemblyName = T.assemblyName
                         LEFT JOIN
                             TxDBXREF TX ON T.tid = TX.tid
                         LEFT JOIN
@@ -258,7 +264,7 @@ class CHESS_DB_API:
                         LEFT JOIN
                             TranscriptToGene TG ON T.tid = TG.tid
                         LEFT JOIN
-                            Genes G ON TG.gid = G.gid
+                            Gene G ON TG.gid = G.gid
                         GROUP BY
                             O.scientificName, A.assemblyName, S.name WITH ROLLUP
                         HAVING
@@ -360,7 +366,7 @@ class CHESS_DB_API:
         return upsetData
 
     def get_Datasets(self):
-        query = "SELECT * FROM Datasets"
+        query = "SELECT * FROM Dataset"
         res = self.execute_query(query)
 
         res = [x[1:] for x in res] # this is simple data - just output the list instead of the dict
