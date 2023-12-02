@@ -17,6 +17,18 @@ from definitions import *
 import api
 
 ##############################
+########   ATTRIBUTES  #######
+##############################
+# This module allows adding pre-determined maps of attributes
+# This is not necessary, but can expedite the process of adding attributes to the database
+# Alternatively attributes will be parsed during source addition and users will be requested to resolve any conflicts and ambiguities.
+def addAttributes(api_connection,config,args):
+    for attribute,data in config.items():
+        api_connection.insert_attribute(attribute,data)
+
+    api_connection.commit(True)
+
+##############################
 ########   ORGANISM   ########
 ##############################
 def addOrganisms(api_connection,config, args):
@@ -30,6 +42,7 @@ def addOrganisms(api_connection,config, args):
 ########   ASSEMBLY   ########
 ##############################
 def parse_fai(fai_fname:str) -> dict:
+    print(os.getcwd(),fai_fname)
     assert os.path.exists(fai_fname),"fai file does not exist: "+fai_fname
 
     fai_dict = {}
@@ -456,6 +469,21 @@ def compile(api_connection,args):
 def main(args):
     parser = argparse.ArgumentParser(description='''Help Page''')
     subparsers = parser.add_subparsers(help='sub-command help')
+
+    ##############################
+    ########  ATTRIBUTES  ########
+    ##############################
+    parser_addAttributes=subparsers.add_parser('addAttributes',
+                                        help='addAttributes help')
+    parser_addAttributes.add_argument('--configuration',
+                                required=True,
+                                type=str,
+                                help='Path to the configuration file. Configuration is provided in JSON format. See example in CHESSApp_DB/data/attributes.json')
+    parser_addAttributes.add_argument('--db_configuration',
+                                required=True,
+                                type=str,
+                                help='Path to the configuration file for connecting to the mysql database. Configuration is provided in JSON format. See example in CHESSApp_DB/data/mysql.json')
+    parser_addAttributes.set_defaults(func=establish_connection,main_fn=addAttributes)
 
     ##############################
     ########   ORGANISM   ########
