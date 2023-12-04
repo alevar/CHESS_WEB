@@ -56,10 +56,7 @@ class CHESS_DB_API:
         result = False
         try:
             cursor = self.connection.cursor()
-            if data:
-                cursor.execute(query, data)
-            else:
-                cursor.execute(query)
+            cursor.execute(query, data)
             if query.lower().startswith('select'):
                 result = cursor.fetchall()
             elif query.lower().startswith('insert'):
@@ -78,6 +75,9 @@ class CHESS_DB_API:
         self.commit()
         cursor.close()
         return result
+    
+    def lastrowid(self):
+        return self.connection.lastrowid
     
     ##############################
     ########   ORGANISM   ########
@@ -105,16 +105,24 @@ class CHESS_DB_API:
         query = f"INSERT INTO Assembly (assemblyName, organismName, link, information) VALUES ('{assemblyName}', '{scienceName}', '{link}', '{information}')"
         return self.execute_query(query)
     
-    def insert_contig(self,contig,length,data:dict):
-        assemblyName = data["name"].replace("'","\\'")
-
+    # TODO: assert entries in the SequenceIDMap table are unique - no contig name should be duplicated for a given assembly
+    def insert_contig(self,assemblyID,contig,nomenclature,length):
+        # create a new entry for the contig
+        # count the number of entries in the SequenceID table for the current assembly
+        query = f"SELECT COUNT(*) FROM SequenceID WHERE assemblyID = {assemblyID}"
+        seqid = self.execute_query(query)[0][0] + 1
         query = f"INSERT INTO SequenceID (assemblyID, sequenceID, length) SELECT \
-                                                    assemblyID,'{contig}', {length} \
-                                                    FROM \
-                                                        Assembly \
-                                                    WHERE \
-                                                        assemblyName = '{assemblyName}';"
-        print(query)
+                                                    {assemblyID}, {seqid}, {length};"
+        self.execute_query(query)
+
+        query = f"INSERT INTO SequenceIDMap (assemblyID, sequenceID, nomenclature, sequenceName) VALUES ('{assemblyID}', '{seqid}', '{nomenclature}', '{contig}')"
+        return self.execute_query(query)
+
+    ##############################
+    ########  ATTRIBUTE  #########
+    ##############################
+    def insert_attribute_pair(self, attribute_key:str, attribute_value:str):
+        query = f"INSERT INTO AttributePairs (name, value) VALUES ('{attribute_key}', '{attribute_value}')"
         return self.execute_query(query)
 
     ##############################
@@ -134,7 +142,7 @@ class CHESS_DB_API:
         query = f"INSERT INTO Transcript (assemblyName,sequenceID,strand,start,end,exons) VALUES ('{assemblyName}','{transcript.seqid}',{transcript.strand},'{transcript.start}','{transcript.end}','{transcript.exons}')"
         return self.execute_query(query)
     
-    def insert_attribute(self, tid:int, sourceID:int, transcriptID:str, attribute_key:str, attribute_value:str):
+    def insert_txattribute(self, tid:int, sourceID:int, transcriptID:str, attribute_key:str, attribute_value:str):
         query = f"INSERT INTO Attribute (tid,sourceID,transcript_id,name,value) VALUES ('{tid}','{sourceID}','{transcriptID}','{attribute_key}','{attribute_value}')"
         return self.execute_query(query)
     
@@ -165,14 +173,11 @@ class CHESS_DB_API:
     ##############################
     #######  NOMENCLATURE  #######
     ##############################
-    def insert_nomenclature(self, sequenceID:str, altID:str, data:dict):
-        assemblyName = data["assemblyName"]
-        nomecnclature = data["nomenclature"]
-
-        # no need to check assemblyName and sequenceID, they are primary keys
-        query = f"INSERT INTO SequenceIDMap (assemblyName, sequenceID, alternativeID, nomenclature) VALUES ('{assemblyName}', '{sequenceID}', '{altID}', '{nomecnclature}')"
+    def insert_nomenclature(self, assemblyID:int, sequenceID:int, altID:str, nomenclature:str):
+        # no need to check assemblyID and sequenceID, they are primary keys
+        query = f"INSERT INTO SequenceIDMap (assemblyID, sequenceID, sequenceName, nomenclature) VALUES ('{assemblyID}', '{sequenceID}', '{altID}', '{nomenclature}')"
         return self.execute_query(query)
-    
+
 
     ##############################
     #########   DATASET   ########
@@ -195,10 +200,6 @@ class CHESS_DB_API:
     ###############################
     ##########  GENERAL  ##########
     ###############################
-    def get_sequenceIDs(self, assemblyName:str):
-        query = f"SELECT sequenceID FROM SequenceID WHERE assemblyName='{assemblyName}'"
-        return self.execute_query(query)
-    
     def check_table(self, table_name:str):
         cursor = self.connection.cursor()
         cursor.execute(f"SHOW TABLES LIKE '{table_name}'")
@@ -374,3 +375,19 @@ class CHESS_DB_API:
     
     def get_sequeceData(self):
         return
+    
+    def get_assemblyID(self,name:str) -> int:
+        query = "SELECT assemblyID FROM Assembly WHERE assemblyName = '"+name+"'"
+        res = self.execute_query(query)
+        assert len(res) == 1,"Invalid assembly name: "+name
+        return res[0][0]
+    
+    def get_seqidMap(self,assemblyID:int,nomenclature:str) -> dict:
+        # retrieve a map from the DB sequenceID to a given nomenclature for the given assembly and nomenclature
+        query = "SELECT sequenceName,sequenceID FROM SequenceIDMap WHERE assemblyID = "+str(assemblyID)+" AND nomenclature = '"+nomenclature+"'"
+        tmp = self.execute_query(query)
+        res = dict()
+        for k,v in tmp:
+            assert k not in res,"duplicate entries: "+k
+            res[k] = v
+        return res

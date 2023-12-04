@@ -1,0 +1,60 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "DB: addOrganisms",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/CHESSApp_DB",
+            "program": "./db_setup.py",
+            "args": [
+                "addOrganisms",
+                "--configuration","./example/configurations/example.organisms.json",
+                "--db_configuration","./example/configurations/example.mysql.json"
+	        ],
+	        "console": "integratedTerminal"
+        },
+        {
+            "name": "DB: addAssemblies",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/CHESSApp_DB",
+            "program": "./db_setup.py",
+            "args": [
+                "addAssemblies",
+                "--configuration","./example/configurations/example.assemblies.json",
+                "--db_configuration","./example/configurations/example.mysql.json"
+	        ],
+	        "console": "integratedTerminal"
+        },
+        {
+            "name": "DB: addNomenclatures",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/CHESSApp_DB",
+            "program": "./db_setup.py",
+            "args": [
+                "addNomenclatures",
+                "--configuration","./example/configurations/example.nomenclatures.json",
+                "--db_configuration","./example/configurations/example.mysql.json"
+	        ],
+	        "console": "integratedTerminal"
+        },
+        {
+            "name": "DB: addAttributes",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/CHESSApp_DB",
+            "program": "./db_setup.py",
+            "args": [
+                "addAttributes",
+                "--configuration","./example/configurations/example.attributes.json",
+                "--db_configuration","./example/configurations/example.mysql.json"
+	        ],
+	        "console": "integratedTerminal"
+        }
+    ]
+}

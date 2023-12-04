@@ -55,11 +55,14 @@ def parse_fai(fai_fname:str) -> dict:
 
 def addAssemblies(api_connection,config,args):
     for assembly,data in config.items():
-        api_connection.insert_assembly(data)
+        row = api_connection.insert_assembly(data)
+
+        # get assembly ID for the assembly name
+        aid = api_connection.get_assemblyID(data["assemblyName"])
 
         # now also write contig information from the index file into SequenceIDs table
         for contig,length in parse_fai(data["fastaIndex"]).items():
-            api_connection.insert_contig(contig,length,data)
+            api_connection.insert_contig(aid,contig,data["nomenclature"],length)
 
     api_connection.commit(True)
 
@@ -301,11 +304,20 @@ def establish_connection(args,main_fn):
 #######  NOMENCLATURE  #######
 ##############################
 def addNomeclatures(api_connection,config, args):
-
     for nomecnclature,data in config.items():
+        # get assembly ID for the assembly name
+        aid = api_connection.get_assemblyID(data["assemblyName"])
+
+        # check if data["to"] already exists in the sequenceIDMap
+        # if it does - then we can skip it
+        query = "SELECT count(*) FROM SequenceIDMap WHERE assemblyID = %s AND nomenclature = %s"
+        res = api_connection.execute_query(query,(aid,data["to"]))
+        if res[0][0]>0:
+            print("Skipping nomenclature: "+data["to"]+" for assembly: "+data["assemblyName"]+" as it already exists in the database")
+            continue
+
         # assert that all sequenceIDs for the assembly exist in the provided map
-        sids = api_connection.get_sequenceIDs(data["assemblyName"])
-        sids = set([x[0] for x in sids])
+        sids = api_connection.get_seqidMap(aid,data["from"])
         assert len(sids)>0,"No sequenceIDs found for assembly: "+data["assemblyName"]
 
         # load the map
@@ -316,14 +328,15 @@ def addNomeclatures(api_connection,config, args):
                 assert len(lcs)==2,"Invalid line in the nomenclature file: "+line
 
                 if lcs[0] in sids:
-                    assert lcs[0] not in map,"Duplicate sequenceID in the nomenclature file: "+lcs[0]
-                    map[lcs[0]] = lcs[1]
+                    sid = sids[lcs[0]]
+                    assert sid not in map,"Duplicate sequenceID in the nomenclature file: "+lcs[0]
+                    map[sid] = lcs[1]
 
         assert len(map)==len(sids),"Not all sequenceIDs have been mapped to the nomenclature: "+data["file"]
 
         # insert the nomenclature
         for sequenceID,altID in map.items():
-            api_connection.insert_nomenclature(sequenceID,altID,data)
+            api_connection.insert_nomenclature(aid,sequenceID,altID,data["to"])
 
     api_connection.commit(True)
 
