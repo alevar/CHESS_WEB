@@ -259,9 +259,9 @@ COMMENT = 'This table is used to build a transcript map between sources.\\nFor a
 DROP TABLE IF EXISTS `CHESS_DB`.`AttributeKey` ;
 
 CREATE TABLE IF NOT EXISTS `CHESS_DB`.`AttributeKey` (
-  `key_name` VARCHAR(45) NOT NULL,
+  `std_key` VARCHAR(45) NOT NULL,
   `variable` TINYINT(1) NOT NULL,
-  PRIMARY KEY (`key_name`))
+  PRIMARY KEY (`std_key`))
 ENGINE = InnoDB;
 
 
@@ -271,12 +271,12 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS `CHESS_DB`.`AttributeKeyValue` ;
 
 CREATE TABLE IF NOT EXISTS `CHESS_DB`.`AttributeKeyValue` (
-  `key_name` VARCHAR(45) NOT NULL,
+  `std_key` VARCHAR(45) NOT NULL,
   `std_value` VARCHAR(45) NOT NULL DEFAULT '',
-  PRIMARY KEY (`key_name`, `std_value`),
+  PRIMARY KEY (`std_key`, `std_value`),
   CONSTRAINT `fk_AttributeKeyValue_key`
-    FOREIGN KEY (`key_name`)
-    REFERENCES `CHESS_DB`.`AttributeKey` (`key_name`)
+    FOREIGN KEY (`std_key`)
+    REFERENCES `CHESS_DB`.`AttributeKey` (`std_key`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -305,7 +305,7 @@ CREATE TABLE IF NOT EXISTS `CHESS_DB`.`TXAttribute` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_Attributes_attr`
     FOREIGN KEY (`name` , `value`)
-    REFERENCES `CHESS_DB`.`AttributeKeyValue` (`key_name` , `std_value`)
+    REFERENCES `CHESS_DB`.`AttributeKeyValue` (`std_key` , `std_value`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -457,7 +457,7 @@ CREATE TABLE IF NOT EXISTS `CHESS_DB`.`AttributeKeyMap` (
   INDEX `fk_AttributeKeyMap_key_idx` (`std_key` ASC) VISIBLE,
   CONSTRAINT `fk_AttributeKeyMap_key`
     FOREIGN KEY (`std_key`)
-    REFERENCES `CHESS_DB`.`AttributeKey` (`key_name`)
+    REFERENCES `CHESS_DB`.`AttributeKey` (`std_key`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -470,14 +470,14 @@ COMMENT = 'Map linking various names to a standard set of attribute keys';
 DROP TABLE IF EXISTS `CHESS_DB`.`AttributeValueMap` ;
 
 CREATE TABLE IF NOT EXISTS `CHESS_DB`.`AttributeValueMap` (
-  `key_name` VARCHAR(45) NOT NULL,
+  `std_key` VARCHAR(45) NOT NULL,
   `og_value` VARCHAR(45) NOT NULL DEFAULT '',
   `std_value` VARCHAR(45) NOT NULL DEFAULT '',
-  PRIMARY KEY (`key_name`, `og_value`, `std_value`),
-  INDEX `fk_Values_key_idx` (`key_name` ASC, `std_value` ASC) VISIBLE,
+  PRIMARY KEY (`std_key`, `og_value`, `std_value`),
+  INDEX `fk_Values_key_idx` (`std_key` ASC, `std_value` ASC) VISIBLE,
   CONSTRAINT `fk_Values_key_value`
-    FOREIGN KEY (`key_name` , `std_value`)
-    REFERENCES `CHESS_DB`.`AttributeKeyValue` (`key_name` , `std_value`)
+    FOREIGN KEY (`std_key` , `std_value`)
+    REFERENCES `CHESS_DB`.`AttributeKeyValue` (`std_key` , `std_value`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -750,7 +750,7 @@ BEGIN
     -- Get the variable value for the corresponding key
     SELECT `variable` INTO v_variable
     FROM `AttributeKey`
-    WHERE `key_name` = NEW.`name`;
+    WHERE `std_key` = NEW.`name`;
 
     -- Check conditions based on the variable value
     IF v_variable = 1 THEN
@@ -803,7 +803,7 @@ END$$
 
 
 USE `CHESS_DB`$$
-DROP TRIGGER IF EXISTS `CHESS_DB`.`AttributeValueMap_BI_WRONG_SCHEMA` $$
+DROP TRIGGER IF EXISTS `CHESS_DB`.`AttributeValueMap_BI` $$
 USE `CHESS_DB`$$
 CREATE DEFINER = CURRENT_USER TRIGGER `CHESS_DB`.`AttributeValueMap_BI` BEFORE INSERT ON `AttributeValueMap` FOR EACH ROW
 BEGIN
@@ -816,7 +816,7 @@ BEGIN
     -- Get the variable value for the corresponding key
     SELECT `variable` INTO v_variable
     FROM `AttributeKey`
-    WHERE `key_name` = NEW.`key_name`;
+    WHERE `std_key` = NEW.`std_key`;
     
     -- Check conditions based on the variable value
     IF v_variable = 1 THEN
