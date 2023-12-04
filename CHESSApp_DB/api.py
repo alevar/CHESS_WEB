@@ -391,3 +391,14 @@ class CHESS_DB_API:
             assert k not in res,"duplicate entries: "+k
             res[k] = v
         return res
+    
+    def get_attribute_key_information(self,key) -> dict:
+        # retrieve a map of all alernative names for a given key (including the key itself) along with all possible values permitted and their maps
+
+        # query AttributeKeyMap where either og_key or alt_key matches the key. Retrieve unique std_key values. Assert it is unique (shout be guaranteed by the DB)
+        query = "SELECT DISTINCT std_key FROM AttributeKeyMap WHERE og_key = '"+key+"'"
+        tmp = self.execute_query(query)
+        assert len(tmp) == 1,"Invalid key: "+key
+        std_key = tmp[0][0]
+
+        # check if key is variable or not

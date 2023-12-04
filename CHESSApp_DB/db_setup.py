@@ -24,7 +24,7 @@ import api
 # Alternatively attributes will be parsed during source addition and users will be requested to resolve any conflicts and ambiguities.
 def addAttributes(api_connection,config,args):
     for attribute,data in config.items():
-        api_connection.insert_attribute(attribute,data)
+        api_connection.insert_attribute_pair(attribute,data)
 
     api_connection.commit(True)
 
@@ -42,7 +42,6 @@ def addOrganisms(api_connection,config, args):
 ########   ASSEMBLY   ########
 ##############################
 def parse_fai(fai_fname:str) -> dict:
-    print(os.getcwd(),fai_fname)
     assert os.path.exists(fai_fname),"fai file does not exist: "+fai_fname
 
     fai_dict = {}
@@ -58,7 +57,7 @@ def addAssemblies(api_connection,config,args):
         row = api_connection.insert_assembly(data)
 
         # get assembly ID for the assembly name
-        aid = api_connection.get_assemblyID(data["assemblyName"])
+        aid = api_connection.get_assemblyID(data["name"])
 
         # now also write contig information from the index file into SequenceIDs table
         for contig,length in parse_fai(data["fastaIndex"]).items():
