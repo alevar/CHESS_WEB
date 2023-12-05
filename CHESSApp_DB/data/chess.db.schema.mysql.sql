@@ -279,7 +279,7 @@ CREATE TABLE IF NOT EXISTS `CHESS_DB`.`AttributeKeyValue` (
     FOREIGN KEY (`key_name`)
     REFERENCES `CHESS_DB`.`AttributeKey` (`key_name`)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON UPDATE CASCADE)
 ENGINE = InnoDB
 COMMENT = 'for standard keys, this map specifies which values are permitted and stores the relationship';
 

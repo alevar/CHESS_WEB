@@ -68,6 +68,8 @@ class CHESS_DB_API:
                 result = True
             elif query.lower().startswith('create'):
                 result = True
+            elif query.lower().startswith('update'):
+                result = cursor.lastrowid
             else:
                 assert False,"Invalid query type. Only select and insert queries are currently supported."
         except mysql.connector.Error as err:
@@ -419,15 +421,15 @@ class CHESS_DB_API:
         for row in tmp:
             std_key = row[0]
             res.setdefault(std_key,{
-                "synonyms": row[1].split(","),
+                "synonyms": set(row[1].split(",")),
                 'variable': row[2],
                 "values": dict()
             })
             assert res[std_key]["variable"] == row[2],"Inconsistent variable value for key "+std_key
-            assert res[std_key]["synonyms"] == row[1].split(","),"Inconsistent synonyms for key "+std_key
+            assert res[std_key]["synonyms"] == set(row[1].split(",")),"Inconsistent synonyms for key "+std_key
             assert row[3] not in res[std_key]["values"],"Duplicate value found for key "+std_key+": "+row[3]
 
-            res[std_key]["values"][row[3]] = row[4].split(",")
+            res[std_key]["values"][row[3]] = set(row[4].split(","))
 
         return res
 
@@ -467,6 +469,24 @@ class Attributes:
     def quit_state(self):
         return True
     
+    def save_changes(self):
+        # present a list of changes to the user for review and ask for confirmation to execute and commit
+        if len(self.commands) == 0:
+            print("No changes to commit.")
+            return self.main_menu
+        print("The following changes will be made to the database:")
+        for query in self.commands:
+            print(query)
+        confirmation = input("Press 'y' to accept changes, any other key to cancel:")
+        if confirmation.lower() == 'y':
+            for query in self.commands:
+                self.dbcon.execute_query(query)
+            self.dbcon.commit(force=True)
+            print("Changes committed successfully.")
+
+        self.commands = []
+        return self.main_menu
+    
     def rename_key_state(self, selected_key):
         print("Renaming entry: " + selected_key)
         new_name = input("Provide new name for the entry: ")
@@ -480,24 +500,65 @@ class Attributes:
             print(f"Renaming '{selected_key}' to '{new_name}'.")
             confirmation = input("Press 'y' to accept changes, any other key to cancel:")
             if confirmation.lower() == 'y':
-                # Implement the renaming logic here
-                # Update the data structures accordingly
+                # update key
+                query = f'UPDATE AttributeKey SET key_name = "{new_name}" WHERE key_name = "{selected_key}"'
+                self.commands.append(query)
+                # add old key to synonyms of new key
+                if not selected_key in self.key_og2std:
+                    query = f'INSERT INTO AttributeKeyMap (std_key, og_key) VALUES ("{new_name}","{selected_key}")'
+                    self.commands.append(query)
 
-                # Placeholder: You may want to update the name in all relevant structures
-                self.key_og2std[new_name] = self.key_og2std[selected_key]
+                # update dictionaries
+                # get list of synonyms for selected_key
+                synonyms = self.key_std2og[selected_key]
+                # rename synonym mappings
+                for syn in synonyms:
+                    del self.key_og2std[syn]
+                    self.key_og2std[syn] = new_name
                 self.key_std2og[new_name] = self.key_std2og[selected_key]
-                self.val_og2std[new_name] = self.val_og2std[selected_key]
-                self.val_std2og[new_name] = self.val_std2og[selected_key]
-
-                # Remove old_key_name from the data structures
-                del self.db_info[selected_key]
-                del self.key_og2std[selected_key]
+                self.key_std2og[new_name].add(selected_key)
                 del self.key_std2og[selected_key]
+                self.val_og2std[new_name] = self.val_og2std[selected_key]
                 del self.val_og2std[selected_key]
+                self.val_std2og[new_name] = self.val_std2og[selected_key]
                 del self.val_std2og[selected_key]
+
+                self.db_info[new_name] = self.db_info[selected_key]
+                self.db_info[new_name]["synonyms"].add(selected_key)
+                del self.db_info[selected_key]
 
                 print(f"Entry '{selected_key}' renamed to '{new_name}' successfully.")
             
+            return self.main_menu
+        
+    def add_key_state(self):
+        print("Adding new entry.")
+        new_name = input("Provide name for the new entry: ")
+        if new_name in self.db_info:
+            print("New name already exists. No changes made.")
+            return self.main_menu
+        else:
+            print(f"Adding new entry '{new_name}'.")
+            confirmation = input("Press 'y' to accept changes, any other key to cancel:")
+            if confirmation.lower() == 'y':
+                # update key
+                query = f'INSERT INTO AttributeKey (key_name) VALUES ("{new_name}")'
+                self.commands.append(query)
+                query = f'INSERT INTO AttributeKeyMap (std_key, og_key) VALUES ("{new_name}","{new_name}")'
+
+                # update dictionaries
+                self.key_og2std[new_name] = new_name
+                self.key_std2og[new_name] = set(["new_name"])
+                self.val_og2std[new_name] = dict()
+                self.val_std2og[new_name] = dict()
+                self.db_info[new_name] = {
+                    "synonyms": set(["new_name"]),
+                    "variable": False,
+                    "values": dict()
+                }
+
+                print(f"Entry '{new_name}' added successfully.")
+
             return self.main_menu
     
     def match_input(self, user_input, state, order):
@@ -510,19 +571,23 @@ class Attributes:
                     return None
             else:
                 return None
+        elif user_input == "s":
+            return self.save_changes()
         elif user_input == "m":
             return self.main_menu()
         elif user_input == "q":
             return self.quit_state()
         elif user_input == "a":
-            print("add new entry")
-        elif re.match(r"^m\d+,\d+$",user_input):
-            print("Option 4: 'm#,#' - Merge two entries")
+            if state == self.main_menu:
+                return self.add_key_state()
+            elif state == self.value_state:
+                return self.add_value_state()
+            else:
+                return None
         elif re.match(r"^r\d+$",user_input):
             print("Option 5: 'r#' - Remove entry")
         elif (res := re.match(r'^n\d+$',user_input)):
             idx = int(res.group()[1:])
-            self.rename_state(user_input)
             if state == self.main_menu:
                 if idx >= 1 and idx <= max(order): # check if the number is in the range of the keys
                     return self.rename_key_state(order[idx])
@@ -565,14 +630,14 @@ class Attributes:
     def main_menu(self):
         options = """
 Options:
-1. '#' - View details about a key
-2. 'm' - Main menu
-3. 'q' - Quit
-4. 'm#,#' - Merge two entries (e.g., 'm1,2')
-5. 'r#' - Remove entry (e.g., 'r3')
-6. 'n#' - Rename entry (e.g., 'n4')
-7. 'v#' - Flip variable status (e.g., 'v2')
-8. 'a' - Add new entry
+> '#' - View details about a key
+> 'm' - Main menu
+> 'q' - Quit
+> 'r#' - Remove entry (e.g., 'r3')
+> 'n#' - Rename entry (e.g., 'n4')
+> 'v#' - Flip variable status (e.g., 'v2')
+> 'a' - Add new entry
+> 's' - Save changes
 """
         print("Current Keys:")
         order = self.print_keys()
@@ -593,12 +658,12 @@ Options:
     def value_state(self, selected_key):
         options = """
 Options:
-1. 'm' - Main menu
-2. 'q' - Quit
-3. 'm#,#' - Merge two entries (e.g., 'm1,2')
-4. 'r#' - Remove entry (e.g., 'r3')
-5. 'n#' - Rename entry (e.g., 'n4')
-6. 'a' - Add new entry
+> 'm' - Main menu
+> 'q' - Quit
+> 'r#' - Remove entry (e.g., 'r3')
+> 'n#' - Rename entry (e.g., 'n4')
+> 'a' - Add new entry
+> 's' - Save changes
 """
         order = self.print_values_for_key(selected_key)
         print(options)
@@ -619,166 +684,3 @@ Options:
             self.current_state = self.current_state()
             if self.current_state == True: # quit
                 break
-            
-
-    def view_values_state(self, selected_key):
-        while True:
-            self.print_values_for_key(selected_key)
-
-            print("\nOptions:")
-            print("1. Merge entries")
-            print("2. Remove entry")
-            print("3. Rename entry")
-            print("4. Back to main menu")
-
-            try:
-                choice = input("Enter your choice (1-4): ")
-
-                if choice == '1':
-                    self.merge_entries_state()
-                elif choice == '2':
-                    self.remove_entry_state()
-                elif choice == '3':
-                    self.rename_entry_state(selected_key)
-                elif choice == '4':
-                    self.current_state = self.view_table_state
-                    return
-                else:
-                    print("Invalid choice.")
-            except ValueError:
-                print("Invalid input. Please enter a valid number.")
-
-    def merge_entries_state(self):
-        self.print_keys()
-
-        print("\nMerge Entries:")
-        print("Enter two key numbers to merge (press 'm' to return to main menu):")
-
-        try:
-            key1 = int(input("Enter the first key number: "))
-            if key1 == 'm':
-                self.current_state = self.view_table_state
-                return
-
-            key2 = int(input("Enter the second key number: "))
-            if key2 == 'm':
-                self.current_state = self.view_table_state
-                return
-
-            keys_list = list(self.db_info.keys())
-            if 1 <= key1 <= len(keys_list) and 1 <= key2 <= len(keys_list) and key1 != key2:
-                key1_name = keys_list[key1 - 1]
-                key2_name = keys_list[key2 - 1]
-
-                self.print_values_for_key(key1_name)
-                self.print_values_for_key(key2_name)
-
-                print(f"\nMerging '{key1_name}' and '{key2_name}'.")
-                print("Press 'y' to accept changes, any other key to cancel:")
-
-                confirmation = input()
-                if confirmation.lower() == 'y':
-                    # Implement the merging logic here
-                    # Update the data structures accordingly
-
-                    # Placeholder: You may want to copy values from key2 to key1
-                    self.db_info[key1_name]["values"].update(self.db_info[key2_name]["values"])
-
-                    # Remove key2 entry from data structures
-                    del self.db_info[key2_name]
-                    del self.key_og2std[key2_name]
-                    del self.key_std2og[key1_name]  # Remove key2 from synonyms of key1
-                    del self.val_og2std[key2_name]
-                    del self.val_std2og[key1_name]  # Remove key2 from synonyms of key1
-
-                    print(f"Entries '{key1_name}' and '{key2_name}' merged successfully.")
-
-            else:
-                print("Invalid key numbers.")
-        except ValueError:
-            print("Invalid input. Please enter valid numbers.")
-
-    def remove_entry_state(self):
-        self.print_keys()
-
-        print("\nRemove Entry:")
-        print("Enter a key number to remove (press 'm' to return to main menu):")
-
-        try:
-            key_num = int(input("Enter the key number: "))
-            if key_num == 'm':
-                self.current_state = self.view_table_state
-                return
-
-            keys_list = list(self.db_info.keys())
-            if 1 <= key_num <= len(keys_list):
-                key_name = keys_list[key_num - 1]
-
-                self.print_values_for_key(key_name)
-
-                print(f"\nRemoving entry '{key_name}'.")
-                print("Press 'y' to accept deletion, any other key to cancel:")
-
-                confirmation = input()
-                if confirmation.lower() == 'y':
-                    # Implement the removal logic here
-                    # Update the data structures accordingly
-
-                    del self.db_info[key_name]
-                    del self.key_og2std[key_name]
-                    del self.key_std2og[key_name]
-                    del self.val_og2std[key_name]
-                    del self.val_std2og[key_name]
-
-                    print(f"Entry '{key_name}' removed successfully.")
-
-            else:
-                print("Invalid key number.")
-        except ValueError:
-            print("Invalid input. Please enter a valid number.")
-
-    def rename_entry_state(self, selected_key):
-        self.print_keys()
-
-        print("\nRename Entry:")
-        print("Enter a key number to rename (press 'm' to return to main menu):")
-
-        try:
-            key_num = int(input("Enter the key number: "))
-            if key_num == 'm':
-                self.current_state = self.view_table_state
-                return
-
-            keys_list = list(self.db_info.keys())
-            if 1 <= key_num <= len(keys_list):
-                old_key_name = keys_list[key_num - 1]
-
-                new_name = input(f"Enter a new name for '{old_key_name}':")
-
-                print(f"\nRenaming '{old_key_name}' to '{new_name}'.")
-                print("Press 'y' to accept changes, any other key to cancel:")
-
-                confirmation = input()
-                if confirmation.lower() == 'y':
-                    # Implement the renaming logic here
-                    # Update the data structures accordingly
-
-                    # Placeholder: You may want to update the name in all relevant structures
-                    self.key_og2std[new_name] = self.key_og2std[old_key_name]
-                    self.key_std2og[new_name] = self.key_std2og[old_key_name]
-                    self.val_og2std[new_name] = self.val_og2std[old_key_name]
-                    self.val_std2og[new_name] = self.val_std2og[old_key_name]
-
-                    # Remove old_key_name from the data structures
-                    del self.db_info[old_key_name]
-                    del self.key_og2std[old_key_name]
-                    del self.key_std2og[old_key_name]
-                    del self.val_og2std[old_key_name]
-                    del self.val_std2og[old_key_name]
-
-                    print(f"Entry '{old_key_name}' renamed to '{new_name}' successfully.")
-
-            else:
-                print("Invalid key number.")
-        except ValueError:
-            print("Invalid input. Please enter a valid number.")
