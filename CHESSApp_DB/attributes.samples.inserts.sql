@@ -1,4 +1,4 @@
-INSERT INTO AttributeKey (std_key, variable) VALUES
+INSERT INTO AttributeKey (key_name, variable) VALUES
 ('gene_type', 0),
 ('Speed', 0),
 ('Info', 1);
@@ -13,7 +13,7 @@ INSERT INTO AttributeKeyMap (std_key, og_key) VALUES
 ('Info', 'Information'),
 ('Info', 'Description');
 
-INSERT INTO AttributeKeyValue (std_key, std_value) VALUES
+INSERT INTO AttributeKeyValue (key_name, value) VALUES
 ('gene_type', 'protein_coding'),
 ('gene_type', 'lncRNA'),
 ('Speed', 'Fast'),
@@ -21,7 +21,7 @@ INSERT INTO AttributeKeyValue (std_key, std_value) VALUES
 ('Speed', 'Slow'),
 ('Info', '');
 
-INSERT INTO AttributeValueMap (std_key, og_value, std_value) VALUES
+INSERT INTO AttributeValueMap (key_name, og_value, std_value) VALUES
 ('gene_type', 'protein_coding', 'protein_coding'),
 ('gene_type', 'coding', 'protein_coding'),
 ('gene_type', 'non_coding', 'lncRNA'),
@@ -31,8 +31,3 @@ INSERT INTO AttributeValueMap (std_key, og_value, std_value) VALUES
 ('Speed', 'Fast2', 'Fast'),
 ('Speed', 'Fast3', 'Fast'),
 ('Info', '', '');
-
-SELECT std_key, GROUP_CONCAT(og_key), variable AS og_key_map
-FROM AttributeKeyMap LEFT JOIN AttributeKey USING (std_key)
-WHERE std_key = 'gene_type'
-GROUP BY std_key;
