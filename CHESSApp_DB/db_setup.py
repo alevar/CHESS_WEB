@@ -23,13 +23,14 @@ import api
 # This is not necessary, but can expedite the process of adding attributes to the database
 # Alternatively attributes will be parsed during source addition and users will be requested to resolve any conflicts and ambiguities.
 def addAttributes(api_connection,config,args):
+    # load existing attribute info from the database
+    attrs = api.Attributes(api_connection)
+    attrs.prompt()
+    
     for key,data in config.items():
-        # get information about the key
-        info = api_connection.get_attribute_key_information(key)
+        attrs.add_key(key)
+    print(attrs)
 
-        api_connection.insert_attribute_pair(attribute,data)
-
-    api_connection.commit(True)
 
 ##############################
 ########   ORGANISM   ########

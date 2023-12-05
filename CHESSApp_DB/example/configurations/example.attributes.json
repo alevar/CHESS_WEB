@@ -60,7 +60,7 @@
                 "misc_RNA_gene"
             ]
         },
-        "alternativeNames":[
+        "synonyms":[
             "gene_type",
             "gene_biotype",
             "gbkey"
@@ -128,7 +128,7 @@
                 "misc_RNA_gene"
             ]
         },
-        "alternativeNames":[
+        "synonyms":[
             "transcript_type",
             "transcript_biotype"
         ],
@@ -136,14 +136,14 @@
     },
     "tag":{
         "values":{},
-        "alternativeNames":[
+        "synonyms":[
             "tag"
         ],
         "variable":1
     },
     "db_xref":{
         "values":{},
-        "alternativeNames":[
+        "synonyms":[
             "db_xref",
             "dbxref"
         ],
@@ -151,7 +151,7 @@
     },
     "gene_name":{
         "values":{},
-        "alternativeNames":[
+        "synonyms":[
             "gene_name",
             "geneName",
             "gene_symbol",
