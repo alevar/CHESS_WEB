@@ -15,6 +15,7 @@ from itertools import chain, combinations
 
 from definitions import *
 import api
+from AttributeManagementSystem import *
 
 ##############################
 ########   ATTRIBUTES  #######
@@ -24,12 +25,12 @@ import api
 # Alternatively attributes will be parsed during source addition and users will be requested to resolve any conflicts and ambiguities.
 def addAttributes(api_connection,config,args):
     # load existing attribute info from the database
-    attrs = api.Attributes(api_connection)
-    attrs.prompt()
+    ams = AttributeManagementSystem(api_connection)
+    ams.prompt()
     
     for key,data in config.items():
-        attrs.add_key(key)
-    print(attrs)
+        ams.add_key(key)
+    print(ams)
 
 
 ##############################

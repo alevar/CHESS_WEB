@@ -1,3 +1,5 @@
+USE `CHESS_DB` ;
+
 INSERT INTO AttributeKey (key_name, variable) VALUES
 ('gene_type', 0),
 ('Speed', 0),

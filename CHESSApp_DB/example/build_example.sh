@@ -4,18 +4,16 @@
 
 
 # clear previous versions. sets up new user and DB. Sets up tables, triggers, etc
-sudo mysql -u root < ../chess.db.schema.mysql.sql
+mysql -u root -p < ./data/chess.db.schema.mysql.sql
 
 # add species information to the DB
-python ../addOrganisms.py addOrganisms --configuration ./configurations/example.organisms.json --db_configuration ./configurations/example.mysql.json
+python ./db_setup.py addOrganisms --configuration ./example/configurations/example.organisms.json --db_configuration ./example/configurations/example.mysql.json
 
 # add assembly information to the DB
-python ../addAssemblies.py addAssemblies --configuration ./configurations/example.assemblies.json --db_configuration ./configurations/example.mysql.json
+python ./db_setup.py addAssemblies --configuration ./example/configurations/example.assemblies.json --db_configuration ./example/configurations/example.mysql.json
 
-# add sources to the DB
-python ../addSources.py addSources --configuration ./configurations/example.sources.json --db_configuration ./configurations/example.mysql.json --temp ./temp --log ./addSources.log
+# add nomenclatures to the DB
+python ./db_setup.py addNomenclatures --configuration ./example/configurations/example.nomenclatures.json --db_configuration ./example/configurations/example.mysql.json
 
-
-
-
-
+# load test attributes
+ mysql -u root -p < ./attributes.samples.inserts.sql
