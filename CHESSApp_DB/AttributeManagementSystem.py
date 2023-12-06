@@ -700,3 +700,12 @@ Options:
                 print(f"Synonym '{self.selected_value}' added successfully.")
             
         return 1
+    
+
+    ##############################################################################################################
+    # API Functions
+    ##############################################################################################################
+    def add_key(self,key,synonyms,variable,description):
+        # checks if key already exists, if not - prompts user to insert as a synonym into existing key
+        # or create a new entry
+        return
