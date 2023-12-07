@@ -65,7 +65,8 @@
             "gene_biotype",
             "gbkey"
         ],
-        "variable":0
+        "variable":0,
+        "description":"The type of gene. Controlled vocabulary of predefined values."
     },
     "transcript_type":{
         "values":{
@@ -132,14 +133,16 @@
             "transcript_type",
             "transcript_biotype"
         ],
-        "variable":0
+        "variable":0,
+        "description":"The type of transcript. Controlled vocabulary of predefined values."
     },
     "tag":{
         "values":{},
         "synonyms":[
             "tag"
         ],
-        "variable":1
+        "variable":1,
+        "description":"A free text field for any additional information."
     },
     "db_xref":{
         "values":{},
@@ -147,7 +150,8 @@
             "db_xref",
             "dbxref"
         ],
-        "variable":1
+        "variable":1,
+        "description":"A free text field for any additional information."
     },
     "gene_name":{
         "values":{},
@@ -157,6 +161,7 @@
             "gene_symbol",
             "geneSymbol"
         ],
-        "variable":1
+        "variable":1,
+        "description":"The gene name."
     }
 }
