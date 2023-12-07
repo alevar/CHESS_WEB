@@ -15,5 +15,5 @@ python ./db_setup.py addAssemblies --configuration ./example/configurations/exam
 # add nomenclatures to the DB
 python ./db_setup.py addNomenclatures --configuration ./example/configurations/example.nomenclatures.json --db_configuration ./example/configurations/example.mysql.json
 
-# load test attributes
- mysql -u root -p < ./attributes.samples.inserts.sql
+# add attribute configuration to the DB
+python ./db_setup.py addAttributes --configuration ./example/configurations/example.attributes.json --db_configuration ./example/configurations/example.mysql.json

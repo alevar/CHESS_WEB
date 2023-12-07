@@ -41,12 +41,15 @@ class AttributeManagementSystem:
         self.selected_key = None
         self.selected_value = None
         self.selected_synonym = None
+
+
+        # table formatting options
+        self.width = 100
     
     def prompt(self):
-        while True:
-            self.next_state()
-            if self.next_state == True: # quit
-                break
+        while self.next_state():
+            continue
+        return
             
 
 ##############################################################################################################
@@ -62,7 +65,7 @@ class AttributeManagementSystem:
         order = dict()
         for idx, (key, value) in enumerate(self.db_info.items(), 1):
             order[idx] = key
-            table.add_row([idx, key, self.wrap_text(", ".join(value['synonyms']), width=100), value['variable']],divider=True)
+            table.add_row([idx, key, self.wrap_text(", ".join(value['synonyms']), width=self.width), value['variable']],divider=True)
 
         print(table)
         return order
@@ -77,7 +80,7 @@ class AttributeManagementSystem:
             order = dict()
             for idx, (val, synonyms) in enumerate(values_info.items(), 1):
                 order[idx] = val
-                table.add_row([idx, val, ", ".join(synonyms)])
+                table.add_row([idx, val, self.wrap_text(", ".join(synonyms),width=self.width)],divider=True)
 
             print(table)
             return order
@@ -90,7 +93,7 @@ class AttributeManagementSystem:
         order = dict()
         for idx, val in enumerate(list, 1):
             order[idx] = val
-            table.add_row([idx, val])
+            table.add_row([idx, self.wrap_text(val, width=self.width)],divider=True)
 
         print(table)
         return order
@@ -113,7 +116,7 @@ class AttributeManagementSystem:
                 self.selected_key = self.order[idx]
                 self.prev_state = self.value_state
                 self.next_state =  self.value_state
-                return 1
+                return True
             else:
                 return None
         #+++++++++++++++++++++++++++++++++++
@@ -122,7 +125,7 @@ class AttributeManagementSystem:
         elif user_input == "m":
             self.prev_state = self.key_state
             self.next_state = self.key_state
-            return 1
+            return True
         #+++++++++++++++++++++++++++++++++++
         # SWITCH TO SYNONYM TABLE
         #+++++++++++++++++++++++++++++++++++
@@ -135,12 +138,12 @@ class AttributeManagementSystem:
                 self.selected_key = self.order[idx]
                 self.prev_state = self.key_synonym_state
                 self.next_state =  self.key_synonym_state
-                return 1
+                return True
             elif self.prev_state == self.value_state:
                 self.selected_value = self.order[idx]
                 self.prev_state = self.value_synonym_state
                 self.next_state = self.value_synonym_state
-                return 1
+                return True
             else:
                 return None
         #+++++++++++++++++++++++++++++++++++
@@ -148,29 +151,29 @@ class AttributeManagementSystem:
         #+++++++++++++++++++++++++++++++++++
         elif user_input == "s":
             self.next_state = self.save_changes
-            return 1
+            return True
         #+++++++++++++++++++++++++++++++++++
         # QUIT
         #+++++++++++++++++++++++++++++++++++
         elif user_input == "q":
             self.next_state = self.quit_state
-            return 1
+            return True
         #+++++++++++++++++++++++++++++++++++
         # ADD ENTRY
         #+++++++++++++++++++++++++++++++++++
         elif user_input == "a":
             if self.prev_state == self.key_synonym_state:
                 self.next_state = self.key_synonym_add_state
-                return 1
+                return True
             elif self.prev_state == self.value_state:
                 self.next_state = self.value_add_state
-                return 1
+                return True
             elif self.prev_state == self.key_state:
                 self.next_state = self.key_add_state
-                return 1
+                return True
             elif self.prev_state == self.value_synonym_state:
                 self.next_state = self.value_synonym_add_state
-                return 1
+                return True
             else:
                 return None
         #+++++++++++++++++++++++++++++++++++
@@ -184,19 +187,19 @@ class AttributeManagementSystem:
             if self.prev_state == self.key_state:
                 self.selected_key = self.order[idx]
                 self.next_state =  self.key_remove_state
-                return 1
+                return True
             elif self.prev_state == self.value_state:
                 self.selected_value = self.order[idx]
                 self.next_state = self.value_remove_state
-                return 1
+                return True
             elif self.prev_state == self.key_synonym_state:
                 self.selected_synonym = self.order[idx]
                 self.next_state = self.key_synonym_remove_state
-                return 1
+                return True
             elif self.prev_state == self.value_synonym_state:
                 self.selected_synonym = self.order[idx]
                 self.next_state = self.value_synonym_remove_state
-                return 1
+                return True
             else:
                 return None
         #+++++++++++++++++++++++++++++++++++
@@ -210,11 +213,11 @@ class AttributeManagementSystem:
             if self.prev_state == self.key_state:
                 self.selected_key = self.order[idx]
                 self.next_state =  self.key_rename_state
-                return 1
+                return True
             elif self.prev_state == self.value_state:
                 self.selected_value = self.order[idx]
                 self.next_state = self.value_rename_state
-                return 1
+                return True
             else:
                 return None
         else:
@@ -227,7 +230,7 @@ class AttributeManagementSystem:
 ##############################################################################################################
 
     def quit_state(self):
-        return True
+        return False
     
     def execute_and_commit(self):
         for query in self.commands:
@@ -239,17 +242,18 @@ class AttributeManagementSystem:
         # present a list of changes to the user for review and ask for confirmation to execute and commit
         if len(self.commands) == 0:
             print("No changes to commit.")
-            return self.key_state
-        print("The following changes will be made to the database:")
-        for query in self.commands:
-            print(query)
-        confirmation = input("Press 'y' to accept changes, any other key to cancel:")
-        
-        if confirmation.lower() == 'y':
-            self.execute_and_commit()
-            print("Changes committed successfully.")
+        else:
+            print("The following changes will be made to the database:")
+            for query in self.commands:
+                print(query)
+            confirmation = input("Press 'y' to accept changes, any other key to cancel:")
+            
+            if confirmation.lower() == 'y':
+                self.execute_and_commit()
+                print("Changes committed successfully.")
 
-        return 1
+        self.next_state = self.prev_state
+        return True
 
 
 #+++++++++++++++++++++++++++++++++++
@@ -282,6 +286,8 @@ Options:
             res = self.match_input(self.user_input)
             if res is None:
                 print("Invalid choice. Please enter a valid option.")
+
+        return True
 
     #===================
     # Add Key
@@ -320,7 +326,7 @@ Options:
 
                 print(f"Entry '{new_name}' added successfully.")
         
-        return 1
+        return True
     
     #===================
     # Rename Key
@@ -333,10 +339,8 @@ Options:
         new_name = self.user_input
         if new_name == self.selected_key:
             print("New name is the same as the old name. No changes made.")
-            return 1
         elif new_name in self.db_info:
             print("New name already exists. No changes made.")
-            return 1
         else:
             print(f"Renaming '{self.selected_key}' to '{new_name}'.")
             confirmation = input("Press 'y' to accept changes, any other key to cancel:")
@@ -370,7 +374,7 @@ Options:
 
                 print(f"Entry '{self.selected_key}' renamed to '{new_name}' successfully.")
 
-            return 1
+        return True
 
     #===================
     # Remove Key
@@ -398,7 +402,7 @@ Options:
 
             print(f"Entry '{self.selected_key}' removed successfully.")
             
-        return 1
+        return True
 
 
     #+++++++++++++++++++++++++++++++
@@ -428,6 +432,8 @@ Options:
             if res is None:
                 print("Invalid choice. Please enter a valid option.")
 
+        return True
+
     #===================
     # Add Key Synonym
     #===================
@@ -439,7 +445,6 @@ Options:
         new_synonym = self.user_input
         if new_synonym in self.key_og2std:
             print("Synonym already exists. No changes made.")
-            return 1
         else:
             print(f"Adding new synonym '{new_synonym}' to entry '{self.selected_key}'.")
             confirmation = input("Press 'y' to accept changes, any other key to cancel: ")
@@ -455,7 +460,7 @@ Options:
 
                 print(f"Synonym '{new_synonym}' added successfully.")
             
-            return 1
+        return True
         
     #===================
     # Remove Key Synonym
@@ -488,7 +493,7 @@ Options:
                 self.db_info[self.selected_key]["synonyms"].add(self.selected_key)
                 print(f"Synonym '{self.selected_key}' added successfully.")
             
-        return 1
+        return True
 
 
     #+++++++++++++++++++++++++++++++++++
@@ -519,6 +524,8 @@ Options:
             if res is None:
                 print("Invalid choice. Please enter a valid option.")
 
+        return True
+
     #===================
     # Add Value
     #===================
@@ -545,7 +552,7 @@ Options:
 
                 print(f"Entry '{new_name}' added successfully.")
         
-        return 1
+        return True
     
     #===================
     # Rename Value
@@ -558,10 +565,8 @@ Options:
         new_name = self.user_input
         if new_name == self.selected_value:
             print("New name is the same as the old name. No changes made.")
-            return 1
         elif new_name in self.db_info[self.selected_key]["values"]:
             print("New name already exists. No changes made.")
-            return 1
         else:
             print(f"Renaming '{self.selected_value}' to '{new_name}'.")
             confirmation = input("Press 'y' to accept changes, any other key to cancel:")
@@ -589,7 +594,7 @@ Options:
 
                 print(f"Entry '{self.selected_value}' renamed to '{new_name}' successfully.")
 
-            return 1
+        return True
         
     #===================
     # Remove Value
@@ -615,7 +620,7 @@ Options:
 
             print(f"Entry '{self.selected_value}' removed successfully.")
             
-        return 1
+        return True
     
     #+++++++++++++++++++++++++++++++
     # Value Synonym State
@@ -643,6 +648,8 @@ Options:
             if res is None:
                 print("Invalid choice. Please enter a valid option.")
 
+        return True
+
     #===================
     # Add Value Synonym
     #===================
@@ -654,7 +661,6 @@ Options:
         new_synonym = self.user_input
         if new_synonym in self.val_og2std[self.selected_key]:
             print("Synonym already exists. No changes made.")
-            return 1
         else:
             print(f"Adding new synonym '{new_synonym}' to entry '{self.selected_value}'.")
             confirmation = input("Press 'y' to accept changes, any other key to cancel: ")
@@ -670,7 +676,7 @@ Options:
 
                 print(f"Synonym '{new_synonym}' added successfully.")
             
-            return 1
+        return True
         
     #===================
     # Remove Value Synonym
@@ -703,7 +709,7 @@ Options:
                 self.db_info[self.selected_key]["values"][self.selected_value].add(self.selected_value)
                 print(f"Synonym '{self.selected_value}' added successfully.")
             
-        return 1
+        return True
     
 
     ##############################################################################################################
@@ -716,11 +722,15 @@ Options:
         # check if key already exists
         if key in self.db_info:
             print(f"Key '{key}' already exists.")
+            # make sure variable matches
+            assert variable == self.db_info[key]["variable"], f"Variable for key '{key}' does not match variable for key '{self.key_og2std[key]}' in the database."
             return key
         else:
             # check if key is a synonym for another key
             if key in self.key_og2std:
                 print(f"Key '{key}' is a synonym for key '{self.key_og2std[key]}'.")
+                # make sure variable matches
+                assert variable == self.db_info[self.key_og2std[key]]["variable"], f"Variable for key '{key}' does not match variable for key '{self.key_og2std[key]}' in the database."
                 return self.key_og2std[key]
             else:
                 # insert new key
@@ -739,6 +749,7 @@ Options:
                     "variable": variable,
                     "values": dict()
                 }
+
                 return key
     
     def add_key_synonym(self,key,synonym):

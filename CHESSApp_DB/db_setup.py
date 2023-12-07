@@ -630,13 +630,13 @@ def main(args):
     ##############################
     ##########  COMPILE  #########
     ##############################
-    parser_addNomeclatures=subparsers.add_parser('compile',
+    parser_compile=subparsers.add_parser('compile',
                                         help='compile help')
-    parser_addNomeclatures.add_argument('--db_configuration',
+    parser_compile.add_argument('--db_configuration',
                               required=True,
                               type=str,
                               help='Path to the configuration file for connecting to the mysql database. Configuration is provided in JSON format. See example in CHESSApp_DB/data/mysql.json')
-    parser_addNomeclatures.set_defaults(func=establish_connection,main_fn=compile)
+    parser_compile.set_defaults(func=establish_connection,main_fn=compile)
 
     args=parser.parse_args()
     args.func(args,args.main_fn)
