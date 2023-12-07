@@ -27,7 +27,7 @@ class CHESS_DB_API:
 
     def connect(self):
         try:
-            self.connection = mysql.connector.connect(
+            self.connection = mysql.connector.MySQLConnection(
                 host=self.host,
                 user=self.username,
                 password=self.password,
