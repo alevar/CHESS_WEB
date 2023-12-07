@@ -26,11 +26,17 @@ from AttributeManagementSystem import *
 def addAttributes(api_connection,config,args):
     # load existing attribute info from the database
     ams = AttributeManagementSystem(api_connection)
-    ams.prompt()
     
     for key,data in config.items():
-        ams.add_key(key)
-    print(ams)
+        ams_key = ams.add_key(key,data["variable"],data["description"])
+        for synonym in data["synonyms"]:
+            ams_key = ams.add_key_synonym(ams_key,synonym)
+        for value,value_synonyms in data["values"].items():
+            ams_value = ams.add_value(ams_key,value)
+            for value_synonym in value_synonyms:
+                ams.add_value_synonym(ams_key,ams_value,value_synonym)
+  
+    ams.prompt()
 
 
 ##############################

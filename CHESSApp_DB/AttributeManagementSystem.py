@@ -229,6 +229,12 @@ class AttributeManagementSystem:
     def quit_state(self):
         return True
     
+    def execute_and_commit(self):
+        for query in self.commands:
+            self.dbcon.execute_query(query)
+        self.dbcon.commit(force=True)
+        self.commands = []
+    
     def save_changes(self):
         # present a list of changes to the user for review and ask for confirmation to execute and commit
         if len(self.commands) == 0:
@@ -238,14 +244,12 @@ class AttributeManagementSystem:
         for query in self.commands:
             print(query)
         confirmation = input("Press 'y' to accept changes, any other key to cancel:")
+        
         if confirmation.lower() == 'y':
-            for query in self.commands:
-                self.dbcon.execute_query(query)
-            self.dbcon.commit(force=True)
+            self.execute_and_commit()
             print("Changes committed successfully.")
 
-        self.commands = []
-        return
+        return 1
 
 
 #+++++++++++++++++++++++++++++++++++
@@ -705,7 +709,114 @@ Options:
     ##############################################################################################################
     # API Functions
     ##############################################################################################################
-    def add_key(self,key,synonyms,variable,description):
+    def add_key(self,key,variable,description):
         # checks if key already exists, if not - prompts user to insert as a synonym into existing key
         # or create a new entry
-        return
+
+        # check if key already exists
+        if key in self.db_info:
+            print(f"Key '{key}' already exists.")
+            return key
+        else:
+            # check if key is a synonym for another key
+            if key in self.key_og2std:
+                print(f"Key '{key}' is a synonym for key '{self.key_og2std[key]}'.")
+                return self.key_og2std[key]
+            else:
+                # insert new key
+                query = f'INSERT INTO AttributeKey (key_name, variable, description) VALUES ("{key}","{variable}","{description}")'
+                self.commands.append(query)
+                query = f'INSERT INTO AttributeKeyMap (std_key, og_key) VALUES ("{key}","{key}")'
+                self.commands.append(query)
+
+                # update dictionaries
+                self.key_og2std[key] = key
+                self.key_std2og.setdefault(key,set()).add(key)
+                self.val_og2std[key] = dict()
+                self.val_std2og[key] = dict()
+                self.db_info[key] = {
+                    "synonyms": set([key]),
+                    "variable": variable,
+                    "values": dict()
+                }
+                return key
+    
+    def add_key_synonym(self,key,synonym):
+        assert key in self.db_info, f"Key '{key}' does not exist."
+        # check if key already exists
+        if synonym in self.db_info:
+            print(f"Synonym '{synonym}' is already a key.")
+            return key
+        else:
+            # check if synonym already exists
+            if synonym in self.key_og2std:
+                print(f"Synonym '{synonym}' already exists for key '{key}'.")
+                return key
+            else:
+                # insert new synonym
+                query = f'INSERT INTO AttributeKeyMap (std_key, og_key) VALUES ("{key}","{synonym}")'
+                self.commands.append(query)
+
+                # update dictionaries
+                self.key_og2std[synonym] = key
+                self.key_std2og[key].add(synonym)
+                self.db_info[key]["synonyms"].add(synonym)
+                return key
+            
+    def add_value(self,key,value):
+        assert key in self.db_info, f"Key '{key}' does not exist."
+        
+        # check if key is variable or not. If variable - then return empty string
+        if self.db_info[key]["variable"] == 1:
+            print(f"Key '{key}' is variable. Cannot add value.")
+            return ""
+        
+        # check if value already exists
+        value_exists = value in self.db_info[key]["values"]
+        if value_exists:
+            print(f"Value '{value}' already exists for key '{key}'.")
+            return value
+        else:
+            # check if value is a synonym for another value
+            if value in self.val_og2std[key]:
+                print(f"Value '{value}' is a synonym for value '{self.val_og2std[key][value]}' for key '{key}'.")
+                return self.val_og2std[key][value]
+            else:
+                # insert new value
+                query = f'INSERT INTO AttributeKeyValue (key_name, value) VALUES ("{key}","{value}")'
+                self.commands.append(query)
+                query = f'INSERT INTO AttributeValueMap (key_name, std_value, og_value) VALUES ("{key}","{value}","{value}")'
+                self.commands.append(query)
+
+                # update dictionaries
+                self.val_og2std[key][value] = value
+                self.val_std2og[key].setdefault(value,set()).add(value)
+                self.db_info[key]["values"][value] = set([value])
+                return value
+            
+    def add_value_synonym(self,key,value,synonym):
+        assert key in self.db_info, f"Key '{key}' does not exist."
+        if self.db_info[key]["variable"] == 1:
+            print(f"Key '{key}' is variable. Cannot add value.")
+            return ""
+        
+        # check if value already exists
+        synonym_is_value = synonym in self.db_info[key]["values"]
+        if synonym_is_value:
+            print(f"Synonym '{synonym}' is already a value for key '{key}'.")
+            return value
+        else:
+            # check if synonym already exists
+            if synonym in self.val_og2std[key]:
+                print(f"Synonym '{synonym}' already exists for value '{value}' for key '{key}'.")
+                return self.val_og2std[key][synonym]
+            else:
+                # insert new synonym
+                query = f'INSERT INTO AttributeValueMap (key_name, std_value, og_value) VALUES ("{key}","{value}","{synonym}")'
+                self.commands.append(query)
+
+                # update dictionaries
+                self.val_og2std[key][synonym] = value
+                self.val_std2og[key][value].add(synonym)
+                self.db_info[key]["values"][value].add(synonym)
+                return value
