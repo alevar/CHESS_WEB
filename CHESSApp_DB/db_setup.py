@@ -16,6 +16,7 @@ from itertools import chain, combinations
 from definitions import *
 import api
 from AttributeManagementSystem import *
+from TX import *
 
 ##############################
 ########   ATTRIBUTES  #######
@@ -173,11 +174,40 @@ def load_tracking(tracking_fname:str) -> dict:
                 res[qry_tid] = ref_tid
     return res
 
-def process_attributes(gtf_fname:str,logFP):
+def load_attributes_from_gtf(gtf_fname:str, max_values, logFP:str) -> dict:
+    # if the number of observed values for the attribute is over the max_value - it is treated as variable and values are not stored
+
     # determine the type of file (GTF or GFF)
+    fname_is_gff = is_gff(gtf_fname)
     
-    # iterate and extract attributes from all lines (irrespective of the feature type)
+    # iterate and extract attributes from all lines (irrespective of the feature type, except exon and CDS).
+    # The unnecessary ones will be dealt with after gffread conversion
     # build a giant map of all attributes and their values across all entries in the file
+
+    attributes = dict()
+
+    with open(gtf_fname, 'r') as inFP:
+        for line in inFP:
+            if line[0] == "#":
+                continue
+            lcs = line.rstrip().split("\t")
+            if not len(lcs) == 9:
+                continue
+
+            if lcs[2] in ["exon","CDS"]:
+                continue
+
+            attrs = extract_attributes(lcs[8],fname_is_gff)
+            # join attrs into the main attributes dictionary
+            for k,v in attrs.items():
+                attributes.setdefault(k,{"values":set(),"over_max_capacity":False})
+                if len(attributes[k]["values"])>max_values:
+                    attributes[k]["over_max_capacity"] = True
+                if attributes[k]["over_max_capacity"]:
+                    continue
+                attributes[k]["values"].add(v)
+
+    return attributes
 
 def addSources(api_connection,config,args):
     if not os.path.exists(args.temp):
@@ -189,7 +219,7 @@ def addSources(api_connection,config,args):
     # this way if the user input is required - it can be handled before the main bulk of the data is processed
     for source,data in config.items():
         # process attributes
-        process_attributes(data["attributes"],logFP)
+        attrs = load_attributes_from_gtf(data["attributes"],logFP)
 
     for source,data in config.items():
         sourceName = data["name"].replace("'","\\'")
