@@ -174,7 +174,7 @@ def load_tracking(tracking_fname:str) -> dict:
                 res[qry_tid] = ref_tid
     return res
 
-def load_attributes_from_gtf(gtf_fname:str, max_values, logFP:str) -> dict:
+def load_attributes_from_gtf(gtf_fname:str, max_values:int) -> dict:
     # if the number of observed values for the attribute is over the max_value - it is treated as variable and values are not stored
 
     # determine the type of file (GTF or GFF)
@@ -209,6 +209,27 @@ def load_attributes_from_gtf(gtf_fname:str, max_values, logFP:str) -> dict:
 
     return attributes
 
+def merge_attributes(attributes:dict,attributes_to_merge:dict) -> dict:
+    # merge attributes_to_merge into attributes
+    # if an attribute is already present in attributes - then merge the values
+    # if an attribute is not present in attributes - then add it
+    # if an attribute is present in attributes and is over max_values - then do not add it
+    # if an attribute is present in attributes and is not over max_values - then add it
+    for k,v in attributes_to_merge.items():
+        # replace "_-. " with "_"
+        v["values"] = {x.replace("_-. ","_") for x in v["values"]} # TODO
+        if k not in attributes:
+            attributes[k] = v
+        else:
+            if attributes[k]["over_max_capacity"]:
+                continue
+            else:
+                attributes[k]["values"].update(v["values"])
+                if len(attributes[k]["values"])>max_values:
+                    attributes[k]["over_max_capacity"] = True
+
+    return attributes
+
 def addSources(api_connection,config,args):
     if not os.path.exists(args.temp):
         os.makedirs(args.temp)
@@ -217,9 +238,10 @@ def addSources(api_connection,config,args):
 
     # before all else, process types from all sources
     # this way if the user input is required - it can be handled before the main bulk of the data is processed
+    all_attributes = dict()
     for source,data in config.items():
         # process attributes
-        attrs = load_attributes_from_gtf(data["attributes"],logFP)
+        attrs = load_attributes_from_gtf(data["file"],args.max_values)
 
     for source,data in config.items():
         sourceName = data["name"].replace("'","\\'")
@@ -553,6 +575,11 @@ def main(args):
                               required=True,
                               type=str,
                               help='Path to the configuration file for connecting to the mysql database. Configuration is provided in JSON format. See example in CHESSApp_DB/data/mysql.json')
+    parser_addSources.add_argument("--max_values",
+                              required=False,
+                              default=100,
+                              type=int,
+                              help="Maximum number of values to store for each attribute. If the number of observed values for the attribute is over the max_value - it is treated as variable attribute.")
     parser_addSources.add_argument("--temp",
                               required=True,
                               type=str,
