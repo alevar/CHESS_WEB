@@ -55,6 +55,21 @@
                 "--db_configuration","./example/configurations/example.mysql.json"
 	        ],
 	        "console": "integratedTerminal"
+        },
+        {
+            "name": "DB: addSources",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/CHESSApp_DB",
+            "program": "./db_setup.py",
+            "args": [
+                "addSources",
+                "--configuration","./example/configurations/example.sources.json",
+                "--db_configuration","./example/configurations/example.mysql.json",
+                "--temp","./example/temp",
+                "--log","./example/log"
+	        ],
+	        "console": "integratedTerminal"
         }
     ]
 }
