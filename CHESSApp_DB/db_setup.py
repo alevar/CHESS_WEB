@@ -203,13 +203,19 @@ def load_attributes_from_gtf(gtf_fname:str, max_values:int) -> dict:
                 attributes.setdefault(k,{"values":set(),"over_max_capacity":False})
                 if len(attributes[k]["values"])>max_values:
                     attributes[k]["over_max_capacity"] = True
+                    attributes[k]["values"] = set()
                 if attributes[k]["over_max_capacity"]:
                     continue
                 attributes[k]["values"].add(v)
 
     return attributes
 
-def merge_attributes(attributes:dict,attributes_to_merge:dict) -> dict:
+def replace_chars(s:str,chars:str,replace_with:str) -> str:
+    for c in chars:
+        s = s.replace(c,replace_with)
+    return s
+
+def merge_attributes(attributes:dict,attributes_to_merge:dict,max_value:int) -> dict:
     # merge attributes_to_merge into attributes
     # if an attribute is already present in attributes - then merge the values
     # if an attribute is not present in attributes - then add it
@@ -217,7 +223,8 @@ def merge_attributes(attributes:dict,attributes_to_merge:dict) -> dict:
     # if an attribute is present in attributes and is not over max_values - then add it
     for k,v in attributes_to_merge.items():
         # replace "_-. " with "_"
-        v["values"] = {x.replace("_-. ","_") for x in v["values"]} # TODO
+        v["values"] = {replace_chars(x,"_-. ","_") for x in v["values"]}
+        k = k.lower()
         if k not in attributes:
             attributes[k] = v
         else:
@@ -225,8 +232,9 @@ def merge_attributes(attributes:dict,attributes_to_merge:dict) -> dict:
                 continue
             else:
                 attributes[k]["values"].update(v["values"])
-                if len(attributes[k]["values"])>max_values:
+                if len(attributes[k]["values"])>max_value:
                     attributes[k]["over_max_capacity"] = True
+                    attributes[k]["values"] = set()
 
     return attributes
 
@@ -242,6 +250,15 @@ def addSources(api_connection,config,args):
     for source,data in config.items():
         # process attributes
         attrs = load_attributes_from_gtf(data["file"],args.max_values)
+        all_attributes = merge_attributes(all_attributes,attrs,args.max_values)
+    # add attributes to the database to prepare for source insertion
+    ams = AttributeManagementSystem(api_connection)
+    for k,v in all_attributes.items():
+        ams_key = ams.add_key(k,int(v["over_max_capacity"]),"")
+        for value in v["values"]:
+            ams.add_value(ams_key,value)
+
+    # have the AMS load a separate loop
 
     for source,data in config.items():
         sourceName = data["name"].replace("'","\\'")
