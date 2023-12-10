@@ -45,6 +45,11 @@ class AttributeManagementSystem:
 
         # table formatting options
         self.width = 100
+        
+        # attribute resolution
+        self.to_resolve_stack = [] # stack of keys linked to sets of values to be resolved
+        # the resolution prompt will pop the top of the stack and present the user with resolution strategies
+    
     
     def prompt(self):
         while self.next_state():
@@ -715,6 +720,26 @@ Options:
     ##############################################################################################################
     # API Functions
     ##############################################################################################################
+    def check_key(self,key):
+        # checks if key exists in the database
+        if key in self.db_info: # is key
+            return key
+        if key in self.key_og2std: # is synonym
+            return self.key_og2std[key]
+
+        return None
+        
+    def check_value(self,key,value):
+        # checks if value exists in the database
+        if self.db_info[key]["variable"] == 1:
+            return ""
+        if value in self.db_info[key]["values"]:
+            return value
+        if value in self.val_og2std[key]:
+            return self.val_og2std[key][value]
+        
+        return None
+        
     def add_key(self,key,variable,description):
         # checks if key already exists, if not - prompts user to insert as a synonym into existing key
         # or create a new entry

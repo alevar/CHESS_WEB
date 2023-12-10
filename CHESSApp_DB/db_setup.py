@@ -204,7 +204,10 @@ def load_attributes_from_gtf(gtf_fname:str, max_values:int) -> dict:
                 if len(attributes[k]["values"])>max_values:
                     attributes[k]["over_max_capacity"] = True
                     attributes[k]["values"] = set()
+                    continue
                 if attributes[k]["over_max_capacity"]:
+                    attributes[k]["over_max_capacity"] = True
+                    attributes[k]["values"] = set()
                     continue
                 attributes[k]["values"].add(v)
 
@@ -221,22 +224,22 @@ def merge_attributes(attributes:dict,attributes_to_merge:dict,max_value:int) -> 
     # if an attribute is not present in attributes - then add it
     # if an attribute is present in attributes and is over max_values - then do not add it
     # if an attribute is present in attributes and is not over max_values - then add it
+    res = copy.deepcopy(attributes)
     for k,v in attributes_to_merge.items():
-        # replace "_-. " with "_"
-        v["values"] = {replace_chars(x,"_-. ","_") for x in v["values"]}
-        k = k.lower()
-        if k not in attributes:
-            attributes[k] = v
+        if k not in res:
+            res[k] = v
         else:
-            if attributes[k]["over_max_capacity"]:
+            if res[k]["over_max_capacity"]:
+                res[k]["over_max_capacity"] = True
+                res[k]["values"] = set()
                 continue
             else:
-                attributes[k]["values"].update(v["values"])
-                if len(attributes[k]["values"])>max_value:
-                    attributes[k]["over_max_capacity"] = True
-                    attributes[k]["values"] = set()
+                res[k]["values"].update(v["values"])
+                if len(res[k]["values"])>max_value:
+                    res[k]["over_max_capacity"] = True
+                    res[k]["values"] = set()
 
-    return attributes
+    return res
 
 def addSources(api_connection,config,args):
     if not os.path.exists(args.temp):
@@ -251,14 +254,35 @@ def addSources(api_connection,config,args):
         # process attributes
         attrs = load_attributes_from_gtf(data["file"],args.max_values)
         all_attributes = merge_attributes(all_attributes,attrs,args.max_values)
-    # add attributes to the database to prepare for source insertion
+    
+    # check that everything is compatible with the database - if there are any conflicts exit, prompting user to add those entries manually via json configuration through addAttributes
+    # eventually to be superceeded by a proper admin panel
+    # verify attributes in the sources and prompt user to resolve conflicts if exist
+    verification = dict()
     ams = AttributeManagementSystem(api_connection)
     for k,v in all_attributes.items():
-        ams_key = ams.add_key(k,int(v["over_max_capacity"]),"")
-        for value in v["values"]:
-            ams.add_value(ams_key,value)
+        db_key = ams.check_key(k)
+        if db_key is None:
+            verification[k] = v["values"]
+            continue
+        else: # if the key is compatible - need to check the values
+            for value in v["values"]:
+                db_value = ams.check_value(db_key,value)
+                if db_value is None:
+                    verification.setdefault(k,set()).add(value)
 
-    # have the AMS load a separate loop
+    if len(verification)>0 and not args.skipUnknownAttributes:
+        print("The following attributes are not present in the database or have values that are not present in the database:")
+        for k,v in verification.items():
+            print(k)
+            print("\t"+",".join(v))
+        
+        res = input("Would you like to launch a prompt to resolve these conflicts now? You can also resolve conflicts via addAttributes module later or run this module with skipUnknownAttributes flag enabled (y/n): ")
+        if res.lower() == "y":
+            ams.prompt(verification)
+        else:
+            print("Skipping attribute verification")
+            exit(1)
 
     for source,data in config.items():
         sourceName = data["name"].replace("'","\\'")
@@ -301,6 +325,15 @@ def addSources(api_connection,config,args):
             api_connection.insert_dbxref(transcript,working_tid,working_sourceID)
 
             for attribute_key,attribute_value in transcript.attributes.items():
+                if ams.check_key(attribute_key) is None:
+                    if args.skipUnknownAttributes:
+                        continue
+                    else:
+                        print("Attribute "+attribute_key+" is not present in the database. Please verify that all attributes have been correctly added \
+                              to the database and all conflicts where resolved via the addSources module. \
+                              If you want to ignore novel attributes you can run this module with skipUnknownAttributes flag \
+                              enabled forcing the software to skip any unknown entries.")
+                        exit(1)
                 api_connection.insert_attribute(working_tid,working_sourceID,transcript.tid,attribute_key,attribute_value)
 
 
@@ -619,6 +652,10 @@ def main(args):
                               required=False,
                               action="store_true",
                               help="Keep temporary files after the database is built")
+    parser_addSources.add_argument("--skipUnknownAttributes",
+                                required=False,
+                                action="store_true",
+                                help="If enabled this flag will ensure any attributes not already in the database are skipped without raising an error.")
     parser_addSources.set_defaults(func=establish_connection,main_fn=addSources)
 
     ##############################

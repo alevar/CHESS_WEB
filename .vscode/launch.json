@@ -67,7 +67,8 @@
                 "--configuration","./example/configurations/example.sources.json",
                 "--db_configuration","./example/configurations/example.mysql.json",
                 "--temp","./example/temp",
-                "--log","./example/log"
+                "--log","./example/log",
+                "--skipUnknownAttributes"
 	        ],
 	        "console": "integratedTerminal"
         }

@@ -217,7 +217,7 @@ class CHESS_DB_API:
 
     def to_gtf(self,assembly:str,outfname:str):
         # retrieve transcripts for a given assembly and outputs them as a GTF file
-        query = f"SELECT * FROM Transcript WHERE assemblyName='{assembly}'"
+        query = f"SELECT * FROM Transcript t JOIN Assembly a on t.assemblyID = a.assemblyID WHERE a.assemblyName='{assembly}'"
         select_res = self.execute_query(query)
 
         with open(outfname,"w") as outFP:
