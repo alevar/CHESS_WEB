@@ -856,3 +856,30 @@ Options:
                 self.val_std2og[key][value].add(synonym)
                 self.db_info[key]["values"][value].add(synonym)
                 return value
+            
+    # add transcript attributes (TXAttribute)
+    def insert_transcript_attribute(self,tid:int,sid:int,transcript_id:str,key:str,value:str):
+        assert key in self.key_std2og or key in self.key_og2std, f"Unknown key {key} provided"
+
+        # find the key representative in database
+        std_key = key
+        if key in self.key_og2std:
+            std_key = self.key_og2std[key]
+        else:
+            assert key in self.key_std2og, f"Key {key} not found in database"
+        
+        # check if key is variable - if so, only populate value_text, otherwise traverse synonyms
+        variable_key = self.db_info[std_key]["variable"] == 1
+
+        # if not variable - make sure the provided value is also compatible with the database
+        ins_value = ""
+        value_text = ""
+        if not variable_key:
+            assert value in self.val_og2std[std_key] or value in self.db_info[std_key]["values"], f"Unknown value {value} provided for key {key}"
+            ins_value = value
+        else:
+            value_text = value
+        
+        # insert into database
+        query = f'INSERT INTO TXAttribute (tid, sid, transcript_id, name, value, value_text) VALUES ("{tid}","{sid}","{transcript_id}","{key}","{ins_value}","{value_text}")'
+        return self.dbcon.execute_query(query)

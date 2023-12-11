@@ -287,15 +287,20 @@ def addSources(api_connection,config,args):
     for source,data in config.items():
         sourceName = data["name"].replace("'","\\'")
         assemblyName = data["assemblyName"].replace("'","\\'")
-        genome = data["assemblyFasta"]
         filename = data["file"]
-        link = data["link"]
-        information = data["information"].replace("'","\\'")
+
+        # get mapping information from the database for the inputs
+        assemblyID = api_connection.get_assemblyID(assemblyName)
+        # load sequence identifiers from the current file first (just a set of all values in column 1)
+        input_seqid_set = set()
+        with open(filename,"r") as inFP:
+            [input_seqid_set.add(line.split("\t")[0]) for line in inFP]
+        sequenceIDMap = api_connection.get_seqidMap(assemblyID,input_seqid_set)
 
         # extract current GTF for the database
         db_gtf_fname = os.path.abspath(args.temp)+"/db.before_"+sourceName+".gtf"
         print("Extracting gtf from the current database before adding "+sourceName)
-        api_connection.to_gtf(assemblyName,db_gtf_fname)
+        api_connection.to_gtf(assemblyID,db_gtf_fname)
 
         # gffread/gffcompare/etc
         source_format = "gff" if is_gff(filename) else "gtf"
@@ -315,15 +320,13 @@ def addSources(api_connection,config,args):
 
         # iterate over the contents of the file and add them to the database
         for transcript_lines in read_gffread_gtf(norm_input_gtf):
-            transcript = TX(transcript_lines)
+            transcript = TX(transcript_lines,sequenceIDMap)
             working_tid = None # tid PK of the transcript being worked on as it appears in the Transcripts table
             working_tid = tracking.get(transcript.tid,None)
             if working_tid is None:
-                working_tid = api_connection.insert_transcript(transcript,data)
+                working_tid = api_connection.insert_transcript(transcript,assemblyID)
 
-            # add transcript source pairing to the TxDBXREF table
-            api_connection.insert_dbxref(transcript,working_tid,working_sourceID)
-
+            # deal with the attributes
             for attribute_key,attribute_value in transcript.attributes.items():
                 if ams.check_key(attribute_key) is None:
                     if args.skipUnknownAttributes:
@@ -334,8 +337,11 @@ def addSources(api_connection,config,args):
                               If you want to ignore novel attributes you can run this module with skipUnknownAttributes flag \
                               enabled forcing the software to skip any unknown entries.")
                         exit(1)
-                api_connection.insert_attribute(working_tid,working_sourceID,transcript.tid,attribute_key,attribute_value)
 
+                ams.insert_txattribute(working_tid,working_sourceID,transcript.tid,attribute_key,attribute_value)
+
+            # add transcript source pairing to the TxDBXREF table
+            api_connection.insert_dbxref(transcript,working_tid,working_sourceID)
 
     api_connection.commit(True)
     logFP.close()

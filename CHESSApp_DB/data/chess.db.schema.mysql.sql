@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS `CHESS_DB`.`SequenceID` (
   `sequenceID` INT UNSIGNED NOT NULL,
   `length` INT UNSIGNED NOT NULL,
   PRIMARY KEY (`assemblyID`, `sequenceID`),
-  CONSTRAINT `fk_SequenceIDs_assembly`
+  CONSTRAINT `fk_SequenceID_assembly`
     FOREIGN KEY (`assemblyID`)
     REFERENCES `CHESS_DB`.`Assembly` (`assemblyID`)
     ON DELETE NO ACTION
@@ -583,7 +583,7 @@ BEGIN
     DECLARE sequenceLength INT;
     
     SELECT COUNT(*) INTO sequenceCount
-    FROM SequenceIDs
+    FROM SequenceID
     WHERE assemblyID = NEW.assemblyID AND sequenceID = NEW.sequenceID;
     
     IF sequenceCount = 0 THEN
@@ -593,7 +593,7 @@ BEGIN
     
     IF sequenceCount > 0 THEN
         SELECT length INTO sequenceLength
-        FROM SequenceIDs
+        FROM SequenceID
         WHERE assemblyID = NEW.assemblyID AND sequenceID = NEW.sequenceID;
         
         IF NEW.start >= NEW.end THEN
@@ -634,7 +634,7 @@ BEGIN
     DECLARE sequenceLength INT;
     
     SELECT COUNT(*) INTO sequenceCount
-    FROM SequenceIDs
+    FROM SequenceID
     WHERE assemblyID = NEW.assemblyID AND sequenceID = NEW.sequenceID;
     
     IF sequenceCount = 0 THEN
@@ -644,7 +644,7 @@ BEGIN
     
     IF sequenceCount > 0 THEN
         SELECT length INTO sequenceLength
-        FROM SequenceIDs
+        FROM SequenceID
         WHERE assemblyID = NEW.assemblyID AND sequenceID = NEW.sequenceID;
         
         IF NEW.start >= NEW.end THEN

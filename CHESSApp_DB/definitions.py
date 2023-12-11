@@ -80,3 +80,22 @@ def extract_attributes(attribute_str:str,gff=False)->dict:
         attrs_dict.setdefault(k,v)
         
     return attrs_dict
+
+def chain_inv(chain:list) -> list:
+    """
+    This function inverts a chain of intervals, instead returning the intervals that are not in the chain. Potential use cases include finding introns from exons.
+
+    Parameters:
+    chain (list): The chain of intervals to invert.
+
+    Returns:
+    list: A list of intervals that are not in the input chain.
+    """
+    if len(chain)<=1:
+        return list()
+    
+    res = []
+    for i in range(1,len(chain)):
+        res.append((chain[i-1][1],chain[i][0]))
+        
+    return res

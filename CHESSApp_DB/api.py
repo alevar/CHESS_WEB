@@ -123,48 +123,54 @@ class CHESS_DB_API:
         return self.execute_query(query)
 
     ##############################
-    ########  ATTRIBUTE  #########
-    ##############################
-    def insert_attribute_pair(self, attribute_key:str, attribute_value:str):
-        query = f"INSERT INTO AttributePairs (name, value) VALUES ('{attribute_key}', '{attribute_value}')"
-        return self.execute_query(query)
-
-    ##############################
     ##########  SOURCE  ##########
     ##############################
     def insert_source(self, data:dict, source_format:str):
         sourceName = data["name"].replace("'","\\'")
+        assemblyName = data["assemblyName"].replace("'","\\'")
         link = data["link"]
         information = data["information"].replace("'","\\'")
 
-        query = f"INSERT INTO Sources (name,link,information,originalFormat) VALUES ('{sourceName}','{link}','{information}','{source_format}')"
-        return self.execute_query(query)
-
-    def insert_transcript(self, transcript:TX, data:dict):
-        assemblyName = data["assemblyName"].replace("'","\\'")
-
-        query = f"INSERT INTO Transcript (assemblyName,sequenceID,strand,start,end,exons) VALUES ('{assemblyName}','{transcript.seqid}',{transcript.strand},'{transcript.start}','{transcript.end}','{transcript.exons}')"
+        query = f"INSERT INTO Sources (assemblyID, name, link, information, originalFormat) SELECT a.assemblyID,'{sourceName}','{link}','{information}','{source_format}' FROM Assembly a WHERE a.assemblyName = '{assemblyName}'"
         return self.execute_query(query)
     
-    def insert_txattribute(self, tid:int, sourceID:int, transcriptID:str, attribute_key:str, attribute_value:str):
-        query = f"INSERT INTO Attribute (tid,sourceID,transcript_id,name,value) VALUES ('{tid}','{sourceID}','{transcriptID}','{attribute_key}','{attribute_value}')"
+    def insert_intron(self, assemblyID:int,sequenceID:int,strand:str,start:int,end:int):
+        query = f"INSERT IGNORE INTO Intron (assemblyID, sequenceID, strand, start, end) VALUES ({assemblyID},{sequenceID},'{strand}','{start}','{end}')"
         return self.execute_query(query)
+
+    def insert_transcript(self, transcript:TX, assemblyID:int):
+        query = f"INSERT INTO Transcript (assemblyID,sequenceID,strand,start,end) VALUES ('{assemblyID}','{transcript.seqid}',{transcript.strand},'{transcript.start}','{transcript.end}')"
+        tx_res = self.execute_query(query)
+    
+        # deal with introns here since they are part of transcript
+        for intron in transcript.introns:
+            i_res = self.insert_intron(assemblyID, transcript.seqid, transcript.strand, intron[0], intron[1])
+            
+            # insert transcript to intron mapping
+            query = f"INSERT INTO TranscriptToIntron (tid, iid) VALUES ({tx_res},{i_res})"
+            txi_res = self.execute_query(query)
+        
+        return tx_res
     
     def insert_dbxref(self, transcript:TX, tid:int, sourceID:int):
         query = f"INSERT INTO TxDBXREF (tid, sourceID, transcript_id, start, end"
         values = (tid, sourceID, transcript.tid, transcript.start, transcript.end)
         if transcript.cds is not None and transcript.cds != "":
-            query += ", cds"
-            values += (transcript.cds,)
+            query += ", cds_start"
+            values += (transcript.cds_start,)
+            query += ", cds_end"
+            values += (transcript.cds_end,)
         if transcript.score is not None:
             query += ", score"
             values += (transcript.score,)
         if transcript.transcript_type is not None:
-            query += ", type"
-            values += (transcript.transcript_type,)
+            query += ", type_key"
+            values += (transcript.transcript_type_key,)
+            query += ", type_value"
+            values += (transcript.transcript_type_value,)
         query += ") VALUES (%s, %s, %s, %s, %s"
         if transcript.cds is not None and transcript.cds != "":
-            query += ", %s"
+            query += ", %s, %s"
         if transcript.score is not None:
             query += ", %s"
         if transcript.transcript_type is not None:
@@ -215,14 +221,14 @@ class CHESS_DB_API:
             cursor.close()
             return
 
-    def to_gtf(self,assembly:str,outfname:str):
+    def to_gtf(self,assemblyID:int,outfname:str):
         # retrieve transcripts for a given assembly and outputs them as a GTF file
-        query = f"SELECT * FROM Transcript t JOIN Assembly a on t.assemblyID = a.assemblyID WHERE a.assemblyName='{assembly}'"
+        query = f"SELECT * FROM Transcript WHERE assemblyID={assemblyID}"
         select_res = self.execute_query(query)
 
         with open(outfname,"w") as outFP:
             if select_res is None or not select_res:
-                print(f"No transcripts found for assembly {assembly}.")
+                print(f"No transcripts found for assembly {assemblyID}.")
                 # write a dummy transcript to avoid errors downstream
                 outFP.write("		transcript	0	0	.	+	.	transcript_id \"nan\";\n")
                 outFP.write("		exon	0	0	.	+	.	transcript_id \"nan\";\n")
@@ -319,6 +325,14 @@ class CHESS_DB_API:
     ######   GETS   ######
     ######################
 
+    # get assemblyID from name
+    def get_assemblyID(self,name:str) -> int:
+        assemblyName = name.replace("'","\\'")
+        query = "SELECT assemblyID FROM Assembly WHERE assemblyName = '"+assemblyName+"'"
+        res = self.execute_query(query)
+        assert len(res) == 1,"Invalid assembly name: "+name
+        return res[0][0]
+
     # get summary table
     def get_AllCountSummaryTable(self) -> dict:
         query = "SELECT * FROM AllCountSummary"
@@ -386,15 +400,38 @@ class CHESS_DB_API:
         assert len(res) == 1,"Invalid assembly name: "+name
         return res[0][0]
     
-    def get_seqidMap(self,assemblyID:int,nomenclature:str) -> dict:
-        # retrieve a map from the DB sequenceID to a given nomenclature for the given assembly and nomenclature
-        query = "SELECT sequenceName,sequenceID FROM SequenceIDMap WHERE assemblyID = "+str(assemblyID)+" AND nomenclature = '"+nomenclature+"'"
-        tmp = self.execute_query(query)
-        res = dict()
-        for k,v in tmp:
-            assert k not in res,"duplicate entries: "+k
-            res[k] = v
-        return res
+    def get_seqidMap(self,assemblyID:int,seqid_set:set=None,nomenclature:str=None) -> dict:
+        # return map across all nomenclatures if both are None
+        map = dict()
+        if nomenclature is None and seqid_set is None:
+            query = "SELECT sequenceName,sequenceID FROM SequenceIDMap WHERE assemblyID = "+str(assemblyID)
+            res = self.execute_query(query)
+            for row in res:
+                map[row[0]] = row[1]
+
+        elif nomenclature is not None and seqid_set is None:
+            query = "SELECT sequenceName,sequenceID FROM SequenceIDMap WHERE assemblyID = "+str(assemblyID)+" AND nomenclature = '"+nomenclature+"'"
+            res = self.execute_query(query)
+            for row in res:
+                map[row[0]] = row[1]
+
+        elif nomenclature is None and seqid_set is not None:
+            query = "SELECT sequenceName,sequenceID,nomenclature FROM SequenceIDMap WHERE assemblyID = "+str(assemblyID)+" AND sequenceName IN ("+",".join(["'"+str(s)+"'" for s in seqid_set])+")"
+            res = self.execute_query(query)
+            nomenclatures = set()
+            for row in res:
+                map[row[0]] = row[1]
+                nomenclatures.add(row[2])
+            assert len(nomenclatures) == 1,"Multiple nomenclatures found for the same sequenceID: "+str(nomenclatures)
+            assert seqid_set == set(map.keys()),"Not all requested seqids were found in the database: "+str(seqid_set.difference(set(map.keys())))
+        else:
+            query = "SELECT sequenceName,sequenceID FROM SequenceIDMap WHERE assemblyID = "+str(assemblyID)+" AND nomenclature = '"+nomenclature+"' AND sequenceName IN ("+",".join(["'"+str(s)+"'" for s in seqid_set])+")"
+            res = self.execute_query(query)
+            for row in res:
+                map[row[0]] = row[1]
+            assert seqid_set == set(map.keys()),"Not all requested seqids were found in the database: "+str(seqid_set.difference(set(map.keys())))
+        
+        return map
     
     def get_attribute_information(self) -> dict:
         # retrieve a map of all keys, their alernative names along with all possible values permitted and their maps
