@@ -31,7 +31,7 @@ class TX:
     def exons_from_introns(self):
         self.exons = [[self.start,0]]
         for intron in sorted(self.introns):
-            assert intron[0] > self.start and intron[1] < self.end,"intron not contained in transcript"
+            assert intron[0] >= self.start and intron[1] <= self.end,"intron not contained in transcript"
             self.exons[-1][1] = intron[0]
             self.exons.append([intron[1],0])
         self.exons[-1][1] = self.end
