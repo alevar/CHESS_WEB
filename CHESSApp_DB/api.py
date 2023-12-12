@@ -249,7 +249,7 @@ class CHESS_DB_API:
         query = f"SELECT * FROM Transcript t JOIN TranscriptToIntron ti ON t.tid = ti.tid \
                                              JOIN Intron i ON ti.iid = i.iid WHERE \
                                                                 t.assemblyID = {assemblyID} AND \
-                                                                i.assemblyID = {assemblyID};"
+                                                                i.assemblyID = {assemblyID} ORDER BY t.tid;"
         select_res = self.execute_query(query)
 
         with open(outfname,"w") as outFP:
@@ -283,9 +283,9 @@ class CHESS_DB_API:
                         LEFT JOIN
                             Assembly A ON O.scientificName = A.organismName
                         LEFT JOIN
-                            SequenceID SI ON A.assemblyName = SI.assemblyName
+                            SequenceID SI ON A.assemblyID = SI.assemblyID
                         LEFT JOIN
-                            Transcript T ON SI.sequenceID = T.sequenceID AND SI.assemblyName = T.assemblyName
+                            Transcript T ON SI.sequenceID = T.sequenceID AND SI.assemblyID = T.assemblyID
                         LEFT JOIN
                             TxDBXREF TX ON T.tid = TX.tid
                         LEFT JOIN

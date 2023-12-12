@@ -87,6 +87,18 @@
                 "--skipUnknownAttributes"
 	        ],
 	        "console": "integratedTerminal"
+        },
+        {
+            "name": "DB: compile",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/CHESSApp_DB",
+            "program": "./db_setup.py",
+            "args": [
+                "compile",
+                "--db_configuration","./example/configurations/example.mysql.json"
+	        ],
+	        "console": "integratedTerminal"
         }
     ]
 }
