@@ -109,7 +109,6 @@ class CHESS_DB_API:
         query = f"INSERT INTO Assembly (assemblyName, organismName, link, information) VALUES ('{assemblyName}', '{scienceName}', '{link}', '{information}')"
         return self.execute_query(query)
     
-    # TODO: assert entries in the SequenceIDMap table are unique - no contig name should be duplicated for a given assembly
     def insert_contig(self,assemblyID,contig,nomenclature,length):
         # create a new entry for the contig
         # count the number of entries in the SequenceID table for the current assembly
@@ -147,7 +146,12 @@ class CHESS_DB_API:
             i_res = self.insert_intron(assemblyID, transcript.seqid, transcript.strand, intron[0], intron[1])
             
             # insert transcript to intron mapping
-            query = f"INSERT INTO TranscriptToIntron (tid, iid) VALUES ({tx_res},{i_res})"
+            query = f"INSERT INTO TranscriptToIntron (tid, iid) SELECT {tx_res}, i.iid FROM Intron i WHERE \
+                                                                                            i.assemblyID = {assemblyID} AND \
+                                                                                            i.sequenceID = {transcript.seqid} AND \
+                                                                                            i.strand = {transcript.strand} AND \
+                                                                                            i.start = {intron[0]} AND \
+                                                                                            i.end = {intron[1]}"
             txi_res = self.execute_query(query)
         
         return tx_res
@@ -155,7 +159,7 @@ class CHESS_DB_API:
     def insert_dbxref(self, transcript:TX, tid:int, sourceID:int):
         query = f"INSERT INTO TxDBXREF (tid, sourceID, transcript_id, start, end"
         values = (tid, sourceID, transcript.tid, transcript.start, transcript.end)
-        if transcript.cds is not None and transcript.cds != "":
+        if transcript.cds_start is not None and transcript.cds_end is not None:
             query += ", cds_start"
             values += (transcript.cds_start,)
             query += ", cds_end"
@@ -163,18 +167,18 @@ class CHESS_DB_API:
         if transcript.score is not None:
             query += ", score"
             values += (transcript.score,)
-        if transcript.transcript_type is not None:
+        if transcript.transcript_type_value is not None:
             query += ", type_key"
             values += (transcript.transcript_type_key,)
             query += ", type_value"
             values += (transcript.transcript_type_value,)
         query += ") VALUES (%s, %s, %s, %s, %s"
-        if transcript.cds is not None and transcript.cds != "":
+        if transcript.cds_start is not None and transcript.cds_end is not None:
             query += ", %s, %s"
         if transcript.score is not None:
             query += ", %s"
-        if transcript.transcript_type is not None:
-            query += ", %s"
+        if transcript.transcript_type_value is not None:
+            query += ", %s, %s"
         query += ")"
 
         return self.execute_query(query, values)
@@ -220,10 +224,32 @@ class CHESS_DB_API:
         else:
             cursor.close()
             return
+        
+    def group_rows(self,rows:list,seqid_map:dict):
+        tx = TX()
+        for row in rows:
+            tid = row[0]
+            if tx.tid != tid:
+                if tx.tid is not None:
+                    tx.exons_from_introns()
+                    yield tx
+                    tx = TX()
+            tx.tid = tid
+            tx.strand = "+" if row[3] == 1 else "-"
+            tx.seqid = seqid_map[row[2]]
+            tx.start = int(row[4])
+            tx.end = int(row[5])
+            tx.introns.append((int(row[13]),int(row[14])))
 
-    def to_gtf(self,assemblyID:int,outfname:str):
+    def to_gtf(self,assemblyID:int,seqid_map:dict,outfname:str):
+        # reverse seqid_map
+        seqid_map_rev = {v:k for k,v in seqid_map.items()}
+
         # retrieve transcripts for a given assembly and outputs them as a GTF file
-        query = f"SELECT * FROM Transcript WHERE assemblyID={assemblyID}"
+        query = f"SELECT * FROM Transcript t JOIN TranscriptToIntron ti ON t.tid = ti.tid \
+                                             JOIN Intron i ON ti.iid = i.iid WHERE \
+                                                                t.assemblyID = {assemblyID} AND \
+                                                                i.assemblyID = {assemblyID};"
         select_res = self.execute_query(query)
 
         with open(outfname,"w") as outFP:
@@ -233,16 +259,8 @@ class CHESS_DB_API:
                 outFP.write("		transcript	0	0	.	+	.	transcript_id \"nan\";\n")
                 outFP.write("		exon	0	0	.	+	.	transcript_id \"nan\";\n")
             else:
-                for row in select_res:
-                    gtf_str = ""
-                    # construct transcript line
-                    strand = "+" if row[3] == 1 else "-"
-                    gtf_str += row[2]+"\t"+"DB"+"\ttranscript\t"+str(row[4])+"\t"+str(row[5])+"\t.\t"+strand+"\t.\ttranscript_id \""+str(row[0])+"\";\n"
-                    # construct exon lines
-                    for exon in row[6].split(","):
-                        exon_start, exon_end = [str(int(v)) for v in exon.split("-")]
-                        gtf_str += row[2]+"\t"+"DB"+"\texon\t"+exon_start+"\t"+exon_end+"\t.\t"+strand+"\t.\ttranscript_id \""+str(row[0])+"\";\n"
-                    outFP.write(gtf_str)
+                for tx in self.group_rows(select_res,seqid_map_rev):
+                    outFP.write(tx.to_gtf()+"\n")
         
         return
     

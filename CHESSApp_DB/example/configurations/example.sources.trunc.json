@@ -1,0 +1,52 @@
+{
+    "RefSeq": {
+        "name": "RefSeq",
+        "assemblyName": "GRCh38",
+        "assemblyFasta": "./data/HomoSapiens/GRCh38/grch38.18.19.fa",
+        "file": "./example/data/HomoSapiens/GRCh38/refseq.18.19.gtf",
+        "information": "The Reference Sequence (RefSeq) collection provides a comprehensive, integrated, non-redundant, well-annotated set of sequences, including genomic DNA, transcripts, and proteins. RefSeq sequences form a foundation for medical, functional, and diversity studies. They provide a stable reference for genome annotation, gene identification and characterization, mutation and polymorphism analysis (especially RefSeqGene records), expression studies, and comparative analyses. [ more... ]",
+        "transcript_type_key":"gbkey",
+        "gene_type_key":"gene_biotype",
+        "link": "https://www.ncbi.nlm.nih.gov/refseq/"
+    },
+    "GENCODE": {
+        "name": "GENCODE",
+        "assemblyName": "GRCh38",
+        "assemblyFasta": "./data/HomoSapiens/GRCh38/grch38.18.19.fa",
+        "file": "./example/data/HomoSapiens/GRCh38/gencode.v41.18.19.gtf",
+        "information": "The goal of the GENCODE project is to identify and classify all gene features in the human and mouse genomes with high accuracy based on biological evidence, and to release these annotations for the benefit of biomedical research and genome interpretation. ",
+        "transcript_type_key":"transcript_type",
+        "gene_type_key":"gene_type",
+        "link": "https://www.gencode.com"
+    },
+    "CHESS.3.0": {
+        "name": "CHESS.3.0",
+        "assemblyName": "GRCh38",
+        "assemblyFasta": "./data/HomoSapiens/GRCh38/grch38.18.19.fa",
+        "file": "./example/data/HomoSapiens/GRCh38/chess3.0.grch38.18.19.gtf",
+        "information": "CHESS is a comprehensive set of human genes based on nearly 10,000 RNA sequencing experiments produced by the GTEx project. ",
+        "transcript_type_key":"gene_type",
+        "gene_type_key":"gene_type",
+        "link": "https://ccb.jhu.edu/chess/"
+    },
+    "CHESS.3.0.1": {
+        "name": "CHESS.3.0.1",
+        "assemblyName": "CHM13",
+        "assemblyFasta": "./data/HomoSapiens/CHM13/chm13.18.19.fa",
+        "file": "./example/data/HomoSapiens/CHM13/chess3.0.1.CHM13.18.19.gtf",
+        "information": "The re-release of the chess annotation based on updated protocol",
+        "transcript_type_key":"gene_type",
+        "gene_type_key":"gene_type",
+        "link": "https://ccb.jhu.edu/chess/"
+    },
+    "CSESS": {
+        "name": "CSESS",
+        "assemblyName": "SIV239",
+        "assemblyFasta": "./data/SIV/M33262.1.fasta",
+        "file": "./example/data/SIV/csess.1.0.0.gtf",
+        "information": "Evidence-based annotation of the transcriptome and proteome of SIV-infected cells",
+        "transcript_type_key":"",
+        "gene_type_key":"",
+        "link": "https://ccb.jhu.edu/chess/"
+    }
+}

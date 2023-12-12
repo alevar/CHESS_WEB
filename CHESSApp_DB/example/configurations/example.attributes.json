@@ -272,15 +272,6 @@
         "variable":1,
         "description":"A free text field for any additional information."
     },
-    "db_xref":{
-        "values":{},
-        "synonyms":[
-            "db_xref",
-            "dbxref"
-        ],
-        "variable":1,
-        "description":"A free text field for any additional information."
-    },
     "gene_name":{
         "values":{},
         "synonyms":[

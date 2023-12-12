@@ -288,6 +288,8 @@ def addSources(api_connection,config,args):
         sourceName = data["name"].replace("'","\\'")
         assemblyName = data["assemblyName"].replace("'","\\'")
         filename = data["file"]
+        transcript_type_key = data["transcript_type_key"]
+        gene_type_key = data["gene_type_key"]
 
         # get mapping information from the database for the inputs
         assemblyID = api_connection.get_assemblyID(assemblyName)
@@ -300,7 +302,7 @@ def addSources(api_connection,config,args):
         # extract current GTF for the database
         db_gtf_fname = os.path.abspath(args.temp)+"/db.before_"+sourceName+".gtf"
         print("Extracting gtf from the current database before adding "+sourceName)
-        api_connection.to_gtf(assemblyID,db_gtf_fname)
+        api_connection.to_gtf(assemblyID,sequenceIDMap,db_gtf_fname)
 
         # gffread/gffcompare/etc
         source_format = "gff" if is_gff(filename) else "gtf"
@@ -320,11 +322,14 @@ def addSources(api_connection,config,args):
 
         # iterate over the contents of the file and add them to the database
         for transcript_lines in read_gffread_gtf(norm_input_gtf):
-            transcript = TX(transcript_lines,sequenceIDMap)
+            transcript = TX(transcript_lines,sequenceIDMap,transcript_type_key,gene_type_key)
             working_tid = None # tid PK of the transcript being worked on as it appears in the Transcripts table
             working_tid = tracking.get(transcript.tid,None)
             if working_tid is None:
                 working_tid = api_connection.insert_transcript(transcript,assemblyID)
+
+            # add transcript source pairing to the TxDBXREF table
+            api_connection.insert_dbxref(transcript,working_tid,working_sourceID)
 
             # deal with the attributes
             for attribute_key,attribute_value in transcript.attributes.items():
@@ -339,9 +344,6 @@ def addSources(api_connection,config,args):
                         exit(1)
 
                 ams.insert_txattribute(working_tid,working_sourceID,transcript.tid,attribute_key,attribute_value)
-
-            # add transcript source pairing to the TxDBXREF table
-            api_connection.insert_dbxref(transcript,working_tid,working_sourceID)
 
     api_connection.commit(True)
     logFP.close()
@@ -407,7 +409,7 @@ def addNomeclatures(api_connection,config, args):
             continue
 
         # assert that all sequenceIDs for the assembly exist in the provided map
-        sids = api_connection.get_seqidMap(aid,data["from"])
+        sids = api_connection.get_seqidMap(aid,None,data["from"])
         assert len(sids)>0,"No sequenceIDs found for assembly: "+data["assemblyName"]
 
         # load the map
