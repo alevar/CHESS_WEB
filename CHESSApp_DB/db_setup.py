@@ -296,7 +296,7 @@ def addSources(api_connection,config,args):
         # load sequence identifiers from the current file first (just a set of all values in column 1)
         input_seqid_set = set()
         with open(filename,"r") as inFP:
-            [input_seqid_set.add(line.split("\t")[0]) for line in inFP]
+            [input_seqid_set.add(line.split("\t")[0]) for line in inFP if line[0]!="#" and len(line.split("\t"))==9]
         sequenceIDMap = api_connection.get_seqidMap(assemblyID,input_seqid_set)
 
         # extract current GTF for the database
