@@ -858,7 +858,7 @@ Options:
                 return value
             
     # add transcript attributes (TXAttribute)
-    def insert_transcript_attribute(self,tid:int,sid:int,transcript_id:str,key:str,value:str):
+    def insert_txattribute(self,tid:int,sid:int,transcript_id:str,key:str,value:str):
         assert key in self.key_std2og or key in self.key_og2std, f"Unknown key {key} provided"
 
         # find the key representative in database
@@ -881,5 +881,5 @@ Options:
             value_text = value
         
         # insert into database
-        query = f'INSERT INTO TXAttribute (tid, sid, transcript_id, name, value, value_text) VALUES ("{tid}","{sid}","{transcript_id}","{key}","{ins_value}","{value_text}")'
+        query = f'INSERT INTO TXAttribute (tid, sourceID, transcript_id, name, value, value_text, key_text) VALUES ({tid},{sid},"{transcript_id}","{std_key}","{ins_value}","{value_text}","{key}")'
         return self.dbcon.execute_query(query)
