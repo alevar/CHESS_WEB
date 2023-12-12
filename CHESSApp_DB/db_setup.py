@@ -533,14 +533,14 @@ def compile(api_connection,args):
 
     # this module will remove any previous versions of the auxillary tables and recompile them from scratch
     api_connection.check_table("Sources")
-    api_connection.check_table("Genes")
+    api_connection.check_table("Gene")
     api_connection.check_table("TranscriptToGene")
     api_connection.check_table("TxDBXREF")
-    api_connection.check_table("Attributes")
-    api_connection.check_table("Transcripts")
-    api_connection.check_table("SequenceIDs")
+    api_connection.check_table("TXAttribute")
+    api_connection.check_table("Transcript")
+    api_connection.check_table("SequenceID")
     api_connection.check_table("SequenceIDMap")
-    api_connection.check_table("Organisms")
+    api_connection.check_table("Organism")
 
     # extract transcript counts across sources and assemblies into a separate table
     api_connection.build_AllCountSummaryTable()
