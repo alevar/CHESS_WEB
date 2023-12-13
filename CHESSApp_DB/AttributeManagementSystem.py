@@ -883,3 +883,12 @@ Options:
         # insert into database
         query = f'INSERT INTO TXAttribute (tid, sourceID, transcript_id, name, value, value_text, key_text) VALUES ({tid},{sid},"{transcript_id}","{std_key}","{ins_value}","{value_text}","{key}")'
         return self.dbcon.execute_query(query)
+    
+    def get_fixed_table(self):
+        # return a dictionary of all fixed attributes to their values using standard key and value names
+        table = dict()
+        for key, value in self.db_info.items():
+            if value["variable"] == 0:
+                table[key] = list(value["values"].keys())
+
+        return table
