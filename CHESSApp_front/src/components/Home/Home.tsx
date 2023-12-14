@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { useAppSelector, useAppDispatch } from "../../app/hooks"
 import { useSelector, useDispatch } from 'react-redux';
 
 import {set_nascent, selectSettings} from "../../features/settings/settingsSlice"
@@ -49,7 +48,8 @@ const Home = () => {
 
                   return (
                     <>
-                      <p>Current format: {settings.format}. Nascent included: 
+                      <p>Current format: {settings.format}. Nascent included: {settings.include_nascent ? 'Yes' : 'No'}</p>
+                      <p>
                         <input 
                           type="checkbox" 
                           checked={settings.include_nascent} 
