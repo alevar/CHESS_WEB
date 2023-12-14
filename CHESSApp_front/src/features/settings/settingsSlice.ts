@@ -10,7 +10,8 @@ export interface SettingsState {
           sources : string[],
           prime3_UTR_extension : number,
           prime5_UTR_extension : number,
-          include_nascent : boolean
+          include_nascent : boolean,
+          include_fasta : boolean,
         }
 }
 
@@ -23,7 +24,8 @@ const initialState: SettingsState = {
           sources : ["CHESS"],
           prime3_UTR_extension : 0,
           prime5_UTR_extension : 0,
-          include_nascent : false
+          include_nascent : false,
+          include_fasta : false,
         }
 }
 

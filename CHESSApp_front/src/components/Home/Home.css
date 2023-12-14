@@ -1,44 +1,54 @@
 /* Home.css */
 .home {
-    text-align: center;
-    padding: 20px;
-  }
-  
-  .header {
-    font-size: 2rem;
-    color: #333;
-  }
-  
-  .description {
-    font-size: 1.2rem;
-    color: #555;
-    margin-top: 20px;
-  }
-  
-  .get-started {
-    font-size: 1.2rem;
-    color: #555;
-    margin-top: 20px;
-  }
-  
-  .list {
-    list-style: none;
-    padding: 0;
-    margin: 20px 0;
-  }
-  
-  .list-item {
-    margin: 10px 0;
-  }
-  
-  .link {
-    text-decoration: none;
-    color: #007BFF;
-    font-weight: bold;
-    transition: color 0.2s;
-  }
-  
-  .link:hover {
-    color: #0056b3;
-  }
-  
+  text-align: center;
+  padding: 20px;
+}
+
+.header {
+  font-size: 2rem;
+  color: #333;
+}
+
+.description, .get-started {
+  font-size: 1.2rem;
+  color: #555;
+  margin-top: 20px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-around;
+}
+
+.card {
+  flex: 0 0 calc(33.33% - 20px); /* Equal width for each card */
+  height: 150px; /* Fixed height for all cards */
+  margin: 10px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.card:hover {
+  background-color: #f0f0f0; /* Hover effect */
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 20px;
+}
+
+.card-link {
+  text-decoration: none;
+  color: #007BFF;
+  font-weight: bold;
+  transition: color 0.2s;
+}
+
+.card-link:hover {
+  color: #0056b3;
+}
