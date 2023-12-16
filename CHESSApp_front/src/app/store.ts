@@ -1,21 +1,11 @@
-import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit"
-import counterReducer from "../features/counter/counterSlice"
-import databaseReducer from "../features/database/databaseSlice"
-import settingsReducer from "../features/settings/settingsSlice"
+import { configureStore } from '@reduxjs/toolkit';
+import databaseSlice from '../features/database/databaseSlice';
+import { databaseApi } from '../features/database/databaseApi';
 
 export const store = configureStore({
   reducer: {
-    counter: counterReducer,
-    database: databaseReducer,
-    settings: settingsReducer,
+    database: databaseSlice,
+    [databaseApi.reducerPath]: databaseApi.reducer,
   },
-})
-
-export type AppDispatch = typeof store.dispatch
-export type RootState = ReturnType<typeof store.getState>
-export type AppThunk<ReturnType = void> = ThunkAction<
-  ReturnType,
-  RootState,
-  unknown,
-  Action<string>
->
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(databaseApi.middleware),
+});

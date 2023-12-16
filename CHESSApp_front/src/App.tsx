@@ -1,5 +1,5 @@
 import logo from "./logo.svg"
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch, Provider } from 'react-redux';
 import React, { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -11,30 +11,40 @@ import Header from "./components/Header/Header";
 import About from "./components/About/About";
 import ContactUs from "./components/ContactUs/ContactUs";
 
-
-import { loadDBData } from "./features/database/databaseAPI";
+import { useGetSequenceByIdQuery } from './features/database/databaseApi';
+import { store } from './app/store';
 
 import "./App.css"
 
 function App() {
-  const [data, setData] = useState(null);
+  
+  const { data, error, isLoading } = useGetSequenceByIdQuery();
+  console.log(data);
 
-  useEffect(() => {
-    loadDBData().then(response => {
-      setData(response.data);
-    });
-  }, []); // Empty dependency array means this effect runs once on mount
+  if (isLoading) {
+    return <div className="loading">
+              <div className="loading-bar"></div>
+              <div className="loading-bar"></div>
+              <div className="loading-bar"></div>
+            </div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
-    <div className="App">
-    <Header />
-    <Routes>
-      <Route path="/" element={<Home/>} />
-      <Route path="/about" element={<About/>} />
-      <Route path="/contact" element={<ContactUs/>} />
-      <Route path="/select" element={<Select/>} />
-    </Routes>
-    </div>
+    <Provider store={store}>
+      <div className="App">
+        <Header />
+        <Routes>
+          <Route path="/" element={<Home/>} />
+          <Route path="/about" element={<About/>} />
+          <Route path="/contact" element={<ContactUs/>} />
+          <Route path="/select" element={<Select/>} />
+        </Routes>
+      </div>
+    </Provider>
   )
 }
 
