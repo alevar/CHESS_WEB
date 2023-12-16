@@ -11,18 +11,18 @@ import Header from "./components/Header/Header";
 import About from "./components/About/About";
 import ContactUs from "./components/ContactUs/ContactUs";
 
-import { useGetSequenceByIdQuery } from './features/database/databaseApi';
+import { useGetGlobalDataQuery } from './features/database/databaseApi';
 import { store } from './app/store';
 
 import "./App.css"
 
 function App() {
   
-  const { data, error, isLoading } = useGetSequenceByIdQuery();
+  const { data, error, isLoading } = useGetGlobalDataQuery();
   console.log(data);
 
   if (isLoading) {
-    return <div className="loading">
+    return  <div className="loading">
               <div className="loading-bar"></div>
               <div className="loading-bar"></div>
               <div className="loading-bar"></div>
