@@ -64,11 +64,11 @@ def get_sources():
 # Route: /seqids
 # Route implemented for testing purposes only
 # Returns: JSON object with all seqids in the database
-@main_blueprint.route('/seqids')
+@main_blueprint.route('/assemblies')
 def get_seqids():
-    query = text("SELECT DISTINCT seqid FROM features")
+    query = text("SELECT DISTINCT assemblyName FROM Assemblies")
     results = db.session.execute(query)
-    return jsonify([x.seqid for x in results])
+    return jsonify([x.assemblyName for x in results])
 
 # Route: /globalData
 # Fetches data about the database required for building the user interface and all interactions

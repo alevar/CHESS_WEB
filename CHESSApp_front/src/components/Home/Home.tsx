@@ -20,21 +20,21 @@ const Home = () => {
           <div className="col-md-4 d-flex">
             <div className="card flex-fill" onClick={() => handleCardClick("/custom")}>
               <div className="card-body">
-                <Link to="/custom" className="card-link">Customize Available Annotations</Link>
+                Customize Available Annotations
               </div>
             </div>
           </div>
           <div className="col-md-4 d-flex">
             <div className="card flex-fill" onClick={() => handleCardClick("/select")}>
               <div className="card-body">
-                <Link to="/select" className="card-link">Download Ready-To-Use CHESS 3 annotation</Link>
+                Download Ready-To-Use CHESS 3 annotation
               </div>
             </div>
           </div>
           <div className="col-md-4 d-flex">
             <div className="card flex-fill" onClick={() => handleCardClick("/genes")}>
               <div className="card-body">
-                <Link to="/genes" className="card-link">Explore Individual Genes</Link>
+                Explore Individual Genes
               </div>
             </div>
           </div>
