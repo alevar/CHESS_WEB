@@ -66,7 +66,7 @@ def get_sources():
 # Returns: JSON object with all seqids in the database
 @main_blueprint.route('/assemblies')
 def get_seqids():
-    query = text("SELECT DISTINCT assemblyName FROM Assemblies")
+    query = text("SELECT DISTINCT assemblyName FROM Assembly")
     results = db.session.execute(query)
     return jsonify([x.assemblyName for x in results])
 
