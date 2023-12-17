@@ -44,12 +44,52 @@ def get_all_sources():
         }
     return sources
 
+def get_attributeSummary(fixed_only):
+    query = text("""SELECT 
+                    AttributeKeyMap.std_key,
+                    GROUP_CONCAT(DISTINCT AttributeKeyMap.og_key) AS og_keys,
+                    MAX(AttributeKey.variable) AS og_key_map,
+                    AttributeValueMap.std_value,
+                    GROUP_CONCAT(DISTINCT AttributeValueMap.og_value) AS og_values
+                FROM 
+                    AttributeKeyMap
+                LEFT JOIN 
+                    AttributeKey ON AttributeKeyMap.std_key = AttributeKey.key_name
+                LEFT JOIN
+                    AttributeValueMap ON AttributeKeyMap.std_key = AttributeValueMap.key_name
+                GROUP BY 
+                    AttributeKeyMap.std_key, AttributeValueMap.std_value;""")
+
+def get_datasets():
+    query = text("SELECT * FROM Datasets")
+    res = db.session.execute(query)
+
+    # parse list into a dictionary
+    datasets = dict()
+    for row in res:
+        datasets[row.name] = {
+            "name":row.name,
+            "information":row.source
+        }
+    return datasets
+
+def get_assembly2nomenclature():
+    query = text("select distinct assemblyName, nomenclature from SequenceIDMap s JOIN Assembly a on s.assemblyID = a.assemblyID;")
+    res = db.session.execute(query)
+
+    # parse list into a dictionary
+    assembly2nomenclature = dict()
+    for row in res:
+        assembly2nomenclature.setdefault(row[0],[])
+        assembly2nomenclature[row[0]].append(row[1])
+    return assembly2nomenclature
+
 def get_AllCountSummaryTable() -> dict:
     query = text("SELECT * FROM AllCountSummary")
     res = db.session.execute(query)
 
+    summary = dict()
     # parse the summary list into a dictionary
-    summary = {"species":dict()}
     for row in res:
         summary["species"].setdefault(row[0],{"assembly":dict()})
         summary["species"][row[0]]["assembly"].setdefault(row[1],{"source":dict()})

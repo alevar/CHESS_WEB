@@ -12,11 +12,11 @@ function Select() {
 
   return (
     <div>
-      {Object.entries(data["assemblies"]).map(([key, value], index) => (
+      {/* {Object.entries(data["assemblies"]).map(([key, value], index) => (
         <div key={index}>
           {key}: {value["assembly"]}
         </div>
-      ))}
+      ))} */}
     </div>
   );
 }

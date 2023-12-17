@@ -85,13 +85,17 @@ def get_seqids():
 #        - gene: gene counts
 @main_blueprint.route('/globalData')
 def globalData():
-    data = dict()
+    summary = db_methods.get_AllCountSummaryTable()
+    assembly2nomenclature = db_methods.get_assembly2nomenclature()
+    datasets = db_methods.get_datasets()
+    fixedAttributes = db_methods.get_attributeSummary(True)
+    upset = db_methods.get_upsetData()
 
-    data["organisms"] = db_methods.get_all_organisms()
-    data["assemblies"] = db_methods.get_all_assemblies()
-    data["sources"] = db_methods.get_all_sources()
-    data["counts"] = db_methods.get_AllCountSummaryTable()
-    # data["upset"] = db_methods.get_upsetData()
+    upsetData = dict()
+
+    data = {
+
+    }
 
     return jsonify(data)
 
