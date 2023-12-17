@@ -99,6 +99,30 @@
                 "--db_configuration","./example/configurations/example.mysql.json"
 	        ],
 	        "console": "integratedTerminal"
-        }
+        },
+        {
+            "name": "Backend",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/CHESSApp_back",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "app.py",
+                "FLASK_DEBUG": "1",
+                "CHESSDB_NAME":"CHESS_DB",
+                "CHESSDB_PASS":"qwerty",
+                "CHESSDB_USER":"chess_master",
+                "EMAIL_FROM_ADDRESS":"dummy_from@gmail.com",
+                "EMAIL_TO_ADDRESS":"dummy_to@gmail.com",
+                "EMAIL_FROM_PASSWORD":"qwerty"
+            },
+            "args": [
+                "run",
+                "--no-debugger",
+                "--no-reload"
+            ],
+            "jinja": true,
+            "justMyCode": true
+        },
     ]
 }
