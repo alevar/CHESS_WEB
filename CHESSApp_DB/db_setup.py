@@ -439,9 +439,7 @@ def load_quant_data(fname:str) -> dict:
     # parse evidence file and load a dictionary with transcript id map to the evidence
     # assumes the following format
     # col1 : transcript id - must be in the corresponding annotation file provided in the configuration alongside this evidence file
-    # col2 : sampleCount
-    # col3 : expressionMean
-    # col4 : expressionStdDev
+    # col2 : Expression
 
     res = dict()
     with open(fname, 'r') as inFP:
@@ -449,11 +447,7 @@ def load_quant_data(fname:str) -> dict:
             lcs = line.strip().split("\t")
             assert len(lcs)==4,"Invalid line in the evidence file: "+line
             assert lcs[0] not in res,"Duplicate transcript id in the evidence file: "+lcs[0]
-            res[lcs[0]] = {
-                            "sampleCount": int(lcs[1]),
-                            "expressionMean": float(lcs[2]),
-                            "expressionStd": float(lcs[3])
-                            }
+            res[lcs[0]] =  float(lcs[2])
 
     return res
 
@@ -462,22 +456,19 @@ def addDatasets(api_connection,config, args):
         os.makedirs(args.temp)
         
     api_connection.check_table("Sources")
-    api_connection.check_table("Genes")
+    api_connection.check_table("Gene")
     api_connection.check_table("TranscriptToGene")
     api_connection.check_table("TxDBXREF")
-    api_connection.check_table("Attributes")
-    api_connection.check_table("Transcripts")
+    api_connection.check_table("Attribute")
+    api_connection.check_table("Transcript")
 
     logFP = open(args.log, 'w') if args.log else None
 
     for dataset,data in config.items():
         assemblyName = data["assemblyName"].replace("'","\\'")
         datasetName = data["name"].replace("'","\\'")
-        sampleCount = int(data["sampleCount"])
-        gtf_fname = data["gtf_file"]
         quant_data_file = data["data_file"]
 
-        assert os.path.exists(gtf_fname),"gtf file does not exist: "+gtf_fname
         assert os.path.exists(quant_data_file),"data file does not exist: "+quant_data_file
 
         # load the data file

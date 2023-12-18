@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { Button } from 'react-bootstrap';
+import { extractCombinations, UpSetJS } from '@upsetjs/react';
+
 import { DatabaseState } from '../../../../features/database/databaseSlice';
 import { SettingsState, set_select_sources } from '../../../../features/settings/settingsSlice';
 
@@ -17,13 +20,50 @@ interface Props {
 }
 
 function SelectOrganism(props: Props) {
+  const elems = useMemo(
+    () => [
+      { name: 'A', sets: ['S1', 'S2'] },
+      { name: 'B', sets: ['S1'] },
+      { name: 'C', sets: ['S2'] },
+      { name: 'D', sets: ['S1', 'S3'] },
+    ],
+    []
+  );
+  
+  const { sets, combinations } = useMemo(() => extractCombinations(elems), [elems]);
+
   const { selection, onSelectionChange, onPreviousSlide, prop_className } = props;
+  const [upsetSelection, setUpsetSelection] = React.useState(null);
+  const onElementClick = (element) => {
+    setUpsetSelection((prevSelection) => {
+      // Check if the element is already in the selection
+      if prevSelection === null {
+        return [element];
+      }
+      if (prevSelection.includes(element)) {
+        // If it is, remove it
+        return prevSelection.filter((e) => e !== element);
+      } else {
+        // If it's not, add it
+        return [...prevSelection, element];
+      }
+    });
+  };
 
   const globalData = useSelector((state: RootState) => state.database.data);
   const settings = useSelector((state: RootState) => state.settings);
   const dispatch = useDispatch();
 
   const isSelectionMade = Object.values(selection).some((value) => value);
+
+  const [buttonStates, setButtonStates] = useState({});
+
+  const onButtonClick = (key) => {
+    setButtonStates((prevStates) => {
+      const newState = prevStates[key] === true ? false : (prevStates[key] === false ? null : true);
+      return { ...prevStates, [key]: newState };
+    });
+  };
 
   const onNextSlide = () => {
     // Gather the selected checkboxes
@@ -42,24 +82,32 @@ function SelectOrganism(props: Props) {
     <div className={`${prop_className}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
       <div className="row" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
         <div className="col-md-6" style={{ borderRight: '1px solid #ccc', paddingRight: '15px' }}>
+        <div className="container">
+        <div className="row">
           {Object.entries(globalData?.sources[settings.value.genome]).map(([key, value], index) => (
-            <div className="form-check" key={index} style={{ display: 'flex', alignItems: 'center' }}>
-              <input
-                className="form-check-input"
-                type="checkbox"
-                name={key}
-                value={key}
-                onChange={onSelectionChange}
-                style={{ marginRight: '10px' }}
-              />
-              <label className="form-check-label" style={{ marginRight: '20px' }}>
+            <div key={index} className="col-sm-4" style={{ marginBottom: '10px' }}>
+              <Button
+                variant={buttonStates[key] === true ? 'success' : (buttonStates[key] === false ? 'danger' : 'secondary')}
+                onClick={() => onButtonClick(key)}
+                style={{ marginRight: '10px', width: '100%', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
                 {key}
-              </label>
+              </Button>
             </div>
           ))}
         </div>
+      </div>
+        </div>
         <div className="col-md-6 pl-md-5">
-          <p>Some general text goes here.</p>
+        <UpSetJS
+          sets={sets}
+          combinations={combinations}
+          width={780}
+          height={400}
+          selection={upsetSelection}
+          onHover={setSelection}
+          onClick={onElementClick}
+        />
         </div>
       </div>
 

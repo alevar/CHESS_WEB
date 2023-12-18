@@ -2,16 +2,12 @@
     "GTEx_Bladder": {
         "assemblyName": "GRCh38",
         "name":"GTEx Bladder",
-        "sampleCount": "13",
-        "gtf_file": "./data/HomoSapiens/GRCh38/Bladder.18.19.gtf",
         "data_file": "./data/HomoSapiens/GRCh38/Bladder.18.19.tsv",
         "information": "Transcript quantification via StringTie2 assembly of all Bladder samples from the GTEx project."
     },
     "GTEx_Fallopian": {
         "assemblyName": "GRCh38",
         "name":"GTEX Fallopian Tube",
-        "sampleCount": "11",
-        "gtf_file": "./data/HomoSapiens/GRCh38/Fallopian_Tube.18.19.gtf",
         "data_file": "./data/HomoSapiens/GRCh38/Fallopian_Tube.18.19.tsv",
         "information": "Transcript quantification via StringTie2 assembly of all Fallopian Tube samples from the GTEx project"
     }
