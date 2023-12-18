@@ -90,9 +90,11 @@ def globalData():
     datasets = db_methods.get_datasets()
     fixedAttributes = db_methods.get_attributeSummary(True)
     upset = db_methods.get_upsetData()
+    sources = db_methods.get_all_sources()
 
     data = {
         "summary":summary,
+        "sources":sources,
         "nomenclature":assembly2nomenclature,
         "datasets":datasets,
         "attributes":fixedAttributes,

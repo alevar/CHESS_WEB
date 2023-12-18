@@ -13,14 +13,20 @@ import About from "./components/About/About";
 import ContactUs from "./components/ContactUs/ContactUs";
 
 import { useGetGlobalDataQuery } from './features/database/databaseApi';
+import { selectSettings } from './features/settings/settingsSlice';
 import { store } from './app/store';
 
 import "./App.css"
 
 function App() {
+
+  const items = [
+    { name: "Item 1", information: "Information about Item 1" },
+    { name: "Item 2", information: "Information about Item 2" },
+    // Add more items as needed
+  ];
   
   const { data, error, isLoading } = useGetGlobalDataQuery();
-  console.log(data);
 
   if (isLoading) {
     return  <div className="loading">
@@ -44,7 +50,7 @@ function App() {
             <Route path="/" element={<Home/>} />
             <Route path="/about" element={<About/>} />
             <Route path="/contact" element={<ContactUs/>} />
-            <Route path="/select" element={<Select/>} />
+            <Route path="/select" element={<Select items={items}/>} />
           </Routes>
         </div>
       </Router>
