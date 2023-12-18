@@ -45,23 +45,32 @@ def get_all_sources():
     return sources
 
 def get_attributeSummary(fixed_only):
-    query = text("""SELECT 
-                    AttributeKeyMap.std_key,
-                    GROUP_CONCAT(DISTINCT AttributeKeyMap.og_key) AS og_keys,
-                    MAX(AttributeKey.variable) AS og_key_map,
-                    AttributeValueMap.std_value,
-                    GROUP_CONCAT(DISTINCT AttributeValueMap.og_value) AS og_values
-                FROM 
-                    AttributeKeyMap
-                LEFT JOIN 
-                    AttributeKey ON AttributeKeyMap.std_key = AttributeKey.key_name
-                LEFT JOIN
-                    AttributeValueMap ON AttributeKeyMap.std_key = AttributeValueMap.key_name
-                GROUP BY 
-                    AttributeKeyMap.std_key, AttributeValueMap.std_value;""")
+    query = ""
+    if fixed_only:
+        query = text("""SELECT kv.key_name, kv.value, k.description 
+                        FROM AttributeKeyValue kv 
+                        JOIN AttributeKey k ON kv.key_name = k.key_name 
+                        WHERE variable = 0
+                    """)
+    else:
+        query = text("""SELECT kv.key_name, kv.value, k.description 
+                        FROM AttributeKeyValue kv 
+                        JOIN AttributeKey k ON kv.key_name = k.key_name
+                    """)
+    res = db.session.execute(query)
+
+    # parse list into a dictionary
+    attributes = dict()
+    for row in res:
+        attributes.setdefault(row[0],{"description":"",
+                                       "values":list()})
+        attributes[row[0]]["description"] = row[2]
+        attributes[row[0]]["values"].append(row[1])
+    
+    return attributes
 
 def get_datasets():
-    query = text("SELECT * FROM Datasets")
+    query = text("SELECT * FROM Dataset")
     res = db.session.execute(query)
 
     # parse list into a dictionary
@@ -91,10 +100,10 @@ def get_AllCountSummaryTable() -> dict:
     summary = dict()
     # parse the summary list into a dictionary
     for row in res:
-        summary["species"].setdefault(row[0],{"assembly":dict()})
-        summary["species"][row[0]]["assembly"].setdefault(row[1],{"source":dict()})
-        assert row[2] not in summary["species"][row[0]]["assembly"][row[1]]["source"],"Duplicate source name found in AllCountSummary table: "+row[2]
-        summary["species"][row[0]]["assembly"][row[1]]["source"][row[2]] = {
+        summary.setdefault(row[0],{"assembly":dict()})
+        summary[row[0]]["assembly"].setdefault(row[1],{"source":dict()})
+        assert row[2] not in summary[row[0]]["assembly"][row[1]]["source"],"Duplicate source name found in AllCountSummary table: "+row[2]
+        summary[row[0]]["assembly"][row[1]]["source"][row[2]] = {
             "lastUpdated":row[3],
             "totalTranscripts":row[4],
             "totalGenes":row[5]
@@ -110,11 +119,11 @@ def get_upsetData():
     # parse list into a dictionary
     upsetData = dict()
     for row in res:
-        upsetData["species"].setdefault(row.organism,{"assembly":dict()})
-        upsetData["species"][row.organism]["assembly"].setdefault(row[1],{"sources":dict()})
-        sub_sources = tuple(row[3].split(","))
-        assert sub_sources not in upsetData["species"][row.organism]["assembly"][row[1]]["sources"],"Duplicate source name found in upsetData table: "+sub_sources
-        upsetData["species"][row.organism]["assembly"][row[1]]["sources"][sub_sources] = int(row[4])
+        upsetData.setdefault(row.organism,{"assembly":dict()})
+        upsetData[row.organism]["assembly"].setdefault(row[1],{"sources":dict()})
+        sub_sources = ";".join(tuple(row[3].split(",")))
+        assert sub_sources not in upsetData[row.organism]["assembly"][row[1]]["sources"],"Duplicate source name found in upsetData table: "+sub_sources
+        upsetData[row.organism]["assembly"][row[1]]["sources"][sub_sources] = int(row[4])
 
     return upsetData
 

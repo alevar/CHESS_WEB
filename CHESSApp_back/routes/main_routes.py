@@ -91,10 +91,12 @@ def globalData():
     fixedAttributes = db_methods.get_attributeSummary(True)
     upset = db_methods.get_upsetData()
 
-    upsetData = dict()
-
     data = {
-
+        "summary":summary,
+        "nomenclature":assembly2nomenclature,
+        "datasets":datasets,
+        "attributes":fixedAttributes,
+        "upset":upset
     }
 
     return jsonify(data)

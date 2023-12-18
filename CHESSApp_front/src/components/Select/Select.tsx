@@ -1,24 +1,77 @@
-import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useState } from 'react';
+import './Select.css';
+import ButtonPrecompiled from './components/ButtonPrecompiled/ButtonPrecompiled';
+import ButtonCustom from './components/ButtonCustom/ButtonCustom';
+import SelectOrganism from './components/SelectOrganism/SelectOrganism';
+import SelectAssembly from './components/SelectAssembly/SelectAssembly';
 
-import { DatabaseState } from '../../features/database/databaseSlice';
+const Select = () => {
 
-interface RootState {
-  database: DatabaseState;
-}
+  const [slideIndex, setSlideIndex] = useState(0);
+  const [selection_organism, setSelectionOrganism] = useState('');
+  const [selection_assembly, setSelectionAssembly] = useState('');
+  const [selection_sources, setSelectionSources] = useState('');
+  const [selection_types, setSelectionTypes] = useState('');
 
-function Select() {
-  const data = useSelector((state: RootState) => state.database.data);
+  const handleNextSlide = () => {
+    setSlideIndex(slideIndex + 1);
+  };
+
+  const handlePreviousSlide = () => {
+    setSlideIndex(slideIndex - 1);
+  };
+
+  const handleSelectionOrganismChange = (event) => {
+    setSelectionOrganism(event.target.value);
+  };
+
+  const handleSelectionAssemblyChange = (event) => {
+    setSelectionAssembly(event.target.value);
+  };
+
+  const renderSlide = () => {
+    switch (slideIndex) {
+      case 0:
+        return (
+          <div className="Select">
+            <h1 className="display-4">CHESS2 Web Interface</h1>
+            <p className="lead">CHESS2 is a comprehensive set of human genes based on nearly 10,000 RNA sequencing experiments produced by the GTEx project.</p>
+            <hr className="my-4"/>
+            <p>You can select through our various references to create a custom annotation!</p>
+            <ButtonCustom onClick={handleNextSlide} />
+            <ButtonPrecompiled />
+          </div>
+        );
+      case 1:
+        return (
+          <SelectOrganism
+            selection={selection_organism}
+            onSelectionChange={handleSelectionOrganismChange}
+            onNextSlide={handleNextSlide}
+            onPreviousSlide={handlePreviousSlide}
+            prop_className="Select"
+          />
+        );
+      case 2:
+        return (
+          <SelectAssembly
+            selection={selection_assembly}
+            onSelectionChange={handleSelectionAssemblyChange}
+            onNextSlide={handleNextSlide}
+            onPreviousSlide={handlePreviousSlide}
+            prop_className="Select"
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
-    <div>
-      {/* {Object.entries(data["assemblies"]).map(([key, value], index) => (
-        <div key={index}>
-          {key}: {value["assembly"]}
-        </div>
-      ))} */}
+    <div className="slide-container">
+      {renderSlide()}
     </div>
   );
-}
+};
 
 export default Select;
