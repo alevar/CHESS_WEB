@@ -37,3 +37,7 @@ Functionality:
 1. When we generate a GTF/GFF file, how do we describe which parameters were used? Should we add a comment to the file? or should we also provide a metadata file?
 2. Should suggest citations when fetching an annotation depending on which sources are being used so that everyone gets credit. Can be stored in the GTF comments and in the metadatafile.
 3. need a way for users to share configurations (like a prompt). For example, a user should be able to share their configuration with other. They either type it in, or follow a link which leads to a very specific configuration
+
+
+
+!!!!! Sex chromosome resolution - PAR regions. implement the algorithm in the original paper
