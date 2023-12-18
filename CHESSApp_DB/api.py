@@ -57,20 +57,21 @@ class CHESS_DB_API:
         try:
             cursor = self.connection.cursor()
             cursor.execute(query, data)
-            if query.lower().startswith('select'):
+            query_type = query.strip().split(" ")[0].lower()
+            if query_type.startswith('select'):
                 result = cursor.fetchall()
-            elif query.lower().startswith('insert'):
+            elif query_type.startswith('insert'):
                 result = cursor.lastrowid
-            elif query.lower().startswith('drop'):
+            elif query_type.startswith('drop'):
                 result = True
-            elif query.lower().startswith('create'):
+            elif query_type.startswith('create'):
                 result = True
-            elif query.lower().startswith('update'):
+            elif query_type.startswith('update'):
                 result = cursor.lastrowid
-            elif query.lower().startswith('delete'):
+            elif query_type.startswith('delete'):
                 result = True
             else:
-                assert False,"Invalid query type. Only select and insert queries are currently supported."
+                assert False,"Invalid query type."
         except mysql.connector.Error as err:
             print(f"Error: {err}")
             print(query)
@@ -129,9 +130,14 @@ class CHESS_DB_API:
         assemblyName = data["assemblyName"].replace("'","\\'")
         link = data["link"]
         information = data["information"].replace("'","\\'")
+        citation = data["citation"]
 
-        query = f"INSERT INTO Sources (assemblyID, name, link, information, originalFormat) SELECT a.assemblyID,'{sourceName}','{link}','{information}','{source_format}' FROM Assembly a WHERE a.assemblyName = '{assemblyName}'"
-        return self.execute_query(query)
+        query = """ INSERT INTO Sources (assemblyID, name, link, information, originalFormat, citation)
+                    SELECT a.assemblyID, %s, %s, %s, %s, %s
+                    FROM Assembly a
+                    WHERE a.assemblyName = %s
+                """
+        return self.execute_query(query,(sourceName, link, information, source_format, citation, assemblyName))
     
     def insert_intron(self, assemblyID:int,sequenceID:int,strand:str,start:int,end:int):
         query = f"INSERT IGNORE INTO Intron (assemblyID, sequenceID, strand, start, end) VALUES ({assemblyID},{sequenceID},'{strand}','{start}','{end}')"
