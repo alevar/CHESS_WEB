@@ -1,19 +1,15 @@
 import React, { useState } from 'react';
 import './Custom.css';
-import ButtonPrecompiled from './components/ButtonPrecompiled/ButtonPrecompiled';
-import ButtonCustom from './components/ButtonCustom/ButtonCustom';
-import SelectOrganism from './components/SelectOrganism/SelectOrganism';
-import SelectAssembly from './components/SelectAssembly/SelectAssembly';
-
-import { useContext } from 'react';
+import SelectSource from './components/SourceSelection/SourceSelection';
+import SelectGenes from './components/GeneSelection/GeneSelection';
+import SelectTranscripts from './components/TranscriptSelection/TranscriptSelection';
 
 const Custom = () => {
 
   const [slideIndex, setSlideIndex] = useState(0);
-  const [selection_organism, setSelectionOrganism] = useState('');
-  const [selection_assembly, setSelectionAssembly] = useState('');
-  const [selection_sources, setSelectionSources] = useState('');
-  const [selection_types, setSelectionTypes] = useState('');
+  const [selection_sources, setSelectionSources] = useState({});
+  const [selection_genes, setSelectionGenes] = useState('');
+  const [selection_transcripts, setSelectionTranscripts] = useState('');
 
   const handleNextSlide = () => {
     setSlideIndex(slideIndex + 1);
@@ -23,45 +19,48 @@ const Custom = () => {
     setSlideIndex(slideIndex - 1);
   };
 
-  const handleSelectionOrganismChange = (event) => {
-    setSelectionOrganism(event.target.value);
+  const handleSelectionSourceChange = (event) => {
+    setSelectionSources(event.target.value);
   };
 
-  const handleSelectionAssemblyChange = (event) => {
-    setSelectionAssembly(event.target.value);
+  const handleSelectionGenesChange = (event) => {
+    setSelectionGenes(event.target.value);
+  };
+
+  const handleSelectionTranscriptsChange = (event) => {
+    setSelectionTranscripts(event.target.value);
   };
 
   const renderSlide = () => {
     switch (slideIndex) {
       case 0:
         return (
-          <div className="Select">
-            <h1 className="display-4">CHESS2 Web Interface</h1>
-            <p className="lead">CHESS2 is a comprehensive set of human genes based on nearly 10,000 RNA sequencing experiments produced by the GTEx project.</p>
-            <hr className="my-4"/>
-            <p>You can select through our various references to create a custom annotation!</p>
-            <ButtonCustom onClick={handleNextSlide} />
-            <ButtonPrecompiled />
-          </div>
+          <SelectSource
+            selection={selection_sources}
+            onSelectionChange={handleSelectionSourceChange}
+            onNextSlide={handleNextSlide}
+            onPreviousSlide={handlePreviousSlide}
+            prop_className="SelectSource"
+          />
         );
       case 1:
         return (
-          <SelectOrganism
-            selection={selection_organism}
-            onSelectionChange={handleSelectionOrganismChange}
+          <SelectGenes
+            selection={selection_genes}
+            onSelectionChange={handleSelectionGenesChange}
             onNextSlide={handleNextSlide}
             onPreviousSlide={handlePreviousSlide}
-            prop_className="Select"
+            prop_className="SelectGenes"
           />
         );
       case 2:
         return (
-          <SelectAssembly
-            selection={selection_assembly}
-            onSelectionChange={handleSelectionAssemblyChange}
+          <SelectTranscripts
+            selection={selection_transcripts}
+            onSelectionChange={handleSelectionTranscriptsChange}
             onNextSlide={handleNextSlide}
             onPreviousSlide={handlePreviousSlide}
-            prop_className="Custom"
+            prop_className="SelectTranscripts"
           />
         );
       default:

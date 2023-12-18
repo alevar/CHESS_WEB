@@ -14,8 +14,7 @@ const Home = () => {
     <div className="container">
       <div className="home">
         <h1 className="header">Welcome to the CHESS Web Interface</h1>
-        <p className="description">A unified resource for downloading existing and customizing genome annotations.</p>
-        <p className="get-started">Get started by:</p>
+        <p className="description">A unified resource for downloading and customizing genome annotations.</p>
         <div className="row d-flex">
           <div className="col-md-4 d-flex">
             <div className="card flex-fill" onClick={() => handleCardClick("/custom")}>
@@ -25,7 +24,7 @@ const Home = () => {
             </div>
           </div>
           <div className="col-md-4 d-flex">
-            <div className="card flex-fill" onClick={() => handleCardClick("/select")}>
+            <div className="card flex-fill" onClick={() => handleCardClick("/selectPrecompiled")}>
               <div className="card-body">
                 Download Ready-To-Use CHESS 3 annotation
               </div>
