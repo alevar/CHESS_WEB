@@ -17,3 +17,10 @@ python ./db_setup.py addNomenclatures --configuration ./example/configurations/e
 
 # add attribute configuration to the DB
 python ./db_setup.py addAttributes --configuration ./example/configurations/example.attributes.json --db_configuration ./example/configurations/example.mysql.json
+
+# add sources to the DB
+python ./db_setup.py addSources --configuration ./example/configurations/example.sources.json --db_configuration ./example/configurations/example.mysql.json --temp ./example/temp --log ./example/log --skipUnknownAttributes
+
+# build auxilary tables
+python ./db_setup.py compile --db_configuration ./example/configurations/example.mysql.json
+
