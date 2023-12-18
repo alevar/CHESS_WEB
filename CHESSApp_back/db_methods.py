@@ -29,18 +29,21 @@ def get_all_assemblies():
 
 # get full source information
 def get_all_sources():
-    query = text("SELECT * FROM Sources")
+    query = text("SELECT a.assemblyName, s.name, s.link, s.information, s.originalFormat, s.lastUpdated, s.citation FROM Sources s JOIN Assembly a on s.assemblyID = a.assemblyID")
     res = db.session.execute(query)
 
     # parse list into a dictionary
     sources = dict()
     for row in res:
-        sources[row.name] = {
+        sources.setdefault(row.assemblyName,dict())
+        sources[row.assemblyName][row.name] = {
             "name":row.name,
             "link":row.link,
             "information":row.information,
+            "citation":row.citation,
             "originalFormat":row.originalFormat,
-            "lastUpdated":row.lastUpdated
+            "lastUpdated":row.lastUpdated,
+            "assembly":row.assemblyName
         }
     return sources
 

@@ -1,0 +1,14 @@
+.breadcrumb-link {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .breadcrumb-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+  }
+  
+  .breadcrumb-text {
+    color: #6c757d;
+  }
+  
