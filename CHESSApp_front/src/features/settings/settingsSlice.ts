@@ -36,6 +36,12 @@ export const settingsSlice = createSlice({
   initialState,
   // The `reducers` field lets us define reducers and generate associated actions
   reducers: {
+    set_organism: (state, action: PayloadAction<string>) => {
+      state.value.species = action.payload
+    },
+    set_assembly: (state, action: PayloadAction<string>) => {
+      state.value.genome = action.payload
+    },
     set_nascent: (state, action: PayloadAction<boolean>) => {
       state.value.include_nascent = action.payload
     },
@@ -61,7 +67,12 @@ export const settingsSlice = createSlice({
   }
 })
 
-export const { set_nascent, set_select_sources, set_format, set_nomenclature } = settingsSlice.actions
+export const { set_organism,
+               set_assembly,
+               set_nascent,
+               set_select_sources,
+               set_format,
+               set_nomenclature } = settingsSlice.actions
 
 // The function below is called a selector and allows us to select a value from
 // the state. Selectors can also be defined inline where they're used instead of

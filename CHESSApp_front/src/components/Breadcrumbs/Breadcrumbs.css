@@ -1,3 +1,9 @@
+.breadcrumb {
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+}
+
 .breadcrumb-link {
     color: #007bff;
     text-decoration: none;

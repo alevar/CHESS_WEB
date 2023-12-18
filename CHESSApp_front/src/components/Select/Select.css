@@ -1,7 +1,10 @@
 .select-container {
-    display: flex;
-    font-family: 'Arial', sans-serif;
-  }
+  display: flex;
+  font-family: 'Arial', sans-serif;
+  justify-content: center;
+  align-items: flex-start;
+  margin-top: 20px; /* Add some spacing from the navbar */
+}
   
   .left-panel {
     width: 30%;
