@@ -4,6 +4,7 @@ import { Button } from 'react-bootstrap';
 
 import { DatabaseState } from '../../../../features/database/databaseSlice';
 import { SettingsState, set_include_sources, set_exclude_sources } from '../../../../features/settings/settingsSlice';
+import { UpSetJS, extractCombinations, asCombinations } from '@upsetjs/react';
 
 interface RootState {
   database: DatabaseState;
@@ -26,8 +27,7 @@ function SelectOrganism(props: Props) {
   const dispatch = useDispatch();
 
   const [buttonStates, setButtonStates] = useState({});
-
-  const isSelectionMade = Object.values(buttonStates).some(value => value === true);
+  const isSelectionMade = Object.values(buttonStates).some((value) => value === true);
 
   const onButtonClick = (key) => {
     setButtonStates((prevStates) => {
@@ -75,13 +75,15 @@ function SelectOrganism(props: Props) {
       </div>
         </div>
         <div className="col-md-6 pl-md-5">
-        TEST
         </div>
       </div>
 
       {/* Move the button div outside the main container */}
       <div style={{ marginTop: '20px', width: '100%' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <button className="btn btn-primary" onClick={onPreviousSlide} disabled={true}>
+            Previous
+          </button>
           <button className="btn btn-primary" onClick={onNextSlide} disabled={!isSelectionMade}>
             Next
           </button>
