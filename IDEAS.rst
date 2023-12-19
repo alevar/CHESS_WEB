@@ -41,3 +41,5 @@ Functionality:
 
 
 !!!!! Sex chromosome resolution - PAR regions. implement the algorithm in the original paper
+
+When examining transcripts at a locus (gene tab). Use https://lineup.js.org/app/#happiness . We can present various stats, like plddt, sources, expression, intron conservation, etc. When clicking on a transcript, can load a view of introns and exons of that transcript (as two side-by-side) panels

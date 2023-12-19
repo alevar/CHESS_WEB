@@ -34,39 +34,12 @@ function SelectOrganism(props: Props) {
 
   const { selection, onSelectionChange, onPreviousSlide, prop_className } = props;
 
-  const [selectedCombinations, setSelectedCombinations] = useState([]);
-  const handleSelectionChange = (combinations) => {
-    console.log("combinations",combinations);
-    // get previous selection
-    let newSelection = {...selectedCombinations};
-    console.log("newSelection",newSelection);
-    // combine combinations.elems with newSelection.elems (both are Arrays)
-    if (Object.keys(newSelection).length === 0) {
-      newSelection = {...combinations};
-    }
-    // add element if not present and remove if present
-    for (let elem of combinations.elems) {
-      // if (!newSelection.elems.includes(elem)) {
-      //   newSelection.elems.push(elem);
-      // } else {
-      //   newSelection.elems = newSelection.elems.filter((e) => e !== elem);
-      // }
-        console.log("elem",elem);
-        newSelection.elems.push(elem);
-    }
-    // also update newSelection.sets
-    newSelection.sets = { ...newSelection.sets, ...combinations.sets };
-    console.log("newSelection",newSelection);
-    setSelectedCombinations(newSelection);
-  };
-
   const globalData = useSelector((state: RootState) => state.database.data);
   const settings = useSelector((state: RootState) => state.settings);
   const dispatch = useDispatch();
 
-  const isSelectionMade = Object.values(selection).some((value) => value);
-
   const [buttonStates, setButtonStates] = useState({});
+  const isSelectionMade = Object.values(buttonStates).some((value) => value === true);
 
   const onButtonClick = (key) => {
     setButtonStates((prevStates) => {
@@ -114,10 +87,6 @@ function SelectOrganism(props: Props) {
           combinations={combinations}
           width={500}
           height={300}
-          selection={selectedCombinations}
-          onClick={(newSelection) => {
-            handleSelectionChange(newSelection);
-          }}
         />
         </div>
       </div>
@@ -125,7 +94,7 @@ function SelectOrganism(props: Props) {
       {/* Move the button div outside the main container */}
       <div style={{ marginTop: '20px', width: '100%' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <button className="btn btn-primary" onClick={onPreviousSlide}>
+          <button className="btn btn-primary" onClick={onPreviousSlide} disabled={true}>
             Previous
           </button>
           <button className="btn btn-primary" onClick={onNextSlide} disabled={!isSelectionMade}>
