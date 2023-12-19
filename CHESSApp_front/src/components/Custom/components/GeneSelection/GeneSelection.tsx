@@ -1,58 +1,41 @@
-import { useState, useContext } from 'react';
+import React, { useState } from 'react';
+import { extractSets, generateCombinations, UpSetJS, ISetLike } from '@upsetjs/react';
 
-interface Props {
-  selection: string;
-  onSelectionChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  onNextSlide: () => void;
-  onPreviousSlide: () => void;
-  prop_className?: string;
-}
+const GeneSelection = () => {
+  // Define your elements here
+  const elements = [
+    { name: 'A', sets: ['Set1', 'Set2'] },
+    { name: 'B', sets: ['Set1'] },
+    { name: 'C', sets: ['Set2'] },
+  ];
 
-function SelectOrganism(props: Props) {
-  const { selection, onSelectionChange, onNextSlide, onPreviousSlide, prop_className } = props;
+  const sets = extractSets(elements);
+  let combinations = generateCombinations(sets);
 
-  const globalData = useContext(GlobalContext);
+  const [selection, setSelection] = useState<ISetLike[]>([]);
 
-  const isSelectionMade = selection !== '';
+  sets[0].cardinality = 1000;
+
+  const handleClick = (set: ISetLike | null) => {
+    if (set) {
+      console.log(sets)
+      console.log(combinations)
+      setSelection(set);
+    }
+  };
 
   return (
-    <div className={`${prop_className}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-      <div className="row" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
-        <div className="col-md-6" style={{ borderRight: '1px solid #ccc', paddingRight: '15px' }}>
-          {Object.entries(globalData.organisms).map(([key, value], index) => (
-            <div className="form-check" key={index} style={{ display: 'flex', alignItems: 'center' }}>
-              <input
-                className="form-check-input"
-                type="radio"
-                name="selection1"
-                value={value.commonName}
-                checked={selection === value.commonName}
-                onChange={onSelectionChange}
-                style={{ marginRight: '10px' }}
-              />
-              <label className="form-check-label" style={{ marginRight: '20px' }}>
-                {value.commonName}
-              </label>
-            </div>
-          ))}
-        </div>
-        <div className="col-md-6 pl-md-5">
-          <p>Some general text goes here.</p>
-        </div>
-      </div>
-
-      <div style={{ position: 'absolute', bottom: '20px', width: '100%' }}>
-        <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between' }}>
-          <button className="btn btn-primary" onClick={onPreviousSlide}>
-            Previous
-          </button>
-          <button className="btn btn-primary" onClick={onNextSlide} disabled={!isSelectionMade}>
-            Next
-          </button>
-        </div>
-      </div>
+    <div>
+      <UpSetJS
+        sets={sets}
+        combinations={combinations}
+        width={500}
+        height={500}
+        selection={selection}
+        onClick={handleClick}
+      />
     </div>
   );
-}
+};
 
-export default SelectOrganism;
+export default GeneSelection;

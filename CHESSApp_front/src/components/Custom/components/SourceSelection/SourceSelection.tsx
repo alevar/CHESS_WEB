@@ -1,10 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Button } from 'react-bootstrap';
-import { extractCombinations, UpSetJS } from '@upsetjs/react';
 
 import { DatabaseState } from '../../../../features/database/databaseSlice';
-import { SettingsState, set_select_sources } from '../../../../features/settings/settingsSlice';
+import { SettingsState, set_include_sources, set_exclude_sources } from '../../../../features/settings/settingsSlice';
 
 interface RootState {
   database: DatabaseState;
@@ -20,53 +19,15 @@ interface Props {
 }
 
 function SelectOrganism(props: Props) {
-  const elems = useMemo(
-    () => [
-      { name: 'A', sets: ['S1', 'S2'] },
-      { name: 'B', sets: ['S1'] },
-      { name: 'C', sets: ['S2'] },
-      { name: 'D', sets: ['S1', 'S3'] },
-    ],
-    []
-  );
-  
-  const { sets, combinations } = useMemo(() => extractCombinations(elems), [elems]);
-
   const { selection, onSelectionChange, onPreviousSlide, prop_className } = props;
-
-  const [selectedCombinations, setSelectedCombinations] = useState([]);
-  const handleSelectionChange = (combinations) => {
-    console.log("combinations",combinations);
-    // get previous selection
-    let newSelection = {...selectedCombinations};
-    console.log("newSelection",newSelection);
-    // combine combinations.elems with newSelection.elems (both are Arrays)
-    if (Object.keys(newSelection).length === 0) {
-      newSelection = {...combinations};
-    }
-    // add element if not present and remove if present
-    for (let elem of combinations.elems) {
-      // if (!newSelection.elems.includes(elem)) {
-      //   newSelection.elems.push(elem);
-      // } else {
-      //   newSelection.elems = newSelection.elems.filter((e) => e !== elem);
-      // }
-        console.log("elem",elem);
-        newSelection.elems.push(elem);
-    }
-    // also update newSelection.sets
-    newSelection.sets = { ...newSelection.sets, ...combinations.sets };
-    console.log("newSelection",newSelection);
-    setSelectedCombinations(newSelection);
-  };
 
   const globalData = useSelector((state: RootState) => state.database.data);
   const settings = useSelector((state: RootState) => state.settings);
   const dispatch = useDispatch();
 
-  const isSelectionMade = Object.values(selection).some((value) => value);
-
   const [buttonStates, setButtonStates] = useState({});
+
+  const isSelectionMade = Object.values(buttonStates).some(value => value === true);
 
   const onButtonClick = (key) => {
     setButtonStates((prevStates) => {
@@ -77,13 +38,18 @@ function SelectOrganism(props: Props) {
 
   const onNextSlide = () => {
     // Gather the selected checkboxes
-    const selectedSources = Object.entries(selection)
-      .filter(([key, value]) => value)
+    const include = Object.entries(buttonStates)
+      .filter(([key, value]) => value === true)
       .map(([key]) => key);
-
+  
+    const exclude = Object.entries(buttonStates)
+      .filter(([key, value]) => value === false)
+      .map(([key]) => key);
+  
     // Dispatch the selected sources to the store
-    dispatch(set_select_sources(selectedSources));
-
+    dispatch(set_include_sources(include));
+    dispatch(set_exclude_sources(exclude));
+  
     // Call the original onNextSlide callback
     props.onNextSlide();
   };
@@ -109,25 +75,13 @@ function SelectOrganism(props: Props) {
       </div>
         </div>
         <div className="col-md-6 pl-md-5">
-        <UpSetJS
-          sets={sets}
-          combinations={combinations}
-          width={500}
-          height={300}
-          selection={selectedCombinations}
-          onClick={(newSelection) => {
-            handleSelectionChange(newSelection);
-          }}
-        />
+        TEST
         </div>
       </div>
 
       {/* Move the button div outside the main container */}
       <div style={{ marginTop: '20px', width: '100%' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <button className="btn btn-primary" onClick={onPreviousSlide}>
-            Previous
-          </button>
           <button className="btn btn-primary" onClick={onNextSlide} disabled={!isSelectionMade}>
             Next
           </button>
