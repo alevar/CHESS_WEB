@@ -7,7 +7,8 @@ export interface SettingsState {
           genome : string,
           nomenclature : string,
           gene_types : string[],
-          sources : string[],
+          sources_include : string[],
+          sources_exclude : string[],
           prime3_UTR_extension : number,
           prime5_UTR_extension : number,
           include_nascent : boolean,
@@ -22,7 +23,8 @@ const initialState: SettingsState = {
           genome : "GRCh38",
           nomenclature : "UCSC",
           gene_types : ["protein_coding"],
-          sources : ["CHESS.3.0"],
+          sources_include : ["CHESS.3.0"],
+          sources_exclude : [],
           prime3_UTR_extension : 0,
           prime5_UTR_extension : 0,
           include_nascent : false,
@@ -45,11 +47,11 @@ export const settingsSlice = createSlice({
     set_nascent: (state, action: PayloadAction<boolean>) => {
       state.value.include_nascent = action.payload
     },
-    set_select_sources: (state, action: PayloadAction<string[]>) => {
-      state.value.sources = action.payload;
+    set_include_sources: (state, action: PayloadAction<string[]>) => {
+      state.value.sources_include = action.payload;
     },
-    clear_sources: (state) => {
-      state.value.sources = []
+    set_exclude_sources: (state, action: PayloadAction<string[]>) => {
+      state.value.sources_exclude = action.payload;
     },
     set_format: (state, action: PayloadAction<string>) => {
       // make sure it is either gtf or gff
@@ -70,7 +72,8 @@ export const settingsSlice = createSlice({
 export const { set_organism,
                set_assembly,
                set_nascent,
-               set_select_sources,
+               set_include_sources,
+               set_exclude_sources,
                set_format,
                set_nomenclature } = settingsSlice.actions
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Button } from 'react-bootstrap';
 import { DatabaseState } from '../../features/database/databaseSlice';
-import { SettingsState, set_select_sources } from '../../features/settings/settingsSlice';
+import { SettingsState, set_include_sources, set_exclude_sources } from '../../features/settings/settingsSlice';
 import MockGraphic from './components/MockGraphic/MockGraphic';
 import DownloadButton from './components/DownloadButton/DownloadButton';
 import './Select.css';
@@ -31,7 +31,8 @@ const Select: React.FC = () => {
   
     const handleItemClick = (item: AnnotationItem) => {
       setSelectedItem(item);
-      dispatch(set_select_sources([item.name]));
+      dispatch(set_exclude_sources([]));
+      dispatch(set_include_sources([item.name]));
     };
   
     const handleItemLeave = () => {

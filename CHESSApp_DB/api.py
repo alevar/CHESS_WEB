@@ -326,9 +326,10 @@ class CHESS_DB_API:
                         HAVING COUNT(DISTINCT s1.name) = %s
                     ) AS C1;"""
         
-        combo_str = ", ".join([str(s) for s in sources])
+        combo_str = ", ".join(["\'"+str(s)+"\'" for s in sources])
         values = tuple([combo_str,combo_str,len(sources)])
-        return self.execute_query(query,values)
+        query = query % values
+        return self.execute_query(query)
     
     def build_upsetDataTable(self,upset_data):
         self.drop_table("UpsetData")
