@@ -121,8 +121,7 @@ function SelectOrganism(props: Props) {
 
     // update selected upset data
     let subset_data = processUpsetData(upset_data, selected_sources);
-    console.log("subset",subset_data);
-    console.log(selected_sources);
+    subset_data = subset_data.filter((data) => data[1] > 0);
     // build elements
     let [elems, combination_cardinalities] = buildElements(subset_data);
 
@@ -133,10 +132,17 @@ function SelectOrganism(props: Props) {
     for (let i=0; i<newSets.length; i++) {
       newSets[i].cardinality = globalData?.summary[settings.value.species][settings.value.genome][newSets[i].name]?.totalTranscripts;
     }
-    setSets(newSets);
-    setCombinations(newCombinations);
 
-    console.log(combinations)
+    // remove any combinations that have cardinality 0. modify existing newCOmbinations
+    let newCombinations_nonempty = [];
+    for (let i=0; i<newCombinations.length; i++) {
+      if (newCombinations[i].cardinality > 0) {
+        newCombinations_nonempty.push(newCombinations[i]);
+      }
+    }
+
+    setSets(newSets);
+    setCombinations(newCombinations_nonempty);
   }
 
   const onNextSlide = () => {
@@ -151,8 +157,6 @@ function SelectOrganism(props: Props) {
     // Call the original onNextSlide callback
     props.onNextSlide();
   };
-  
-
 
   return (
     <div className={`${prop_className}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
