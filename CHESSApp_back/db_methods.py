@@ -103,10 +103,10 @@ def get_AllCountSummaryTable() -> dict:
     summary = dict()
     # parse the summary list into a dictionary
     for row in res:
-        summary.setdefault(row[0],{"assembly":dict()})
-        summary[row[0]]["assembly"].setdefault(row[1],{"source":dict()})
-        assert row[2] not in summary[row[0]]["assembly"][row[1]]["source"],"Duplicate source name found in AllCountSummary table: "+row[2]
-        summary[row[0]]["assembly"][row[1]]["source"][row[2]] = {
+        summary.setdefault(row[0],dict())
+        summary[row[0]].setdefault(row[1],dict())
+        assert row[2] not in summary[row[0]][row[1]],"Duplicate source name found in AllCountSummary table: "+row[2]
+        summary[row[0]][row[1]][row[2]] = {
             "lastUpdated":row[3],
             "totalTranscripts":row[4],
             "totalGenes":row[5]
@@ -122,11 +122,11 @@ def get_upsetData():
     # parse list into a dictionary
     upsetData = dict()
     for row in res:
-        upsetData.setdefault(row.organism,{"assembly":dict()})
-        upsetData[row.organism]["assembly"].setdefault(row[1],{"sources":dict()})
+        upsetData.setdefault(row.organism,dict())
+        upsetData[row.organism].setdefault(row[1],dict())
         sub_sources = ";".join(tuple(row[3].split(",")))
-        assert sub_sources not in upsetData[row.organism]["assembly"][row[1]]["sources"],"Duplicate source name found in upsetData table: "+sub_sources
-        upsetData[row.organism]["assembly"][row[1]]["sources"][sub_sources] = int(row[4])
+        assert sub_sources not in upsetData[row.organism][row[1]],"Duplicate source name found in upsetData table: "+sub_sources
+        upsetData[row.organism][row[1]][sub_sources] = int(row[4])
 
     return upsetData
 

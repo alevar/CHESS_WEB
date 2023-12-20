@@ -26,7 +26,7 @@ const SelectAssembly: React.FC = () => {
       <div className="select">
         <h1 className="header">{`Select Assembly for ${organism}`}</h1>
         <div className="row d-flex">
-        {Object.entries(globalData?.summary[organism]?.assembly || {}).map(([key, value], index) => (
+        {Object.entries(globalData?.summary[organism] || {}).map(([key, value], index) => (
             <div
               key={key}
               className="col-md-4 d-flex"
