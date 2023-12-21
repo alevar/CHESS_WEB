@@ -274,6 +274,42 @@ class CHESS_DB_API:
         query = f"DROP TABLE IF EXISTS {table_name} "
         return self.execute_query(query)
     
+    def build_dbOverviewTable(self):
+        # a single table of all transcripts in the database with all relevant information included. No need too store any positions, etc
+        # this table is a lot faster to query since no joins are necessary and all information is as condensed as possible
+        # 1. tid (pk) - no need to store any additional transcript identifiers - those are only needed for extracting gtf, etc
+        # 2. assemblyID (pk)
+        # 3. source (pk)
+        # 4. one field for each fixed attribute
+
+        # that's it for now but can be supplemented with additional fields later
+
+        query = """SELECT
+    sub.1,
+    sub.2,
+    sub.3,
+    sub.4,
+    COUNT(*) AS count
+FROM (
+    SELECT
+        tid,
+        MAX(CASE WHEN s.sourceID = 1 THEN 1 ELSE 0 END) AS "1",
+        MAX(CASE WHEN s.sourceID = 2 THEN 1 ELSE 0 END) AS "2",
+        MAX(CASE WHEN s.sourceID = 3 THEN 1 ELSE 0 END) AS "3",
+        MAX(CASE WHEN s.sourceID = 4 THEN 1 ELSE 0 END) AS "4"
+    FROM
+        TxDBXREF
+    JOIN Sources s USING (sourceID)
+    WHERE
+        s.assemblyID = 1
+    GROUP BY
+        tid
+) AS sub
+GROUP BY
+    sub.1, sub.2, sub.3, sub.4;
+"""
+        return
+    
     def build_AllCountSummaryTable(self):
         self.drop_table("AllCountSummary")
         query = """CREATE TABLE AllCountSummary 
