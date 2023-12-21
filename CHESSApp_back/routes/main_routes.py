@@ -88,7 +88,7 @@ def globalData():
     summary = db_methods.get_AllCountSummaryTable()
     assembly2nomenclature = db_methods.get_assembly2nomenclature()
     datasets = db_methods.get_datasets()
-    fixedAttributes = db_methods.get_attributeSummary(True)
+    fixedAttributes = db_methods.get_attributeSummary()
     upset = db_methods.get_upsetData()
     sources = db_methods.get_all_sources()
 
