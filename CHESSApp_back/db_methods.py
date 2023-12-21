@@ -47,28 +47,19 @@ def get_all_sources():
         }
     return sources
 
-def get_attributeSummary(fixed_only):
-    query = ""
-    if fixed_only:
-        query = text("""SELECT kv.key_name, kv.value, k.description 
-                        FROM AttributeKeyValue kv 
-                        JOIN AttributeKey k ON kv.key_name = k.key_name 
-                        WHERE variable = 0
-                    """)
-    else:
-        query = text("""SELECT kv.key_name, kv.value, k.description 
-                        FROM AttributeKeyValue kv 
-                        JOIN AttributeKey k ON kv.key_name = k.key_name
-                    """)
+def get_attributeSummary():
+    query = text("SELECT * FROM AttributeSummary")
     res = db.session.execute(query)
 
     # parse list into a dictionary
     attributes = dict()
     for row in res:
         attributes.setdefault(row[0],{"description":"",
-                                       "values":list()})
-        attributes[row[0]]["description"] = row[2]
-        attributes[row[0]]["values"].append(row[1])
+                                       "values":dict()})
+        attributes[row[0]]["description"] = row[1]
+        attributes[row[0]]["values"].setdefault(row[2],dict()) # value
+        attributes[row[0]]["values"][row[2]].setdefault(row[3],dict()) # assembly
+        attributes[row[0]]["values"][row[2]][row[3]][row[4]] = row[5] # source to count
     
     return attributes
 

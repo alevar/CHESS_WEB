@@ -537,6 +537,8 @@ def compile(api_connection,args):
     api_connection.build_AllCountSummaryTable()
     summary = api_connection.get_AllCountSummaryTable()
 
+    attribute_summary = api_connection.build_attributeSummaryTable()
+
     # get sources table (map of sourceID to sourceName)
     all_sources = api_connection.get_sources()
     source_id2name = {k:v["name"] for k,v in all_sources.items()}
