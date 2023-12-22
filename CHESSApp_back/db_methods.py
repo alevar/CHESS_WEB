@@ -121,6 +121,10 @@ def get_upsetData():
 
     return upsetData
 
+def get_dbTxOverview():
+    return
+
+
 
 # contents of the json with DB state
 # all counts table (contains mappings between all organisms, assemblies, sources)

@@ -532,6 +532,9 @@ def compile(api_connection,args):
     api_connection.check_table("SequenceID")
     api_connection.check_table("SequenceIDMap")
     api_connection.check_table("Organism")
+    
+    # build summary table
+    api_connection.build_dbTxSummaryTable()
 
     # extract transcript counts across sources and assemblies into a separate table
     api_connection.build_AllCountSummaryTable()
