@@ -274,7 +274,7 @@ class CHESS_DB_API:
         query = f"DROP TABLE IF EXISTS {table_name} "
         return self.execute_query(query)
     
-    def build_dbOverviewTable(self):
+    def build_dbTxSummaryTable(self):
         # a single table of all transcripts in the database with all relevant information included. No need too store any positions, etc
         # this table is a lot faster to query since no joins are necessary and all information is as condensed as possible
         # 1. tid (pk) - no need to store any additional transcript identifiers - those are only needed for extracting gtf, etc
@@ -284,31 +284,64 @@ class CHESS_DB_API:
 
         # that's it for now but can be supplemented with additional fields later
 
-        query = """SELECT
-    sub.1,
-    sub.2,
-    sub.3,
-    sub.4,
-    COUNT(*) AS count
-FROM (
-    SELECT
-        tid,
-        MAX(CASE WHEN s.sourceID = 1 THEN 1 ELSE 0 END) AS "1",
-        MAX(CASE WHEN s.sourceID = 2 THEN 1 ELSE 0 END) AS "2",
-        MAX(CASE WHEN s.sourceID = 3 THEN 1 ELSE 0 END) AS "3",
-        MAX(CASE WHEN s.sourceID = 4 THEN 1 ELSE 0 END) AS "4"
-    FROM
-        TxDBXREF
-    JOIN Sources s USING (sourceID)
-    WHERE
-        s.assemblyID = 1
-    GROUP BY
-        tid
-) AS sub
-GROUP BY
-    sub.1, sub.2, sub.3, sub.4;
-"""
-        return
+        # get list of assemblies
+        query = "SELECT assemblyID FROM Assembly"
+        assemblies = [x[0] for x in self.execute_query(query)]
+
+        for assemblyID in assemblies:
+            table_name = f"dbTxSummary_{assemblyID}"
+            # drop existing table
+            self.drop_table(table_name)
+
+            # get source IDs
+            query = "SELECT sourceID FROM Sources where assemblyID = "+str(assemblyID)
+            source_ids = [x[0] for x in self.execute_query(query)]
+            # get attribute keys
+            query = "SELECT key_name FROM AttributeKey WHERE variable = 0"
+            attribute_keys = [x[0] for x in self.execute_query(query)]
+
+            # create table
+            query = f"""
+                    CREATE TABLE {table_name} (
+                        `tid` INT,
+                        {", ".join([f"`{source_id}` INT" for source_id in source_ids])},
+                        {", ".join([f"`{key}` VARCHAR(50)" for key in attribute_keys])},
+                        PRIMARY KEY (tid),
+                        UNIQUE INDEX ({", ".join([f'`{source_id}` ASC' for source_id in source_ids] + [f'`{key}` ASC' for key in attribute_keys])})
+                    );
+                    """
+            res = self.execute_query(query)
+
+            # populate table
+            source_cases = "\n".join([f"MAX(CASE WHEN s.sourceID = {source_id} THEN 1 ELSE 0 END) AS \"{source_id}\"," for source_id in source_ids])
+            attribute_cases = "\n".join([f"MAX(CASE WHEN ak.key_name = '{key}' THEN avm.std_value ELSE NULL END) AS \"{key}\"," for key in attribute_keys])
+            if len(attribute_cases) > 0:
+                attribute_cases = attribute_cases[:-1] # remove the last comma
+
+            query = f"""
+                    INSERT INTO {table_name}
+                    SELECT
+                            tid,
+                            {source_cases}
+                            {attribute_cases}
+                        FROM
+                            TxDBXREF
+                        JOIN Sources s USING (sourceID)
+                        JOIN TXAttribute txa USING (tid, sourceID, transcript_id)
+                        JOIN AttributeValueMap avm ON txa.name = avm.key_name AND txa.value = avm.std_value
+                        JOIN AttributeKey ak USING (key_name)
+                        WHERE
+                            s.assemblyID = {assemblyID}
+                            AND
+                            ak.variable = 0
+                        GROUP BY
+                            tid;
+                    """
+            print(query)
+            
+            res = self.execute_query(query)
+        
+        return True
     
     def build_AllCountSummaryTable(self):
         self.drop_table("AllCountSummary")

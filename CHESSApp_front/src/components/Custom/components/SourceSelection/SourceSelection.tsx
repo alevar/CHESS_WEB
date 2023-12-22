@@ -1,3 +1,10 @@
+// The logic here will be as follows:
+// 1. There exists a summary table for transcripts, where each transcript is listed with all attributes for user interface selections
+// 2. there is a function which groups these transcripts by the attributes, etc and returns result to the frontend
+// 3. frontend uses this data to provide a visual feedback to the user
+// 5. dataset information will have to be integrated into this table as well, eventually.
+// 6. however we will not need to incorporate it into the result shared with the frontend (at least not in full - maybe summarize by binning?)
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Button } from 'react-bootstrap';
