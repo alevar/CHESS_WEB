@@ -300,21 +300,28 @@ class CHESS_DB_API:
             query = "SELECT key_name FROM AttributeKey WHERE variable = 0"
             attribute_keys = [x[0] for x in self.execute_query(query)]
 
+            index_strings = f"""INDEX ({", ".join([f"`{source_id}` ASC" for source_id in source_ids])})"""
+            for source_id in source_ids:
+                index_strings += f", INDEX (`{source_id}` ASC)"
+                index_strings += ", INDEX ("+", ".join([f"`{source_id}.{key}` ASC" for key in attribute_keys])+")"
+                for attribute_key in attribute_keys:
+                    index_strings += f", INDEX (`{source_id}.{attribute_key}` ASC)"
+
             # create table
             query = f"""
                     CREATE TABLE {table_name} (
                         `tid` INT,
                         {", ".join([f"`{source_id}` INT" for source_id in source_ids])},
-                        {", ".join([f"`{key}` VARCHAR(50)" for key in attribute_keys])},
+                        {", ".join([f"`{source_id}.{key}` VARCHAR(50)" for key in attribute_keys for source_id in source_ids])},
                         PRIMARY KEY (tid),
-                        UNIQUE INDEX ({", ".join([f'`{source_id}` ASC' for source_id in source_ids] + [f'`{key}` ASC' for key in attribute_keys])})
+                        {index_strings}
                     );
                     """
             res = self.execute_query(query)
 
             # populate table
             source_cases = "\n".join([f"MAX(CASE WHEN s.sourceID = {source_id} THEN 1 ELSE 0 END) AS \"{source_id}\"," for source_id in source_ids])
-            attribute_cases = "\n".join([f"MAX(CASE WHEN ak.key_name = '{key}' THEN avm.std_value ELSE NULL END) AS \"{key}\"," for key in attribute_keys])
+            attribute_cases = "\n".join([f"MAX(CASE WHEN ak.key_name = '{key}' and s.sourceID = {source_id} THEN avm.std_value ELSE NULL END) AS \"{source_id}.{key}\"," for key in attribute_keys for source_id in source_ids])
             if len(attribute_cases) > 0:
                 attribute_cases = attribute_cases[:-1] # remove the last comma
 
@@ -337,7 +344,6 @@ class CHESS_DB_API:
                         GROUP BY
                             tid;
                     """
-            print(query)
             
             res = self.execute_query(query)
         
