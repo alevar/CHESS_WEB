@@ -301,8 +301,10 @@ class CHESS_DB_API:
             attribute_keys = [x[0] for x in self.execute_query(query)]
 
             index_strings = f"""INDEX ({", ".join([f"`{source_id}` ASC" for source_id in source_ids])})"""
+            index_strings += f", INDEX ({', '.join([f'`{source_id}.has_cds` ASC' for source_id in source_ids])})"
             for source_id in source_ids:
                 index_strings += f", INDEX (`{source_id}` ASC)"
+                index_strings += f", INDEX (`{source_id}.has_cds` ASC)"
                 index_strings += ", INDEX ("+", ".join([f"`{source_id}.{key}` ASC" for key in attribute_keys])+")"
                 for attribute_key in attribute_keys:
                     index_strings += f", INDEX (`{source_id}.{attribute_key}` ASC)"
@@ -312,7 +314,8 @@ class CHESS_DB_API:
                     CREATE TABLE {table_name} (
                         `tid` INT,
                         {", ".join([f"`{source_id}` INT" for source_id in source_ids])},
-                        {", ".join([f"`{source_id}.{key}` VARCHAR(50)" for key in attribute_keys for source_id in source_ids])},
+                        {", ".join([f"`{source_id}.{key}` INT" for key in attribute_keys for source_id in source_ids])},
+                        {", ".join([f"`{source_id}.has_cds` INT" for source_id in source_ids])},
                         PRIMARY KEY (tid),
                         {index_strings}
                     );
@@ -321,22 +324,29 @@ class CHESS_DB_API:
 
             # populate table
             source_cases = "\n".join([f"MAX(CASE WHEN s.sourceID = {source_id} THEN 1 ELSE 0 END) AS \"{source_id}\"," for source_id in source_ids])
-            attribute_cases = "\n".join([f"MAX(CASE WHEN ak.key_name = '{key}' and s.sourceID = {source_id} THEN avm.std_value ELSE NULL END) AS \"{source_id}.{key}\"," for key in attribute_keys for source_id in source_ids])
+            if len(source_cases) > 0:
+                source_cases = source_cases[:-1] # remove the last comma
+            attribute_cases = "\n".join([f"MAX(CASE WHEN akv.key_name = '{key}' and s.sourceID = {source_id} THEN akv.kvid ELSE NULL END) AS \"{source_id}.{key}\"," for key in attribute_keys for source_id in source_ids])
             if len(attribute_cases) > 0:
                 attribute_cases = attribute_cases[:-1] # remove the last comma
+            has_cds_cases = "\n".join([f"MAX(CASE WHEN dbx.cds_start IS NULL and s.sourceID = {source_id} THEN 1 ELSE 0 END) AS \"{source_id}.has_cds\"," for source_id in source_ids])
+            if len(has_cds_cases) > 0:
+                has_cds_cases = has_cds_cases[:-1] # remove the last comma
 
             query = f"""
                     INSERT INTO {table_name}
                     SELECT
                             tid,
-                            {source_cases}
-                            {attribute_cases}
+                            {source_cases},
+                            {attribute_cases},
+                            {has_cds_cases}
                         FROM
-                            TxDBXREF
+                            TxDBXREF dbx
                         JOIN Sources s USING (sourceID)
                         JOIN TXAttribute txa USING (tid, sourceID, transcript_id)
                         JOIN AttributeValueMap avm ON txa.name = avm.key_name AND txa.value = avm.std_value
                         JOIN AttributeKey ak USING (key_name)
+                        JOIN AttributeKeyValue akv ON txa.name = akv.key_name AND txa.value = akv.value
                         WHERE
                             s.assemblyID = {assemblyID}
                             AND
