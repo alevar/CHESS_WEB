@@ -16,6 +16,12 @@ class CHESS_DB_API:
         self.commit_interval = 10000
         self.commit_counter = 1
 
+
+    def test(self):
+        output = self.execute_query('''SELECT * FROM Transcripts''')
+        return output
+
+
     # commits after every n invocations or immediately if requested
     def commit(self,force=False):
         if force or self.commit_counter % self.commit_interval == 0:
@@ -28,7 +34,7 @@ class CHESS_DB_API:
 
     def connect(self):
         try:
-            self.connection = mysql.connector.connect(
+            self.connection = mysql.connector.MySQLConnection(
                 host=self.host,
                 user=self.username,
                 password=self.password,
@@ -53,6 +59,7 @@ class CHESS_DB_API:
 
     # returns result of the select query or the lastrowid of the insert query
     def execute_query(self, query, data=None):
+       # print('hi!')
         result = False
         try:
             cursor = self.connection.cursor()
@@ -156,6 +163,9 @@ class CHESS_DB_API:
         return self.execute_query(query, values)
     
 
+
+
+
     ##############################
     #######  NOMENCLATURE  #######
     ##############################
@@ -228,6 +238,20 @@ class CHESS_DB_API:
                     outFP.write(gtf_str)
         
         return
+    
+
+    #####################################################
+    ############  EXTRACT GTF WITH INPUTS    ############
+    #####################################################
+
+
+
+
+
+
+    #####################################################
+    ############  EXTRACT GTF WITH INPUTS    ############
+    #####################################################
     
     def drop_table(self,table_name:str):
         query = f"DROP TABLE IF EXISTS {table_name} "
@@ -356,8 +380,6 @@ class CHESS_DB_API:
             sub_sources = tuple(row[3].split(","))
             assert sub_sources not in upsetData["speciesName"][row[0]]["assemblyName"][row[1]]["sources"],"Duplicate source name found in upsetData table: "+sub_sources
             upsetData["speciesName"][row[0]]["assemblyName"][row[1]]["sources"][sub_sources] = int(row[4])
-        
-        return upsetData
 
     def get_Datasets(self):
         query = "SELECT * FROM Datasets"

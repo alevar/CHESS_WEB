@@ -420,6 +420,16 @@ def compile(api_connection,args):
     api_connection.commit(True)
     return
 
+
+#############################
+##########  TEST  #########
+##############################
+def test(api_connection,args):
+    api_connection.test()
+    return
+
+
+
 def main(args):
     parser = argparse.ArgumentParser(description='''Help Page''')
     subparsers = parser.add_subparsers(help='sub-command help')
@@ -554,8 +564,26 @@ def main(args):
                               help='Path to the configuration file for connecting to the mysql database. Configuration is provided in JSON format. See example in CHESSApp_DB/data/mysql.json')
     parser_addNomeclatures.set_defaults(func=establish_connection,main_fn=compile)
 
+
+
+
+    ##############################
+    ##########  TEST  #########
+    ##############################
+    parser_test=subparsers.add_parser('test', help='compile help')
+    parser_test.add_argument('--db_configuration',
+                              required=True,
+                              type=str,
+                              help='Path to the configuration file for connecting to the mysql database. Configuration is provided in JSON format. See example in CHESSApp_DB/data/mysql.json')
+    parser_test.set_defaults(func=establish_connection,main_fn=test)
+    
+
+
     args=parser.parse_args()
     args.func(args,args.main_fn)
+
+
+
 
 
 if __name__ == "__main__":
