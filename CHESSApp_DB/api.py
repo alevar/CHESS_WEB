@@ -329,7 +329,7 @@ class CHESS_DB_API:
             attribute_cases = "\n".join([f"MAX(CASE WHEN akv.key_name = '{key}' and s.sourceID = {source_id} THEN akv.kvid ELSE NULL END) AS \"{source_id}.{key}\"," for key in attribute_keys for source_id in source_ids])
             if len(attribute_cases) > 0:
                 attribute_cases = attribute_cases[:-1] # remove the last comma
-            has_cds_cases = "\n".join([f"MAX(CASE WHEN dbx.cds_start IS NULL and s.sourceID = {source_id} THEN 1 ELSE 0 END) AS \"{source_id}.has_cds\"," for source_id in source_ids])
+            has_cds_cases = "\n".join([f"MAX(CASE WHEN dbx.cds_start IS NOT NULL and s.sourceID = {source_id} THEN 1 ELSE 0 END) AS \"{source_id}.has_cds\"," for source_id in source_ids])
             if len(has_cds_cases) > 0:
                 has_cds_cases = has_cds_cases[:-1] # remove the last comma
 

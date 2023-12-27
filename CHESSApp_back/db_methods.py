@@ -121,8 +121,53 @@ def get_upsetData():
 
     return upsetData
 
-def get_dbTxOverview():
-    return
+def get_dbTxSlice(settings):
+    # settings should have:
+    # 1. assemblyID
+    # 2. for each sourceID to include:
+    #   - key (standard name)
+    #   - value (kvid)
+    # returns a slice of the dbTxSummary table with matching data
+    # summarized by the number of transcripts in each category
+
+    # construct query
+    query = "SELECT "
+    # add all columns
+    for sourceID, attributes in settings["data"].items():
+        query += "dbtx.`"+str(sourceID)+"`, "
+        for k,v in attributes.items():
+            query += "dbtx.`"+str(sourceID)+"."+k+"`, "
+    # add count
+    query += " COUNT(*)"
+
+    query += " FROM dbTxSummary_"+str(settings["assemblyID"])+" dbtx WHERE "
+
+    for sourceID, attributes in settings["data"].items():
+        query += "dbtx.`"+str(sourceID)+"` = 1"
+        for key,values in attributes.items():
+            # values are a list. test for containment
+            query += " AND dbtx.`"+str(sourceID)+"."+key+"` IN ("
+            for v in values:
+                query += str(v)+","
+            query = query[:-1] # remove last comma
+            query += ")"
+        query += " AND "
+    query = query[:-5] # remove last AND
+    
+    # attach groupby
+    query += " GROUP BY "
+    for sourceID, attributes in settings["data"].items():
+        query += "dbtx.`"+str(sourceID)+"`, "
+        for k,v in attributes.items():
+            query += "dbtx.`"+str(sourceID)+"."+k+"`, "
+    query = query[:-2] # remove last comma
+
+    query += ";"
+    print(query)
+
+    # execute query
+    res = db.session.execute(text(query))
+    return res
 
 
 

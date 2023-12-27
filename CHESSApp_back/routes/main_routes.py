@@ -92,6 +92,36 @@ def globalData():
     upset = db_methods.get_upsetData()
     sources = db_methods.get_all_sources()
 
+    # since we are now working with this new summary table - need to send different data
+    # 1. map of source names to ids
+    # 2. map of assembly names to ids
+    # 3. map of attribute key value pairs to ids
+
+    # also need to reorganize the data in the summary table to reference transcript and gene types form the txdbxref instead
+
+    settings = {"assemblyID":1,
+                "data":{
+                    1:{
+                        "gbkey":["gene","mRNA"],
+                        "gene_type":["protein_coding","lncRNA"],
+                        "transcript_type":["protein_coding","lncRNA"],
+                        "has_cds":["True","False"]
+                    },
+                    2:{
+                        "gbkey":["Gene","RNA"],
+                        "gene_type":["protein_coding","lncRNA"],
+                        "transcript_type":["protein_coding","lncRNA"],
+                        "has_cds":["True","False"]
+                    },
+                    3:{
+                        "gbkey":["Gene","RNA"],
+                        "gene_type":["protein_coding","lncRNA"],
+                        "transcript_type":["protein_coding","lncRNA"],
+                        "has_cds":["True","False"]
+                    }
+                }}
+    test = db_methods.get_dbTxSlice(settings)
+
     data = {
         "summary":summary,
         "sources":sources,
