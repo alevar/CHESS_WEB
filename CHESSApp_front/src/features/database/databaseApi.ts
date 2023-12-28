@@ -11,6 +11,10 @@ export const databaseApi = createApi({
   endpoints: (builder) => ({
     getGlobalData: builder.query<object[], void>({
       query: () => `/globalData`,
+      transformResponse: (response: object) => {
+        // useful in case we need to do anything to the response before caching it
+        return response;
+      },
     }),
   }),
 });

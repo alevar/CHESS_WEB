@@ -16,7 +16,7 @@ const SelectAssembly: React.FC = () => {
 
   const navigate = useNavigate();
 
-  const handleCardClick = (selectedValue: string) => {
+  const handleCardClick = (selectedValue: int) => {
     navigate(`/select/${organism}/${selectedValue}`);
     dispatch(set_assembly([selectedValue]));
   };

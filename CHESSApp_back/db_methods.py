@@ -3,11 +3,12 @@ from CHESSApp_back import db
 
 # GETTER FUNCTIONS
 def get_all_organisms():
-    query = text("SELECT * FROM Organisms")
+    query = text("SELECT * FROM Organism")
     res = db.session.execute(query)
     json_res = dict()
     for row in res:
-        json_res[row.scientificName] = {
+        json_res[row.organismID] = {
+            "id":row.organismID,
             "scientificName":row.scientificName,
             "commonName":row.commonName,
             "information":row.information
@@ -15,13 +16,14 @@ def get_all_organisms():
     return json_res
 
 def get_all_assemblies():
-    query = text("SELECT * FROM Assemblies")
+    query = text("SELECT * FROM Assembly")
     res = db.session.execute(query)
     json_res = dict()
     for row in res:
-        json_res[row.assemblyName] = {
+        json_res[row.assemblyID] = {
+            "id":row.assemblyID,
             "assembly":row.assemblyName,
-            "organism":row.organismName,
+            "organismID":row.organismID,
             "link":row.link,
             "information":row.information
         }
@@ -29,21 +31,21 @@ def get_all_assemblies():
 
 # get full source information
 def get_all_sources():
-    query = text("SELECT a.assemblyName, s.name, s.link, s.information, s.originalFormat, s.lastUpdated, s.citation FROM Sources s JOIN Assembly a on s.assemblyID = a.assemblyID")
+    query = text("SELECT * FROM Sources")
     res = db.session.execute(query)
 
     # parse list into a dictionary
     sources = dict()
     for row in res:
-        sources.setdefault(row.assemblyName,dict())
-        sources[row.assemblyName][row.name] = {
+        sources[row.sourceID] = {
             "name":row.name,
+            "id":row.sourceID,
             "link":row.link,
             "information":row.information,
             "citation":row.citation,
             "originalFormat":row.originalFormat,
             "lastUpdated":row.lastUpdated,
-            "assembly":row.assemblyName
+            "assembly":row.assemblyID
         }
     return sources
 

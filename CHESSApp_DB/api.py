@@ -103,11 +103,12 @@ class CHESS_DB_API:
     def insert_assembly(self, data:dict):
         assemblyName = data["name"].replace("'","\\'")
         scienceName = data["organismScienceName"]
+        organismID = self.get_organismID(scienceName)
         link = data["link"]
         information = data["information"].replace("'","\\'")
 
         # no need to check assemblyName, it is a primary key
-        query = f"INSERT INTO Assembly (assemblyName, organismName, link, information) VALUES ('{assemblyName}', '{scienceName}', '{link}', '{information}')"
+        query = f"INSERT INTO Assembly (assemblyName, organismID, link, information) VALUES ('{assemblyName}', '{organismID}', '{link}', '{information}')"
         return self.execute_query(query)
     
     def insert_contig(self,assemblyID,contig,nomenclature,length):
@@ -372,7 +373,7 @@ class CHESS_DB_API:
                         FROM
                             Organism O
                         LEFT JOIN
-                            Assembly A ON O.scientificName = A.organismName
+                            Assembly A ON O.organismID = A.organismID
                         LEFT JOIN
                             SequenceID SI ON A.assemblyID = SI.assemblyID
                         LEFT JOIN
@@ -526,6 +527,12 @@ class CHESS_DB_API:
         query = "SELECT assemblyID FROM Assembly WHERE assemblyName = '"+name+"'"
         res = self.execute_query(query)
         assert len(res) == 1,"Invalid assembly name: "+name
+        return res[0][0]
+    
+    def get_organismID(self,name:str) -> int:
+        query = "SELECT organismID FROM Organism WHERE scientificName = '"+name+"'"
+        res = self.execute_query(query)
+        assert len(res) == 1,"Invalid organism name: "+name
         return res[0][0]
     
     def get_seqidMap(self,assemblyID:int,seqid_set:set=None,nomenclature:str=None) -> dict:

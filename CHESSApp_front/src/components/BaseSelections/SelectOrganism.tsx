@@ -25,16 +25,16 @@ const SelectOrganism: React.FC = () => {
       <div className="select">
         <h1 className="header">Select Organism</h1>
         <div className="row d-flex">
-            {Object.entries(globalData?.summary || {}).map(([key, value], index) => (
+            {Object.entries(globalData?.organisms || {}).map(([key, value], index) => (
             <div
-              key={key}
+              key={value["id"]}
               className="col-md-4 d-flex"
             >
               <div
                 className="card flex-fill"
-                onClick={() => handleCardClick(key)}
+                onClick={() => handleCardClick(value["id"])}
               >
-                <div className="card-body">{key}</div>
+                <div className="card-body">{value["commonName"]}</div>
               </div>
             </div>
           ))}
