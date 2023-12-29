@@ -1,5 +1,5 @@
 import logo from "./logo.svg"
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch, Provider } from 'react-redux';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -17,16 +17,18 @@ import About from "./components/About/About";
 import ContactUs from "./components/ContactUs/ContactUs";
 
 import { useGetGlobalDataQuery } from './features/database/databaseApi';
-import { selectSettings } from './features/settings/settingsSlice';
 import { store } from './app/store';
 
 import "./App.css"
 
 function App() {
+
   const [selectedOrganism, setSelectedOrganism] = useState<string | null>(null);
   const [selectedAssembly, setSelectedAssembly] = useState<string | null>(null);
 
-  const { data, error, isLoading } = useGetGlobalDataQuery();
+  const queryParams = ["test"]
+
+  const { data, error, isLoading, refetch } = useGetGlobalDataQuery(queryParams);
 
   if (isLoading) {
     return (
