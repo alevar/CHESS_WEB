@@ -3,8 +3,8 @@ import { RootState } from "../../app/store"
 
 export interface SettingsState {
   value: {format : string,
-          species : string,
-          genome : string,
+          species : number,
+          genome : number,
           nomenclature : string,
           gene_types : string[],
           sources_include : string[],
@@ -19,8 +19,8 @@ export interface SettingsState {
 
 const initialState: SettingsState = {
   value: {format : "GTF",
-          species : "HomoSapiens",
-          genome : "GRCh38",
+          species : 1,
+          genome : 1,
           nomenclature : "UCSC",
           gene_types : ["protein_coding"],
           sources_include : ["CHESS.3.0"],
@@ -38,10 +38,10 @@ export const settingsSlice = createSlice({
   initialState,
   // The `reducers` field lets us define reducers and generate associated actions
   reducers: {
-    set_organism: (state, action: PayloadAction<string>) => {
-      state.value.species = action.payload
+    set_organism: (state, action: PayloadAction<number>) => {
+      state.value.species = action.payload;
     },
-    set_assembly: (state, action: PayloadAction<string>) => {
+    set_assembly: (state, action: PayloadAction<number>) => {
       state.value.genome = action.payload
     },
     set_nascent: (state, action: PayloadAction<boolean>) => {

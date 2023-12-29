@@ -16,9 +16,9 @@ const SelectAssembly: React.FC = () => {
 
   const navigate = useNavigate();
 
-  const handleCardClick = (selectedValue: int) => {
+  const handleCardClick = (selectedValue: number) => {
     navigate(`/select/${organism}/${selectedValue}`);
-    dispatch(set_assembly([selectedValue]));
+    dispatch(set_assembly(selectedValue));
   };
 
   return (
@@ -26,14 +26,14 @@ const SelectAssembly: React.FC = () => {
       <div className="select">
         <h1 className="header">{`Select Assembly for ${globalData?.organisms[organism]["commonName"]}`}</h1>
         <div className="row d-flex">
-        {globalData?.o2a[organism].map((assemblyID, index) => (
+          {globalData?.o2a[organism].map((assemblyID, index) => (
             <div
-              key={assemblyID}
+              key={Number(assemblyID)}
               className="col-md-4 d-flex"
             >
               <div
                 className="card flex-fill"
-                onClick={() => handleCardClick(assemblyID)}
+                onClick={() => handleCardClick(Number(assemblyID))}
               >
                 <div className="card-body">{globalData?.assemblies[assemblyID]["assembly"]}</div>
               </div>

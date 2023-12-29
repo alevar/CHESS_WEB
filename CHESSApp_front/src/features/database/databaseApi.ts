@@ -27,6 +27,17 @@ export const databaseApi = createApi({
         }
         response['o2a'] = assemblyMap;
 
+        // construct map of assemblies to sources
+        let sourceMap: { [key: number]: number[] } = {};
+        for (let [key, value] of Object.entries(response['sources'])) {
+          const aid = Number(value["assemblyID"]);
+          if (!sourceMap.hasOwnProperty(aid)) {
+            sourceMap[aid] = [];
+          }
+          sourceMap[aid].push(key);
+        }
+        response['a2s'] = sourceMap;
+
         
         return response;
       },
