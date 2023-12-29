@@ -23,10 +23,8 @@ import "./App.css"
 
 function App() {
 
-  const [selectedOrganism, setSelectedOrganism] = useState<string | null>(null);
-  const [selectedAssembly, setSelectedAssembly] = useState<string | null>(null);
-
-  const queryParams = ["test_key", "test_value"]
+  const [selectedOrganism, setSelectedOrganism] = useState<number | null>(null);
+  const [selectedAssembly, setSelectedAssembly] = useState<number | null>(null);
 
   const { data, error, isLoading } = useGetGlobalDataQuery();
 
@@ -44,11 +42,11 @@ function App() {
     return <div>Error: {error}</div>;
   }
 
-  const handleOrganismSelect = (selectedValue: string) => {
+  const handleOrganismSelect = (selectedValue: number) => {
     setSelectedOrganism(selectedValue);
   };
 
-  const handleAssemblySelect = (selectedValue: string) => {
+  const handleAssemblySelect = (selectedValue: number) => {
     setSelectedAssembly(selectedValue);
   };
 

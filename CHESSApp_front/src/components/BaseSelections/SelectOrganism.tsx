@@ -15,9 +15,9 @@ const SelectOrganism: React.FC = () => {
 
   const navigate = useNavigate();
 
-  const handleCardClick = (selectedValue: string) => {
+  const handleCardClick = (selectedValue: number) => {
     navigate(`/select/${selectedValue}`);
-    dispatch(set_organism([selectedValue]));
+    dispatch(set_organism(selectedValue));
   };
 
   return (
@@ -27,12 +27,12 @@ const SelectOrganism: React.FC = () => {
         <div className="row d-flex">
             {Object.entries(globalData?.organisms || {}).map(([key, value], index) => (
             <div
-              key={value["id"]}
+              key={Number(value["id"])}
               className="col-md-4 d-flex"
             >
               <div
                 className="card flex-fill"
-                onClick={() => handleCardClick(value["id"])}
+                onClick={() => handleCardClick(Number(value["id"]))}
               >
                 <div className="card-body">{value["commonName"]}</div>
               </div>

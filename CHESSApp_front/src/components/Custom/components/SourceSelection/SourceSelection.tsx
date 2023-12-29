@@ -26,7 +26,7 @@ interface Props {
   prop_className?: string;
 }
 
-function SelectOrganism(props: Props) {
+function SelectSources(props: Props) {
   const { selection, onSelectionChange, onPreviousSlide, prop_className } = props;
 
   const globalData = useSelector((state: RootState) => state.database.data);
@@ -126,30 +126,30 @@ function SelectOrganism(props: Props) {
       selected_sources.push(key);
     }
 
-    // update selected upset data
-    let subset_data = processUpsetData(upset_data, selected_sources);
-    subset_data = subset_data.filter((data) => data[1] > 0);
-    // build elements
-    let [elems, combination_cardinalities] = buildElements(subset_data);
+    // // update selected upset data
+    // let subset_data = processUpsetData(upset_data, selected_sources);
+    // subset_data = subset_data.filter((data) => data[1] > 0);
+    // // build elements
+    // let [elems, combination_cardinalities] = buildElements(subset_data);
 
-    const { sets: newSets, combinations: newCombinations } = extractCombinations(elems);
-    for (let i=0; i<newCombinations.length; i++) {
-      newCombinations[i].cardinality = combination_cardinalities[i];
-    }
-    for (let i=0; i<newSets.length; i++) {
-      newSets[i].cardinality = globalData?.summary[settings.value.species][settings.value.genome][newSets[i].name]?.totalTranscripts;
-    }
+    // const { sets: newSets, combinations: newCombinations } = extractCombinations(elems);
+    // for (let i=0; i<newCombinations.length; i++) {
+    //   newCombinations[i].cardinality = combination_cardinalities[i];
+    // }
+    // for (let i=0; i<newSets.length; i++) {
+    //   newSets[i].cardinality = globalData?.summary[settings.value.species][settings.value.genome][newSets[i].name]?.totalTranscripts;
+    // }
 
-    // remove any combinations that have cardinality 0. modify existing newCOmbinations
-    let newCombinations_nonempty = [];
-    for (let i=0; i<newCombinations.length; i++) {
-      if (newCombinations[i].cardinality > 0) {
-        newCombinations_nonempty.push(newCombinations[i]);
-      }
-    }
+    // // remove any combinations that have cardinality 0. modify existing newCOmbinations
+    // let newCombinations_nonempty = [];
+    // for (let i=0; i<newCombinations.length; i++) {
+    //   if (newCombinations[i].cardinality > 0) {
+    //     newCombinations_nonempty.push(newCombinations[i]);
+    //   }
+    // }
 
-    setSets(newSets);
-    setCombinations(newCombinations_nonempty);
+    // setSets(newSets);
+    // setCombinations(newCombinations_nonempty);
   }
 
   const onNextSlide = () => {
@@ -171,17 +171,17 @@ function SelectOrganism(props: Props) {
         <div className="col-md-6" style={{ borderRight: '1px solid #ccc', paddingRight: '15px' }}>
         <div className="container">
         <div className="row">
-          {Object.entries(globalData?.sources[settings.value.genome]).map(([key, value], index) => (
+          {globalData?.a2s[settings.value.genome].map((sourceID, index) => (
             <div key={index} className="col-sm-4" style={{ marginBottom: '10px' }}>
               <Button
-                variant={buttonStates[key] === true ? 'success' : 'secondary'}
+                variant={buttonStates[sourceID] === true ? 'success' : 'secondary'}
                 onClick={() => {
-                  onButtonClick(key);
-                  onButtonClickUpdateUpset(key );
+                  onButtonClick(sourceID);
+                  onButtonClickUpdateUpset(sourceID );
                 }}
                 style={{ marginRight: '10px', width: '100%', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
-                {key}
+                {globalData?.sources[sourceID].name}
               </Button>
             </div>
           ))}
@@ -189,12 +189,12 @@ function SelectOrganism(props: Props) {
       </div>
         </div>
         <div className="col-md-6 pl-md-5">
-        <UpSetJS
+        {/* <UpSetJS
           sets={sets}
           combinations={combinations}
           width={600}
           height={300}
-        />
+        /> */}
         </div>
       </div>
 
@@ -213,4 +213,4 @@ function SelectOrganism(props: Props) {
   );
 }
 
-export default SelectOrganism;
+export default SelectSources;

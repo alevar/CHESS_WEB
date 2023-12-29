@@ -45,7 +45,7 @@ def get_all_sources():
             "citation":row.citation,
             "originalFormat":row.originalFormat,
             "lastUpdated":row.lastUpdated,
-            "assembly":row.assemblyID
+            "assemblyID":row.assemblyID
         }
     return sources
 
