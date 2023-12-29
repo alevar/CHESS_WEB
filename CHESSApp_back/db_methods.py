@@ -56,12 +56,12 @@ def get_attributeSummary():
     # parse list into a dictionary
     attributes = dict()
     for row in res:
-        attributes.setdefault(row[0],{"description":"",
-                                       "values":dict()})
-        attributes[row[0]]["description"] = row[1]
-        attributes[row[0]]["values"].setdefault(row[2],dict()) # value
-        attributes[row[0]]["values"][row[2]].setdefault(row[3],dict()) # assembly
-        attributes[row[0]]["values"][row[2]][row[3]][row[4]] = row[5] # source to count
+        attributes.setdefault(row.kvid,{"key":row.key_name,
+                                        "value":row.value,
+                                        "description":row.description,
+                                        "id":row.kvid,
+                                        "sources":[]})
+        attributes[row.kvid]["sources"].append(row.sourceID)
     
     return attributes
 
@@ -142,7 +142,7 @@ def get_dbTxSlice(settings):
     # add count
     query += " COUNT(*)"
 
-    query += " FROM dbTxSummary_"+str(settings["assemblyID"])+" dbtx WHERE "
+    query += " FROM dbTxSummary_"+str(settings["genome"])+" dbtx WHERE "
 
     for sourceID, attributes in settings["data"].items():
         query += "dbtx.`"+str(sourceID)+"` = 1"

@@ -19,25 +19,38 @@ export const databaseApi = createApi({
         // create a map of organisms to a list of assemblies
         let assemblyMap: { [key: number]: number[] } = {};
         for (let [key, value] of Object.entries(response['assemblies'])) {
-          const oid = Number(value["organismID"]);
-          if (!assemblyMap.hasOwnProperty(oid)) {
-            assemblyMap[oid] = [];
+          const organismID = Number(value["organismID"]);
+          if (!assemblyMap.hasOwnProperty(organismID)) {
+            assemblyMap[organismID] = [];
           }
-          assemblyMap[oid].push(key);
+          assemblyMap[organismID].push(key);
         }
-        response['o2a'] = assemblyMap;
+        response['org2asss'] = assemblyMap;
 
         // construct map of assemblies to sources
         let sourceMap: { [key: number]: number[] } = {};
         for (let [key, value] of Object.entries(response['sources'])) {
-          const aid = Number(value["assemblyID"]);
-          if (!sourceMap.hasOwnProperty(aid)) {
-            sourceMap[aid] = [];
+          const assemblyID = Number(value["assemblyID"]);
+          if (!sourceMap.hasOwnProperty(assemblyID)) {
+            sourceMap[assemblyID] = [];
           }
-          sourceMap[aid].push(key);
+          sourceMap[assemblyID].push(key);
         }
-        response['a2s'] = sourceMap;
+        response['ass2src'] = sourceMap;
 
+        // extract attribute information
+        // source to attribute map: sourceID -> attribute key -> list of kvids
+        let src2attr: { [key: number]: { [key: string]: number[] } } = {};
+        for (let [key, value] of Object.entries(response['attributes'])) {
+          for (let sourceID of value["sources"]) {
+            if (!src2attr.hasOwnProperty(sourceID)) {
+              src2attr[sourceID] = {};
+            }
+            src2attr[sourceID][value["key"]] = key;
+          }
+        }
+
+        // attribute key to attribute values
         
         return response;
       },

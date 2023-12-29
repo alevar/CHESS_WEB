@@ -4,11 +4,7 @@ import SelectSource from './components/SourceSelection/SourceSelection';
 import SelectGenes from './components/GeneSelection/GeneSelection';
 import SelectTranscripts from './components/TranscriptSelection/TranscriptSelection';
 
-import { useGetTxSummarySliceQuery } from '../../features/database/databaseApi';
-
 const Custom = () => {
-
-  const { txdata, txerror, txisLoading } = useGetTxSummarySliceQuery({"queryParams": "val"});
 
   const [slideIndex, setSlideIndex] = useState(0);
   const [selection_sources, setSelectionSources] = useState({});
