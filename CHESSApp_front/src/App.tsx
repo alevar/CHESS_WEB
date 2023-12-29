@@ -26,9 +26,9 @@ function App() {
   const [selectedOrganism, setSelectedOrganism] = useState<string | null>(null);
   const [selectedAssembly, setSelectedAssembly] = useState<string | null>(null);
 
-  const queryParams = ["test"]
+  const queryParams = ["test_key", "test_value"]
 
-  const { data, error, isLoading, refetch } = useGetGlobalDataQuery(queryParams);
+  const { data, error, isLoading } = useGetGlobalDataQuery();
 
   if (isLoading) {
     return (

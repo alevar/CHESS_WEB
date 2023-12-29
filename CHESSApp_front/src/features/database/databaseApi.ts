@@ -11,10 +11,9 @@ export const databaseApi = createApi({
   }),
   endpoints: (builder) => ({
     getGlobalData: builder.query<object[], void>({
-      query: (settings) => ({
+      query: () => ({
         url: '/globalData',
-        method: 'POST',
-        body: settings,
+        method: 'GET',
       }),
       transformResponse: (response: object) => { // useful in case we need to do anything to the response before caching it        
         // create a map of organisms to a list of assemblies
@@ -34,7 +33,7 @@ export const databaseApi = createApi({
     }),
 
     getTxSummarySlice: builder.query<object, void>({
-      query: (settings: SettingsState) => ({
+      query: (settings) => ({
         url: '/txSummarySlice',
         method: 'POST',
         body: settings,
@@ -46,4 +45,4 @@ export const databaseApi = createApi({
   }),
 });
 
-export const { useGetGlobalDataQuery } = databaseApi;
+export const { useGetGlobalDataQuery, useGetTxSummarySliceQuery } = databaseApi;
