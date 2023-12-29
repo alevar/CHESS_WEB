@@ -83,8 +83,9 @@ def get_seqids():
 #   source: list of all tissue names in the database
 #        - transcript: transcript counts
 #        - gene: gene counts
-@main_blueprint.route('/globalData')
+@main_blueprint.route('/globalData', methods=['POST'])
 def globalData():
+    print(request.get_json())
     # summary = db_methods.get_AllCountSummaryTable()
     # assembly2nomenclature = db_methods.get_assembly2nomenclature()
     # datasets = db_methods.get_datasets()

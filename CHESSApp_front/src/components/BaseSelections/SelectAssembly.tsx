@@ -24,18 +24,18 @@ const SelectAssembly: React.FC = () => {
   return (
     <div className="container">
       <div className="select">
-        <h1 className="header">{`Select Assembly for ${organism}`}</h1>
+        <h1 className="header">{`Select Assembly for ${globalData?.organisms[organism]["commonName"]}`}</h1>
         <div className="row d-flex">
-        {Object.entries(globalData?.summary[organism] || {}).map(([key, value], index) => (
+        {globalData?.o2a[organism].map((assemblyID, index) => (
             <div
-              key={key}
+              key={assemblyID}
               className="col-md-4 d-flex"
             >
               <div
                 className="card flex-fill"
-                onClick={() => handleCardClick(key)}
+                onClick={() => handleCardClick(assemblyID)}
               >
-                <div className="card-body">{key}</div>
+                <div className="card-body">{globalData?.assemblies[assemblyID]["assembly"]}</div>
               </div>
             </div>
           ))}
