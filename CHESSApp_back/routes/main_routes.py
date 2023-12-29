@@ -104,6 +104,7 @@ def globalData():
     sources = db_methods.get_all_sources()
     organisms = db_methods.get_all_organisms()
     assemblies = db_methods.get_all_assemblies()
+    attributes = db_methods.get_attributeSummary()
 
         # since we are now working with this new summary table - need to send different data
     # 1. map of source names to ids
@@ -139,7 +140,8 @@ def globalData():
     data = {
         "organisms":organisms,
         "assemblies":assemblies,
-        "sources":sources
+        "sources":sources,
+        "attributes":attributes
     }
 
     return jsonify(data)
@@ -148,6 +150,8 @@ def globalData():
 def txSummarySlice():
     settings = request.get_json()
     print(settings)
+
+    # get a slice of the txSummary table and return
 
     return jsonify({"txSummarySlice":"value"})
 

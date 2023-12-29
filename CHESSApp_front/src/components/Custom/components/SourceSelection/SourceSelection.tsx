@@ -13,6 +13,8 @@ import { DatabaseState } from '../../../../features/database/databaseSlice';
 import { SettingsState, set_include_sources, set_exclude_sources } from '../../../../features/settings/settingsSlice';
 import { UpSetJS, extractCombinations, asCombinations } from '@upsetjs/react';
 
+import { useGetTxSummarySliceQuery } from '../../../../features/database/databaseApi';
+
 interface RootState {
   database: DatabaseState;
   settings: SettingsState;
@@ -32,6 +34,8 @@ function SelectSources(props: Props) {
   const globalData = useSelector((state: RootState) => state.database.data);
   const settings = useSelector((state: RootState) => state.settings);
   const dispatch = useDispatch();
+
+  const { txdata, txerror, txisLoading } = useGetTxSummarySliceQuery(settings.value);
 
   const [buttonStates, setButtonStates] = useState({});
   const isSelectionMade = Object.values(buttonStates).some((value) => value === true);

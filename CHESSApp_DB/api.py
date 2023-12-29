@@ -430,20 +430,20 @@ class CHESS_DB_API:
     def build_attributeSummaryTable(self):
         self.drop_table("AttributeSummary")
         query = """CREATE TABLE AttributeSummary AS
-                    SELECT k.key_name, 
+                    SELECT 
+                        kv.kvid,
+                        k.key_name, 
                         k.description,
-                        kv.value, 
-                        a.assemblyName,
-                        s.name,
+                        kv.value,
+                        s.sourceID,
                         COUNT(*) AS count_of_records
                     FROM AttributeKeyValue kv 
                     JOIN AttributeKey k ON kv.key_name = k.key_name 
                     JOIN AttributeValueMap avm ON kv.key_name = avm.key_name AND kv.value = avm.std_value
                     JOIN TXAttribute ta ON avm.key_name = ta.name AND avm.og_value = ta.value
                     JOIN Sources s ON ta.sourceID = s.sourceID
-                    JOIN Assembly a ON s.assemblyID = a.assemblyID
                     WHERE variable = 0
-                    GROUP BY s.name, kv.key_name, kv.value, k.description;"""
+                    GROUP BY s.sourceID, kv.key_name, kv.value, k.description;"""
         self.execute_query(query)
 
     def custom_transcript_set(self,settings):
