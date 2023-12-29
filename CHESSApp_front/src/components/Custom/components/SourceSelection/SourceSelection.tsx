@@ -36,61 +36,61 @@ function SelectOrganism(props: Props) {
   const [buttonStates, setButtonStates] = useState({});
   const isSelectionMade = Object.values(buttonStates).some((value) => value === true);
 
-  // UpSetJS stuff
-  let upset_data = []
-  let selected_sources = []
-  for (const [key, value] of Object.entries(globalData?.upset[settings.value.species][settings.value.genome])) {
-    upset_data.push([key.split(';'),value]);
-    for (const name of key.split(';')) {
-      if (!selected_sources.includes(name)) {
-        selected_sources.push(name);
-      }
-    }
-  }
+  // // UpSetJS stuff
+  // let upset_data = []
+  // let selected_sources = []
+  // for (const [key, value] of Object.entries(globalData?.upset[settings.value.species][settings.value.genome])) {
+  //   upset_data.push([key.split(';'),value]);
+  //   for (const name of key.split(';')) {
+  //     if (!selected_sources.includes(name)) {
+  //       selected_sources.push(name);
+  //     }
+  //   }
+  // }
 
-  function areArraysEqual(array1: string[], array2: string[]): boolean {
-    return array1.length === array2.length && array1.every((value) => array2.includes(value));
-  }
+  // function areArraysEqual(array1: string[], array2: string[]): boolean {
+  //   return array1.length === array2.length && array1.every((value) => array2.includes(value));
+  // }
   
-  function processUpsetData(upset_data: UpsetData[], selected_sources: string[]): UpsetData[] {
-    const results: UpsetData[] = [];
+  // function processUpsetData(upset_data: UpsetData[], selected_sources: string[]): UpsetData[] {
+  //   const results: UpsetData[] = [];
   
-    upset_data.forEach((data) => {
-      const commonNames = data[0].filter((name) => selected_sources.includes(name));
+  //   upset_data.forEach((data) => {
+  //     const commonNames = data[0].filter((name) => selected_sources.includes(name));
   
-      if (commonNames.length > 0) {
-        const existingResult = results.find((result) =>
-          areArraysEqual(result[0], commonNames)
-        );
+  //     if (commonNames.length > 0) {
+  //       const existingResult = results.find((result) =>
+  //         areArraysEqual(result[0], commonNames)
+  //       );
   
-        if (existingResult) {
-          // If the combination exists, update the count
-          existingResult[1] += data[1];
-        } else {
-          // If the combination doesn't exist, add a new entry to results
-          results.push([
-            commonNames,
-            data[1],
-          ]);
-        }
-      }
-    });
+  //       if (existingResult) {
+  //         // If the combination exists, update the count
+  //         existingResult[1] += data[1];
+  //       } else {
+  //         // If the combination doesn't exist, add a new entry to results
+  //         results.push([
+  //           commonNames,
+  //           data[1],
+  //         ]);
+  //       }
+  //     }
+  //   });
     
-    return results;
-  }
+  //   return results;
+  // }
 
-  // now build elements from this data
-  function buildElements(data: UpsetData[]): any[] {
-    let elements: any[] = [];
-    let cardinalities = [];
-    let iname = 0;
-    data.forEach((data) => {
-      elements.push({ name: String(iname), sets: data[0] });
-      cardinalities.push(data[1]);
-      iname++;
-    });
-    return [elements,cardinalities];
-  }
+  // // now build elements from this data
+  // function buildElements(data: UpsetData[]): any[] {
+  //   let elements: any[] = [];
+  //   let cardinalities = [];
+  //   let iname = 0;
+  //   data.forEach((data) => {
+  //     elements.push({ name: String(iname), sets: data[0] });
+  //     cardinalities.push(data[1]);
+  //     iname++;
+  //   });
+  //   return [elements,cardinalities];
+  // }
 
   const [sets, setSets] = useState([]);
   const [combinations, setCombinations] = useState([]);
