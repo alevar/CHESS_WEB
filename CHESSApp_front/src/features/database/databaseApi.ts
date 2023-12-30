@@ -25,7 +25,7 @@ export const databaseApi = createApi({
           }
           assemblyMap[organismID].push(key);
         }
-        response['org2asss'] = assemblyMap;
+        response['org2ass'] = assemblyMap;
 
         // construct map of assemblies to sources
         let sourceMap: { [key: number]: number[] } = {};
@@ -41,16 +41,19 @@ export const databaseApi = createApi({
         // extract attribute information
         // source to attribute map: sourceID -> attribute key -> list of kvids
         let src2attr: { [key: number]: { [key: string]: number[] } } = {};
+        console.log(response)
         for (let [key, value] of Object.entries(response['attributes'])) {
           for (let sourceID of value["sources"]) {
             if (!src2attr.hasOwnProperty(sourceID)) {
               src2attr[sourceID] = {};
             }
-            src2attr[sourceID][value["key"]] = key;
+            if (!src2attr[sourceID].hasOwnProperty(value["key"])) {
+              src2attr[sourceID][value["key"]] = [];
+            }
+            src2attr[sourceID][value["key"]].push(Number(key));
           }
         }
-
-        // attribute key to attribute values
+        response['src2attr'] = src2attr;
         
         return response;
       },
