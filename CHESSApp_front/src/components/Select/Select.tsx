@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Button } from 'react-bootstrap';
 import { DatabaseState } from '../../features/database/databaseSlice';
-import { SettingsState, set_include_sources, set_exclude_sources } from '../../features/settings/settingsSlice';
+import { SettingsState, set_include_sources } from '../../features/settings/settingsSlice';
 import MockGraphic from './components/MockGraphic/MockGraphic';
 import DownloadButton from './components/DownloadButton/DownloadButton';
 import './Select.css';
