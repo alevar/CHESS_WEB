@@ -7,10 +7,10 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Button, Accordion, Card } from 'react-bootstrap';
+import { Button, Accordion, Card, Form, Switch, } from 'react-bootstrap';
 
 import { DatabaseState } from '../../../../features/database/databaseSlice';
-import { SettingsState, set_include_sources } from '../../../../features/settings/settingsSlice';
+import { SettingsState, set_include_sources, add_source, remove_source } from '../../../../features/settings/settingsSlice';
 import { UpSetJS, extractCombinations, asCombinations } from '@upsetjs/react';
 
 import { useGetTxSummarySliceQuery } from '../../../../features/database/databaseApi';
@@ -40,67 +40,115 @@ function SelectSources(props: Props) {
   const [buttonStates, setButtonStates] = useState({});
   const isSelectionMade = Object.values(buttonStates).some((value) => value === true);
 
-  const onButtonClick = (key) => {
+  const [activeAccordionKey, setActiveAccordionKey] = useState(null);
+
+  const onCheckboxChange = (sid, event) => {
+    // if checked, add to the list, otherwise remove
+    if (event.target.checked) {
+      dispatch(add_source(sid));
+    } else {
+      dispatch(remove_source(sid));
+    }
+
+    // Prevent accordion from expanding when the switch is toggled
+    setActiveAccordionKey(null);
+  };
+
+  const onButtonClick = (sourceID,kvid) => {
     setButtonStates((prevStates) => {
-      const newState = !prevStates[key]; // Toggle the state
-      return { ...prevStates, [key]: newState };
+      const newState = !prevStates[kvid]; // Toggle the state
+      return { ...prevStates, [kvid]: newState };
     });
   };
 
   const onNextSlide = () => {
-    // Gather the selected checkboxes
-    const include = Object.entries(buttonStates)
-      .filter(([key, value]) => value === true)
-      .map(([key]) => key);
-  
-    // Dispatch the selected sources to the store
-    dispatch(set_include_sources(include));
-  
     // Call the original onNextSlide callback
     props.onNextSlide();
   };
+
+  const [color, setColor] = useState('red');
 
   return (
     <div className={`${prop_className}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
       <div className="row" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
         <div className="col-md-6" style={{ flex: '0 0 30%', borderRight: '1px solid #ccc', paddingRight: '15px' }}>
           <div className="container" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-            <Accordion>
-              {globalData?.ass2src[settings.value.genome].map((sourceID, index) => (
-                <Accordion.Item eventKey={index.toString()} key={index}>
-                  <Accordion.Header>
-                    {globalData?.sources[sourceID].name}
-                  </Accordion.Header>
-                  <Accordion.Body style={{ overflowY: 'auto' }}>
-                    <div>
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={buttonStates[sourceID] === true}
-                          onChange={() => onButtonClick(sourceID)}
+            <Accordion activeKey={activeAccordionKey} onSelect={(key) => setActiveAccordionKey(key)} style={{ overflowY: 'auto' }}>
+              {globalData?.ass2src[settings.value.genome].map((sourceID, index) => {
+                const isSourceIncluded = settings.value.sources_include.includes(Number(sourceID)) === true;
+                const src2attrData = globalData?.src2attr[sourceID];
+
+                return (
+                  <Accordion.Item eventKey={sourceID.toString()} key={sourceID} className={'selected'}>
+                    <Accordion.Header style={
+                      isSourceIncluded
+                        ? {
+                            '--bs-accordion-active-bg': '#45b08c',
+                            '--bs-accordion-btn-bg': '#45b08c',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                          }
+                        : { backgroundColor: 'inherit' }
+                    }>
+                      <span>{globalData?.sources[sourceID].name}</span>
+                      <div className="ml-auto">
+                        <Form.Check
+                          type="switch"
+                          id={`switch-${sourceID}`}
+                          checked={isSourceIncluded}
+                          onChange={(event) => onCheckboxChange(Number(sourceID), event)}
+                          label=""
+                          style={{ marginTop: 'auto', marginBottom: 'auto' }} // Align switch to the right
                         />
-                        <span>{/* Add a span for styling */}Include this source</span>
-                      </label>
-                    </div>
-                  </Accordion.Body>
-                </Accordion.Item>
-              ))}
+                      </div>
+                    </Accordion.Header>
+                    <Accordion.Body>
+                      <h3>Gene Type</h3>
+                      <div>
+
+                      </div>
+                      <h3>Transcript Type</h3>
+                      <div>
+                        
+                      </div>
+                      <h3>Include Pseudogenes</h3>
+                      <div>
+                        <Form.Check
+                          type="switch"
+                          id={`switch-${sourceID}`}
+                          checked={isSourceIncluded}
+                          onChange={(event) => onCheckboxChange(Number(sourceID), event)}
+                          label=""
+                          style={{ marginTop: 'auto', marginBottom: 'auto' }} // Align switch to the right
+                        />
+                      </div>
+                      {src2attrData && Object.keys(src2attrData).map((attrKey) => (
+                        <div key={attrKey} style={{ marginBottom: '15px' }}>
+                          <h3>{attrKey}</h3>
+                          <div className="button-group">
+                            {src2attrData[attrKey].map((kvid, valueIndex) => (
+                              <Button
+                                key={kvid}
+                                variant={buttonStates[kvid] === true ? 'success' : 'secondary'}
+                                onClick={() => onButtonClick(sourceID, kvid)}
+                              >
+                                {globalData?.attributes[kvid].value}
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </Accordion.Body>
+                  </Accordion.Item>
+                );
+              })}
             </Accordion>
           </div>
         </div>
       </div>
 
-      {/* Move the button div outside the main container */}
-      <div style={{ marginTop: '20px', width: '100%' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <button className="btn btn-primary" onClick={onPreviousSlide} disabled={true}>
-            Previous
-          </button>
-          <button className="btn btn-primary" onClick={onNextSlide} disabled={!isSelectionMade}>
-            Next
-          </button>
-        </div>
-      </div>
+      {/* ... other stuff */}
     </div>
   );
 }

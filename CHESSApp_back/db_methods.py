@@ -65,6 +65,38 @@ def get_attributeSummary():
     
     return attributes
 
+def get_transcriptTypeSummary():
+    query = text("SELECT * FROM TranscriptTypeSummary")
+    res = db.session.execute(query)
+
+    # parse list into a dictionary
+    attributes = dict()
+    for row in res:
+        attributes.setdefault(row.kvid,{"key":row.key_name,
+                                        "value":row.value,
+                                        "description":row.description,
+                                        "id":row.kvid,
+                                        "sources":[]})
+        attributes[row.kvid]["sources"].append(row.sourceID)
+    
+    return attributes
+
+def get_geneTypeSummary():
+    query = text("SELECT * FROM GeneTypeSummary")
+    res = db.session.execute(query)
+
+    # parse list into a dictionary
+    attributes = dict()
+    for row in res:
+        attributes.setdefault(row.kvid,{"key":row.key_name,
+                                        "value":row.value,
+                                        "description":row.description,
+                                        "id":row.kvid,
+                                        "sources":[]})
+        attributes[row.kvid]["sources"].append(row.sourceID)
+    
+    return attributes
+
 def get_datasets():
     query = text("SELECT * FROM Dataset")
     res = db.session.execute(query)

@@ -446,6 +446,52 @@ class CHESS_DB_API:
                     GROUP BY s.sourceID, kv.key_name, kv.value, k.description;"""
         self.execute_query(query)
 
+    def build_TranscriptTypeSummaryTable(self):
+        # links transcript_type from the TxDBXREF table to the sources and attributes and
+        # aggregates information about the number of genes with each type
+        # TxDBXREF table stores std_key and og_value. The summary also links it to the kvid entries for quick lookup
+        self.drop_table("TranscriptTypeSummary")
+        query = """CREATE TABLE TranscriptTypeSummary AS
+                    SELECT
+                        kv.kvid,
+                        k.key_name,
+                        k.description,
+                        kv.value,
+                        s.sourceID,
+                        COUNT(*) AS count_of_records
+                    FROM AttributeKeyValue kv
+                    JOIN AttributeKey k ON kv.key_name = k.key_name
+                    JOIN AttributeValueMap avm ON kv.key_name = avm.key_name AND kv.value = avm.std_value
+                    JOIN TxDBXREF on avm.key_name = TxDBXREF.type_key AND avm.og_value = TxDBXREF.type_value
+                    JOIN Sources s ON TxDBXREF.sourceID = s.sourceID
+                    GROUP BY s.sourceID, kv.key_name, kv.value, k.description;"""
+        self.execute_query(query)
+
+    def build_GeneTypeSummaryTable(self):
+        # TODO: redo using Gene table
+
+        # links standardized gene_type key from the attributes table to the sources and 
+        # aggregates information about the number of genes with each type
+
+        self.drop_table("GeneTypeSummary")
+        query = """CREATE TABLE GeneTypeSummary AS
+                    SELECT 
+                        kv.kvid,
+                        k.key_name, 
+                        k.description,
+                        kv.value,
+                        s.sourceID,
+                        COUNT(*) AS count_of_records
+                    FROM AttributeKeyValue kv 
+                    JOIN AttributeKey k ON kv.key_name = k.key_name 
+                    JOIN AttributeValueMap avm ON kv.key_name = avm.key_name AND kv.value = avm.std_value
+                    JOIN TXAttribute ta ON avm.key_name = ta.name AND avm.og_value = ta.value
+                    JOIN Sources s ON ta.sourceID = s.sourceID
+                    WHERE k.key_name = 'gene_type'
+                    GROUP BY s.sourceID, kv.key_name, kv.value, k.description;"""
+        self.execute_query(query)
+
+
     def custom_transcript_set(self,settings):
         return
         
