@@ -105,6 +105,8 @@ def globalData():
     organisms = db_methods.get_all_organisms()
     assemblies = db_methods.get_all_assemblies()
     attributes = db_methods.get_attributeSummary()
+    gene_types = db_methods.get_geneTypeSummary()
+    transcript_types = db_methods.get_transcriptTypeSummary()
 
         # since we are now working with this new summary table - need to send different data
     # 1. map of source names to ids
@@ -141,7 +143,9 @@ def globalData():
         "organisms":organisms,
         "assemblies":assemblies,
         "sources":sources,
-        "attributes":attributes
+        "attributes":attributes,
+        "gene_types":gene_types,
+        "transcript_types":transcript_types
     }
 
     return jsonify(data)

@@ -541,6 +541,8 @@ def compile(api_connection,args):
     summary = api_connection.get_AllCountSummaryTable()
 
     attribute_summary = api_connection.build_attributeSummaryTable()
+    transcript_type_summary = api_connection.build_TranscriptTypeSummaryTable()
+    gene_type_summary = api_connection.build_GeneTypeSummaryTable()
 
     # get sources table (map of sourceID to sourceName)
     all_sources = api_connection.get_sources()

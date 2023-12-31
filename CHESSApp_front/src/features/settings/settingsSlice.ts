@@ -21,7 +21,7 @@ const initialState: SettingsState = {
           species : 1,
           genome : 1,
           nomenclature : "UCSC",
-          sources_include : ["CHESS.3.0"],
+          sources_include : [4],
           prime3_UTR_extension : 0,
           prime5_UTR_extension : 0,
           include_nascent : false,
@@ -48,6 +48,12 @@ export const settingsSlice = createSlice({
     set_include_sources: (state, action: PayloadAction<string[]>) => {
       state.value.sources_include = action.payload;
     },
+    add_source: (state, action: PayloadAction<string>) => {
+      state.value.sources_include.push(action.payload);
+    },
+    remove_source: (state, action: PayloadAction<string>) => {
+      state.value.sources_include = state.value.sources_include.filter((source) => source !== action.payload);
+    },
     set_format: (state, action: PayloadAction<string>) => {
       // make sure it is either gtf or gff
       if (action.payload === "GTF" || action.payload === "GFF") {
@@ -67,7 +73,7 @@ export const settingsSlice = createSlice({
 export const { set_organism,
                set_assembly,
                set_nascent,
-               set_include_sources,
+               set_include_sources, add_source, remove_source,
                set_format,
                set_nomenclature } = settingsSlice.actions
 

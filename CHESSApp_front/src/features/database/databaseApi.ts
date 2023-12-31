@@ -41,7 +41,6 @@ export const databaseApi = createApi({
         // extract attribute information
         // source to attribute map: sourceID -> attribute key -> list of kvids
         let src2attr: { [key: number]: { [key: string]: number[] } } = {};
-        console.log(response)
         for (let [key, value] of Object.entries(response['attributes'])) {
           for (let sourceID of value["sources"]) {
             if (!src2attr.hasOwnProperty(sourceID)) {
@@ -54,6 +53,32 @@ export const databaseApi = createApi({
           }
         }
         response['src2attr'] = src2attr;
+
+        // extract gene_type information
+        // source to gene_type map: sourceID -> gene_type -> list of kvids
+        let src2gt: { [key: number]: { [key: string]: number[] } } = {};
+        for (let [key, value] of Object.entries(response['gene_types'])) {
+          for (let sourceID of value["sources"]) {
+            if (!src2gt.hasOwnProperty(sourceID)) {
+              src2gt[sourceID] = [];
+            }
+            src2gt[sourceID].push(Number(key));
+          }
+        }
+        response['src2gt'] = src2gt;
+
+        // extract transcript_type information
+        // source to transcript_type map: sourceID -> transcript_type -> list of kvids
+        let src2tt: { [key: number]: { [key: string]: number[] } } = {};
+        for (let [key, value] of Object.entries(response['transcript_types'])) {
+          for (let sourceID of value["sources"]) {
+            if (!src2tt.hasOwnProperty(sourceID)) {
+              src2tt[sourceID] = [];
+            }
+            src2tt[sourceID].push(Number(key));
+          }
+        }
+        response['src2tt'] = src2tt;
         
         return response;
       },
