@@ -1,46 +1,43 @@
-.Annotations {
-    max-width: 1280px;
-    margin: 20px;
-    padding: 2rem;
-    text-align: center;
-
-    /* Add a background color */
-  background-color: #f5f5f5;
-
-  /* Add a box shadow */
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-
-  /* Add a border radius */
-  border-radius: 5px;
-
-  /* Add a transition */
-  transition: transform 0.5s ease-in-out;
-
-  /* Add a fixed height */
-  height: 400px;
-
-  /* Add overflow-y to enable vertical scrolling */
-  overflow-y: auto;
-}
-
-.Annotations * {
-text-align: inherit;
-}
-
-.slide-container {
+body {
+    overflow: hidden;
+  }
+  
+  .custom-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     position: relative;
+    padding: 2vh 2vh;
   }
   
-  .slide {
-    position: absolute;
-    top: 0;
-    left: 0;
+  .custom-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     width: 100%;
-    height: 100%;
-    opacity: 0;
-    transition: opacity 0.5s ease-in-out;
   }
   
-  .slide.active {
-    opacity: 1;
+  .custom-sourceSettingsColumn {
+    flex: 0 0 30%;
+    border-right: 1px solid #ccc;
   }
+
+  .custom-evidenceSettingsColumn {
+    flex: 0 0 30%;
+  }
+
+  .custom-summaryColumn {
+    flex: 0 0 40%;
+    border-right: 1px solid #ccc;
+  }
+  
+  .custom-container {
+    height: 80vh;
+    overflow-y: auto;
+  }
+  
+  .custom-header {
+    padding: 15px;
+    font-size: 1.5rem;
+  }
+  

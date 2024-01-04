@@ -1,78 +1,42 @@
-import React, { useState } from 'react';
+import React from 'react';
+
+import SourceSettings from './components/SourceSettings/SourceSettings';
+import SummaryView from './components/SummaryView/SummaryView';
+import DataSettings from './components/DataSettings/DataSettings';
+
+import { DatabaseState } from '../../features/database/databaseSlice';
+import { SettingsState } from '../../features/settings/settingsSlice';
 import './Custom.css';
-import SelectSource from './components/SourceSelection/SourceSelection';
-import SelectGenes from './components/GeneSelection/GeneSelection';
-import SelectTranscripts from './components/TranscriptSelection/TranscriptSelection';
 
-const Custom = () => {
+interface RootState {
+  database: DatabaseState;
+  settings: SettingsState;
+}
 
-  const [slideIndex, setSlideIndex] = useState(0);
-  const [selection_sources, setSelectionSources] = useState({});
-  const [selection_genes, setSelectionGenes] = useState('');
-  const [selection_transcripts, setSelectionTranscripts] = useState('');
-
-  const handleNextSlide = () => {
-    setSlideIndex(slideIndex + 1);
-  };
-
-  const handlePreviousSlide = () => {
-    setSlideIndex(slideIndex - 1);
-  };
-
-  const handleSelectionSourceChange = (event) => {
-    setSelectionSources(event.target.value);
-  };
-
-  const handleSelectionGenesChange = (event) => {
-    setSelectionGenes(event.target.value);
-  };
-
-  const handleSelectionTranscriptsChange = (event) => {
-    setSelectionTranscripts(event.target.value);
-  };
-
-  const renderSlide = () => {
-    switch (slideIndex) {
-      case 0:
-        return (
-          <SelectSource
-            selection={selection_sources}
-            onSelectionChange={handleSelectionSourceChange}
-            onNextSlide={handleNextSlide}
-            onPreviousSlide={handlePreviousSlide}
-            prop_className="SelectSource"
-          />
-        );
-      case 1:
-        return (
-          <SelectGenes
-            selection={selection_genes}
-            onSelectionChange={handleSelectionGenesChange}
-            onNextSlide={handleNextSlide}
-            onPreviousSlide={handlePreviousSlide}
-            prop_className="SelectGenes"
-          />
-        );
-      case 2:
-        return (
-          <SelectTranscripts
-            selection={selection_transcripts}
-            onSelectionChange={handleSelectionTranscriptsChange}
-            onNextSlide={handleNextSlide}
-            onPreviousSlide={handlePreviousSlide}
-            prop_className="SelectTranscripts"
-          />
-        );
-      default:
-        return null;
-    }
-  };
-
+function Custom() {
   return (
-    <div className="slide-container">
-      {renderSlide()}
+    <div className="custom-wrapper">
+      <div className="custom-row">
+        <div className="custom-sourceSettingsColumn">
+          <div className="custom-container">
+            <SourceSettings />
+          </div>
+        </div>
+
+        <div className="custom-summaryColumn">
+          <div className="custom-container">
+            <SummaryView />
+          </div>
+        </div>
+
+        <div className="custom-evidenceSettingsColumn">
+          <div className="custom-container">
+            <DataSettings />
+          </div>
+        </div>
+      </div>
     </div>
   );
-};
+}
 
 export default Custom;
