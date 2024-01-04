@@ -23,7 +23,7 @@ const SummaryView: React.FC = () => {
     };
 
     return (
-        <div className="custom-container">
+        <div className="custom-container" id="test">
             <div className="custom-header">Summary</div>
             <UpsetPlot data={sampleData} />
         </div>
