@@ -117,12 +117,7 @@ const Grid: React.FC<UpsetPlotDataProps> = ({ data }) => {
             .style('stroke', 'black')
             .style('stroke-width', '1px');
 
-        const tooltip = d3
-            .select('#container')
-            .append('div')
-            .attr('class', 'tooltip')
-            .style('opacity', 0);
-
+        // Create rectangles for each intersection(behind circles)
         svg
             .selectAll('rect.gridCell')
             .data(data.intersections)
@@ -138,22 +133,6 @@ const Grid: React.FC<UpsetPlotDataProps> = ({ data }) => {
             .attr('x', (d:any) => data.intersections.indexOf(d.intersection) * cellSize + margin.top + label_width)
             .attr('width', cellSize)
             .attr('height', cellSize)
-            .style('cursor', 'pointer') // Add pointer cursor to indicate clickability
-            .on('click', (event:Event, rowData:any) => handleRowClick(rowData))
-            .on('mouseover', (event:Event, rowData:any) => {
-                handleRowHover(rowData.rowIndex);
-                tooltip.transition().duration(200).style('opacity', 0.9);
-                tooltip
-                    .html(
-                        `<div style="background-color: #fff; padding: 5px; border: 1px solid black; border-radius: 5px;">
-                            <div style="font-weight: bold;">${rowData.intersection.set}</div>
-                            <div>${rowData.intersection.value}</div>
-                        </div>`
-                    )
-                    .style('left', `${event.pageX + 10}px`)
-                    .style('top', `${event.pageY - 10}px`);
-            })
-            .on('mouseout', () => handleRowHover(null))
             .style('fill', (d:any) => {
                 const isSelected = selectedRows.includes(d.rowIndex);
                 const isHovered = hoveredRow === d.rowIndex;
@@ -176,10 +155,6 @@ const Grid: React.FC<UpsetPlotDataProps> = ({ data }) => {
             .attr('cy', (d:any) => data.sets.indexOf(d.set) * cellSize + margin.left + cellSize / 2)
             .attr('cx', (d:any) => data.intersections.indexOf(d.intersection) * cellSize + margin.top + label_width + cellSize / 2)
             .attr('r', cellSize / 3)
-            .style('cursor', 'pointer') // Add pointer cursor to indicate clickability
-            .on('click', (event:Event, rowData:any) => handleRowClick(rowData))
-            .on('mouseover', (event:Event, rowData:any) => handleRowHover(rowData.rowIndex))
-            .on('mouseout', () => handleRowHover(null))
             .style('fill', (d:any) => {
                 const isSelected = selectedRows.includes(d.rowIndex);
                 const isHovered = hoveredRow === d.rowIndex;
@@ -189,7 +164,34 @@ const Grid: React.FC<UpsetPlotDataProps> = ({ data }) => {
             })
             .style('stroke', "black");
 
-            svg
+        // plot a single rectangle for each intersection for handling mouse events
+        // rectangle is completely transparent
+        svg
+            .selectAll('rect.eventRect')
+            .data(data.intersections)
+            .enter()
+            .append('g')
+            .attr('class', 'eventRectGroup')
+            .selectAll('rect')
+            .data((d:any, i:number) => data.sets.map((set) => ({ set, intersection: d, rowIndex: i })))
+            .enter()
+            .append('rect')
+            .attr('class', 'eventRect')
+            .attr('y', margin.top)
+            .attr('x', (d:any) => data.intersections.indexOf(d.intersection) * cellSize + margin.top + label_width)
+            .attr('width', cellSize)
+            .attr('height', cellSize*data.sets.length+barHeight+10+2)
+            .style('fill', 'transparent')
+            .on('click', (event:Event, rowData:any) => handleRowClick(rowData))
+            .on('mouseover', (event: Event, rowData: any) => {
+                handleRowHover(rowData.rowIndex);
+            })
+            .on('mouseleave', () => {
+                handleRowHover(null);
+            });
+
+        // plot bar chart for the sizes of intersections
+        svg
             .selectAll('rect.valueBar')
             .data(data.intersections)
             .enter()
@@ -204,10 +206,6 @@ const Grid: React.FC<UpsetPlotDataProps> = ({ data }) => {
             .attr('x', (d:any) => data.intersections.indexOf(d.intersection) * cellSize + margin.top + label_width + cellSize / 8)
             .attr('width', cellSize / 1.25)
             .attr('height', (d:any) => normalizedValues[d.rowIndex]) // Use normalized values
-            .style('cursor', 'pointer')
-            .on('click', (event:Event, d:any) => handleRowClick(d))
-            .on('mouseover', (event:Event, d:any) => handleRowHover(d.rowIndex))
-            .on('mouseout', () => handleRowHover(null))
             .style('fill', (d:any) => {
                 const isSelected = selectedRows.includes(d.rowIndex);
                 const isHovered = hoveredRow === d.rowIndex;
@@ -231,7 +229,6 @@ const Grid: React.FC<UpsetPlotDataProps> = ({ data }) => {
 
     return (
         <svg ref={svgRef} width="100%" height="100%">
-        {/* SVG content will be added dynamically */}
         </svg>
     );
 };
