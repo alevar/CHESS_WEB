@@ -20,11 +20,11 @@ const Genes = () => {
     setSlideIndex(slideIndex - 1);
   };
 
-  const handleSelectionOrganismChange = (event) => {
+  const handleSelectionOrganismChange = (event:any) => {
     setSelectionOrganism(event.target.value);
   };
 
-  const handleSelectionAssemblyChange = (event) => {
+  const handleSelectionAssemblyChange = (event:any) => {
     setSelectionAssembly(event.target.value);
   };
 

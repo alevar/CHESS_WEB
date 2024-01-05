@@ -6,6 +6,7 @@ import Genes from "./components/Genes/Genes";
 import Home from "./components/Home/Home";
 import About from "./components/About/About";
 import ContactUs from "./components/ContactUs/ContactUs";
+import GeneSearch from './components/GeneSearch/GeneSearch';
 
 import { Routes, Route } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -40,6 +41,7 @@ function App() {
           <Route path="/" element={<Home/>} />
           <Route path="/annotations" element={<Annotations/>} />
           <Route path="/genes" element={<Genes/>} />
+          <Route path="/genesearch" element={<GeneSearch/>} />
           <Route path="/about" element={<About/>} />
           <Route path="/contact" element={<ContactUs/>} />
         </Routes>
