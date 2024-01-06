@@ -35,9 +35,9 @@ function App() {
     );
   }
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+  // if (error) {
+  //   return <div>Error: {error}</div>;
+  // }
 
   const handleOrganismSelect = (selectedValue: number) => {
     setSelectedOrganism(selectedValue);

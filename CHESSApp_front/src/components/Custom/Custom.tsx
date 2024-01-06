@@ -5,7 +5,7 @@ import './Custom.css';
 
 import SourceSettings from './components/SourceSettings/SourceSettings';
 import SummaryView from './components/SummaryView/SummaryView';
-import CombinationSettings from './components/CombinationSettings/CombinationSettings';
+// import CombinationSettings from './components/CombinationSettings/CombinationSettings';
 
 import { DatabaseState } from '../../features/database/databaseSlice';
 import { SettingsState } from '../../features/settings/settingsSlice';
