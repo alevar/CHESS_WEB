@@ -26,37 +26,35 @@ const Home = () => {
   };
 
   return (
-    <div className="container">
-      <div className="home">
-        <h1 className="header">Welcome to the CHESS Web Interface</h1>
-        <p className="description">A unified resource for downloading and customizing genome annotations.</p>
-        <div className="row d-flex">
-          <div className="col-md-4 d-flex">
-            <div className="card flex-fill" onClick={() => handleCardClick("/custom")}>
-              <div className="card-body">
-                Create Custom CHESS Annotation
-              </div>
+    <div className="home">
+      <h1 className="header">Welcome to the CHESS Web Interface</h1>
+      <p className="description">A unified resource for downloading and customizing genome annotations.</p>
+      <div className="row d-flex">
+        <div className="col-md-4 d-flex">
+          <div className="card flex-fill" onClick={() => handleCardClick("/custom")}>
+            <div className="card-body">
+              Create Custom CHESS Annotation
             </div>
           </div>
-          <div className="col-md-4 d-flex">
-            <div className="card flex-fill" onClick={() => handleCardClick("/selectPrecompiled")}>
-              <div className="card-body">
-                Download Ready-To-Use CHESS 3 annotation
-              </div>
+        </div>
+        <div className="col-md-4 d-flex">
+          <div className="card flex-fill" onClick={() => handleCardClick("/selectPrecompiled")}>
+            <div className="card-body">
+              Download Ready-To-Use CHESS 3 annotation
             </div>
           </div>
-          <div className="col-md-4 d-flex">
-            <div className="card flex-fill" onClick={() => handleCardClick("/genes")}>
-              <div className="card-body">
-                Explore Individual Genes
-              </div>
+        </div>
+        <div className="col-md-4 d-flex">
+          <div className="card flex-fill" onClick={() => handleCardClick("/genes")}>
+            <div className="card-body">
+              Explore Individual Genes
             </div>
           </div>
-          <div className="col-md-4 d-flex">
-            <div className="card flex-fill" onClick={() => handleCardClick("/genes")}>
-              <div className="card-body">
-                Explore Other Genomes and Assemblies
-              </div>
+        </div>
+        <div className="col-md-4 d-flex">
+          <div className="card flex-fill" onClick={() => handleCardClick("/genes")}>
+            <div className="card-body">
+              Explore Other Genomes and Assemblies
             </div>
           </div>
         </div>
