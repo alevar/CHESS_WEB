@@ -16,7 +16,6 @@ export const summaryApi = createApi({
         body: settings,
       }),
       transformResponse: (response: object) => {
-        console.log("summaryApi.ts: transformResponse: response: ", response)
         return response;
       },
     }),
