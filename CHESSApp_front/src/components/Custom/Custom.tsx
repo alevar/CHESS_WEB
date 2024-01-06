@@ -1,16 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import './Custom.css';
 
 import SourceSettings from './components/SourceSettings/SourceSettings';
 import SummaryView from './components/SummaryView/SummaryView';
-import DataSettings from './components/DataSettings/DataSettings';
+import CombinationSettings from './components/CombinationSettings/CombinationSettings';
 
 import { DatabaseState } from '../../features/database/databaseSlice';
 import { SettingsState } from '../../features/settings/settingsSlice';
-import CombinationSettings from './components/CombinationSettings/CombinationSettings';
+import { useGetTxSummarySliceQuery } from '../../features/database/databaseApi';
+
 
 const Custom: React.FC = () => {
+
+    // handle resize logic
     const [combinationsPanelSize, setCombinationsPanelSize] = useState<{ width: number; height: number }>({
         width: 30, // replace with the actual default width
         height: 30, // replace with the actual default height
@@ -24,6 +28,15 @@ const Custom: React.FC = () => {
             setCombinationsPanelSize({ width: combinationsPanelSize.width, height: data[0] });
         }
     };
+
+    // coordinate data synchronization with the server whenever settings change
+    // whenever settings change - fetch new data
+    const settings = useSelector((state: RootState) => state.settings.value);
+    const { slice_data, slice_error, slice_isLoading } = useGetTxSummarySliceQuery(settings);
+    console.log(slice_data);
+    useEffect(() => {
+        console.log("fetching new data");
+    }, [settings]);
 
     return (
         <div className="custom-wrapper" id="test">

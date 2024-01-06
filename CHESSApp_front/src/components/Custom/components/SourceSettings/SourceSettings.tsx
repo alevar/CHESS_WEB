@@ -5,8 +5,6 @@ import { Button, Accordion, Form, } from 'react-bootstrap';
 import { DatabaseState } from '../../../../features/database/databaseSlice';
 import { SettingsState, set_include_sources, add_source, remove_source, add_attribute, remove_attribute } from '../../../../features/settings/settingsSlice';
 
-import { useGetTxSummarySliceQuery } from '../../../../features/database/databaseApi';
-
 interface RootState {
   database: DatabaseState;
   settings: SettingsState;
@@ -29,9 +27,12 @@ function SelectSources() {
       // Set initial button states only once when the component mounts
       if (!initialButtonStatesSet.current) {
         const initialButtonStates = {};
-        for (const sourceID of Object.values(settings.value.attributes)) {
-          for (const kvid of settings.value.attributes[sourceID]) {
-            initialButtonStates[kvid] = true;
+        for (const [sourceID,attrs] of Object.entries(settings.value.attributes)) {
+          for (const [key,values] of Object.entries(attrs)) {
+            for (const kvid of values) {
+                const buttonKey = `${sourceID}_${kvid}`;
+                initialButtonStates[buttonKey] = true;
+            }
           }
         }
         setButtonStates(initialButtonStates);
@@ -53,9 +54,10 @@ function SelectSources() {
       setActiveAccordionKey(null);
     };
   
-    const onButtonClick = (sourceID,kvid) => {
+    const onButtonClick = (sourceID:number,kvid:number) => {
       setButtonStates((prevStates) => {
-        const newState = !prevStates[kvid];
+        const buttonKey = `${sourceID}_${kvid}`;
+        const newState = !prevStates[buttonKey];
         if (newState) {
           dispatch(add_attribute([sourceID,kvid]));
         } else {
@@ -107,7 +109,7 @@ function SelectSources() {
                             {globalData?.src2gt[sourceID].map((kvid, valueIndex) => (
                               <Button
                                 key={kvid}
-                                variant={buttonStates[kvid] === true ? 'success' : 'secondary'}
+                                variant={buttonStates[`${sourceID}_${kvid}`] === true ? 'success' : 'secondary'}
                                 onClick={() => onButtonClick(sourceID, kvid)}
                               >
                                 {globalData?.attributes[kvid].value}
@@ -125,7 +127,7 @@ function SelectSources() {
                             {globalData?.src2tt[sourceID].map((kvid, valueIndex) => (
                               <Button
                                 key={kvid}
-                                variant={buttonStates[kvid] === true ? 'success' : 'secondary'}
+                                variant={buttonStates[`${sourceID}_${kvid}`] === true ? 'success' : 'secondary'}
                                 onClick={() => onButtonClick(sourceID, kvid)}
                               >
                                 {globalData?.attributes[kvid].value}
