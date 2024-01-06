@@ -1,6 +1,4 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { SettingsState, set_include_sources, set_attributes } from '../settings/settingsSlice';
-import { useSelector, useDispatch } from 'react-redux';
 
 export const databaseApi = createApi({
   reducerPath: 'databaseApi',
@@ -88,18 +86,7 @@ export const databaseApi = createApi({
         return response;
       },
     }),
-
-    getTxSummarySlice: builder.query<object, void>({
-      query: (settings) => ({
-        url: '/txSummarySlice',
-        method: 'POST',
-        body: settings,
-      }),
-      transformResponse: (response: object) => {
-        return response;
-      },
-    }),
   }),
 });
 
-export const { useGetGlobalDataQuery, useGetTxSummarySliceQuery } = databaseApi;
+export const { useGetGlobalDataQuery } = databaseApi;

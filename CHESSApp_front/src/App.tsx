@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch, Provider } from 'react-redux';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Spinner from 'react-bootstrap/Spinner';
 
-import Home from "./components/Home/Home";
-import Custom from "./components/Custom/Custom";
+import Main from "./components/Main/Main";
+import Custom from "./components/Main/components/Custom/Custom";
+import Home from "./components/Main/components/Home/Home";
 import Header from "./components/Header/Header";
 import About from "./components/About/About";
 import ContactUs from "./components/ContactUs/ContactUs";
@@ -13,16 +15,9 @@ import ContactUs from "./components/ContactUs/ContactUs";
 import { useGetGlobalDataQuery } from './features/database/databaseApi';
 import { store } from './app/store';
 
-import { DatabaseState } from './features/database/databaseSlice';
-import { SettingsState, set_include_sources } from './features/settings/settingsSlice';
-
 import "./App.css"
 
-function App() {
-
-  const [selectedOrganism, setSelectedOrganism] = useState<number | null>(null);
-  const [selectedAssembly, setSelectedAssembly] = useState<number | null>(null);
-
+const App: React.FC = () => {
   const { data, error, isLoading } = useGetGlobalDataQuery();
 
   if (isLoading) {
@@ -39,13 +34,8 @@ function App() {
     return <div>Error: {error}</div>;
   }
 
-  const handleOrganismSelect = (selectedValue: number) => {
-    setSelectedOrganism(selectedValue);
-  };
-
-  const handleAssemblySelect = (selectedValue: number) => {
-    setSelectedAssembly(selectedValue);
-  };
+  if (!isLoading && data) {
+  }
 
   return (
     <Provider store={store}>
@@ -53,15 +43,18 @@ function App() {
         <div className="App">
           <Header />
           <Routes>
+            <Route path="/main/:organismID/:assemblyID/:sourceIDs" element={<Main />}>
+              <Route path="home" element={<Home />} />
+              <Route path="custom" element={<Custom />} />
+            </Route>
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<ContactUs />} />
-            <Route path="/" element={<Home />} />
-            <Route path="/custom" element={<Custom />} />
+            <Route path="/*" element={<Navigate to="/main/1/1/4/home" />} />
           </Routes>
         </div>
       </Router>
     </Provider>
   );
-}
+};
 
 export default App;

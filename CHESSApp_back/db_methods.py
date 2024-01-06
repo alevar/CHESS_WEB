@@ -158,7 +158,7 @@ def get_upsetData():
 def get_dbTxSlice(settings):
     # settings should have:
     # 1. assemblyID
-    # 2. for each sourceID to include:
+    # 2. data: for each sourceID to include:
     #   - key (standard name)
     #   - value (kvid)
     # returns a slice of the dbTxSummary table with matching data
@@ -167,7 +167,7 @@ def get_dbTxSlice(settings):
     # construct query
     query = "SELECT "
     # add all columns
-    for sourceID, attributes in settings["data"].items():
+    for sourceID, attributes in settings["attributes"].items():
         query += "dbtx.`"+str(sourceID)+"`, "
         for k,v in attributes.items():
             query += "dbtx.`"+str(sourceID)+"."+k+"`, "
@@ -176,7 +176,7 @@ def get_dbTxSlice(settings):
 
     query += " FROM dbTxSummary_"+str(settings["genome"])+" dbtx WHERE "
 
-    for sourceID, attributes in settings["data"].items():
+    for sourceID, attributes in settings["attributes"].items():
         query += "dbtx.`"+str(sourceID)+"` = 1"
         for key,values in attributes.items():
             # values are a list. test for containment
@@ -190,7 +190,7 @@ def get_dbTxSlice(settings):
     
     # attach groupby
     query += " GROUP BY "
-    for sourceID, attributes in settings["data"].items():
+    for sourceID, attributes in settings["attributes"].items():
         query += "dbtx.`"+str(sourceID)+"`, "
         for k,v in attributes.items():
             query += "dbtx.`"+str(sourceID)+"."+k+"`, "
