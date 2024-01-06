@@ -13,7 +13,8 @@ export interface SettingsState {
           include_fasta : boolean,
           exclude_y_chromosome : boolean,
           attributes : Record<number,Record<string, number[]>>
-        }
+        },
+  status: "loading" | "idle"
 }
 
 const initialState: SettingsState = {
@@ -21,14 +22,15 @@ const initialState: SettingsState = {
           species : 1,
           genome : 1,
           nomenclature : "UCSC",
-          sources_include : [4],
+          sources_include : [],
           prime3_UTR_extension : 0,
           prime5_UTR_extension : 0,
           include_nascent : false,
           include_fasta : false,
           exclude_y_chromosome : false,
           attributes : {}
-        }
+        },
+  status: "loading"
 }
 
 export const settingsSlice = createSlice({
@@ -36,6 +38,9 @@ export const settingsSlice = createSlice({
   initialState,
   // The `reducers` field lets us define reducers and generate associated actions
   reducers: {
+    set_status: (state, action: PayloadAction<"loading" | "idle">) => {
+      state.status = action.payload;
+    },
     set_organism: (state, action: PayloadAction<number>) => {
       state.value.species = action.payload;
     },
@@ -79,7 +84,8 @@ export const settingsSlice = createSlice({
   }
 })
 
-export const { set_organism,
+export const { set_status,
+               set_organism,
                set_assembly,
                set_nascent,
                set_include_sources, add_source, remove_source,
