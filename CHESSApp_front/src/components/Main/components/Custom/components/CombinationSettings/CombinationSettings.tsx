@@ -1,5 +1,13 @@
-import { useEffect, useState } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import UpsetPlot from './components/UpsetPlot/UpsetPlot';
+import Spinner from 'react-bootstrap/Spinner';
+
+import { DatabaseState } from '../../../../../../features/database/databaseSlice';
+import { SettingsState } from '../../../../../../features/settings/settingsSlice';
+import { SummaryState } from '../../../../../../features/summary/summarySlice';
+import { useGetTxSummarySliceQuery } from '../../../../../../features/summary/summaryApi';
+
 import "../../Custom.css"
 
 interface CombinationSettingsProps {
@@ -10,6 +18,12 @@ interface CombinationSettingsProps {
 interface SampleData {
     sets: string[];
     intersections: { set: string; value: number }[];
+}
+
+interface RootState {
+    database: DatabaseState;
+    settings: SettingsState;
+    summary: SummaryState;
 }
 
 const generateRandomData = (): SampleData => {
@@ -74,10 +88,22 @@ const CombinationSettings: React.FC<CombinationSettingsProps> = ({ parentWidth, 
         updateSettings(newRandomData);
     };
 
+    const summary = useSelector((state: RootState) => state.summary);
+
     return (
         <div className="custom-container" style={{ overflowY: 'auto', overflowX: 'auto' }}>
             <div className="custom-header">Combination Settings</div>
-            <UpsetPlot data={settings} parentWidth={currentParentWidth} parentHeight={currentParentHeight} />
+            {summary.status === "loading" ? (
+                <Spinner animation="border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </Spinner>
+            ) : summary.status === "succeeded" ? (
+                <UpsetPlot data={settings} parentWidth={currentParentWidth} parentHeight={currentParentHeight} />
+            ) : (
+                <div>
+                    Error loading summary slice
+                </div>
+            )}
         </div>
     );
 };

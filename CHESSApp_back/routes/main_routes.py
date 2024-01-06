@@ -155,8 +155,8 @@ def txSummarySlice():
     settings = request.get_json()
 
     # get a slice of the txSummary table and return
-    # slice = db_methods.get_dbTxSlice(settings)
-    # print(slice)
+    slice = db_methods.get_dbTxSlice(settings)
+    print(slice)
 
     return jsonify({"txSummarySlice":"value"})
 

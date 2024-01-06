@@ -33,24 +33,19 @@ const Custom: React.FC = () => {
 
 
     // deal with the summary updates
-    const summary = useSelector((state: SummaryState) => state);
+    const summary_status = useSelector((state: SummaryState) => state.status);
+    const summary_data = useSelector((state: SummaryState) => state.data);
     useEffect(() => {
-        if (summary.status === "loading") {
-            return (
-                <div className="loading">
-                    <Spinner animation="border" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                    </Spinner>
-                </div>
-            );
+        if (summary_status === "loading") {
+            console.log("summary loading")
         }
-        if (summary.status === "succeeded") {
+        if (summary_status === "succeeded") {
             console.log("summary loaded")
         }
-    }, [summary.status]);
+    }, [summary_status]);
 
     return (
-        <div className="custom-wrapper" id="test">
+        <div className="custom-wrapper">
             <PanelGroup direction="horizontal" onLayout={(newSize) => handleResize(0,newSize)}>
                 <Panel id="sources_panel" defaultSize={30} minSize={10}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
