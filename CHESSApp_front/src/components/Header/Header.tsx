@@ -16,6 +16,7 @@ function Header() {
           <Nav className="me-auto">
             <Nav.Link href="/annotations" active={location.pathname === '/annotations'}>Annotations</Nav.Link>
             <Nav.Link href="/genes" active={location.pathname === '/genes'}>Genes</Nav.Link>
+            <Nav.Link href="/genesearch" active={location.pathname === '/genesearch'}>Gene Search</Nav.Link>
             <Nav.Link href="/about" active={location.pathname === '/about'}>About</Nav.Link>
             <Nav.Link href="/contact" active={location.pathname === '/contact'}>Contact Us</Nav.Link>
           </Nav>

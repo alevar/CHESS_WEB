@@ -17,6 +17,7 @@ import { DatabaseState } from './features/database/databaseSlice';
 import { SettingsState, set_include_sources } from './features/settings/settingsSlice';
 
 import "./App.css"
+import GeneSearch from './components/GeneSearch/GeneSearch';
 
 function App() {
 
@@ -35,9 +36,9 @@ function App() {
     );
   }
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+  // if (error) {
+  //   return <div>Error: {error}</div>;
+  // }
 
   const handleOrganismSelect = (selectedValue: number) => {
     setSelectedOrganism(selectedValue);
@@ -56,6 +57,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/" element={<Home />} />
+            <Route path="/genesearch" element={<GeneSearch />} />
             <Route path="/custom" element={<Custom />} />
           </Routes>
         </div>
