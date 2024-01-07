@@ -281,7 +281,7 @@ class CHESS_DB_API:
         # 1. tid (pk) - no need to store any additional transcript identifiers - those are only needed for extracting gtf, etc
         # 2. assemblyID (pk)
         # 3. source (pk)
-        # 4. one field for each fixed attribute
+        # 4. one field for each specified attribute
 
         # that's it for now but can be supplemented with additional fields later
 
@@ -297,9 +297,9 @@ class CHESS_DB_API:
             # get source IDs
             query = "SELECT sourceID FROM Sources where assemblyID = "+str(assemblyID)
             source_ids = [x[0] for x in self.execute_query(query)]
-            # get attribute keys
-            query = "SELECT key_name FROM AttributeKey WHERE variable = 0"
-            attribute_keys = [x[0] for x in self.execute_query(query)]
+            
+            # This is list of attribute names used in this summary table. Actual definition of how they are fetched are below
+            attribute_keys = ["gene_type","transcript_type","has_cds"]
 
             index_strings = f"""INDEX ({", ".join([f"`{source_id}` ASC" for source_id in source_ids])})"""
             index_strings += f", INDEX ({', '.join([f'`{source_id}.has_cds` ASC' for source_id in source_ids])})"
@@ -316,7 +316,6 @@ class CHESS_DB_API:
                         `tid` INT,
                         {", ".join([f"`{source_id}` INT" for source_id in source_ids])},
                         {", ".join([f"`{source_id}.{key}` INT" for key in attribute_keys for source_id in source_ids])},
-                        {", ".join([f"`{source_id}.has_cds` INT" for source_id in source_ids])},
                         PRIMARY KEY (tid),
                         {index_strings}
                     );
@@ -327,9 +326,17 @@ class CHESS_DB_API:
             source_cases = "\n".join([f"MAX(CASE WHEN s.sourceID = {source_id} THEN 1 ELSE 0 END) AS \"{source_id}\"," for source_id in source_ids])
             if len(source_cases) > 0:
                 source_cases = source_cases[:-1] # remove the last comma
-            attribute_cases = "\n".join([f"MAX(CASE WHEN akv.key_name = '{key}' and s.sourceID = {source_id} THEN akv.kvid ELSE NULL END) AS \"{source_id}.{key}\"," for key in attribute_keys for source_id in source_ids])
-            if len(attribute_cases) > 0:
-                attribute_cases = attribute_cases[:-1] # remove the last comma
+
+            # gene_type cases
+            geneType_cases = "\n".join([f"MAX(CASE WHEN akv.key_name = 'gene_type' and s.sourceID = {source_id} THEN akv.kvid ELSE NULL END) AS \"{source_id}.gene_type\"," for source_id in source_ids])
+            if len(geneType_cases) > 0:
+                geneType_cases = geneType_cases[:-1] # remove the last comma
+            # transcript_type cases
+            transcriptType_cases = "\n".join([f"MAX(CASE WHEN akv.key_name = dbx.type_key and s.sourceID = {source_id} THEN akv.kvid ELSE NULL END) AS \"{source_id}.gene_type\"," for source_id in source_ids])
+            if len(transcriptType_cases) > 0:
+                transcriptType_cases = transcriptType_cases[:-1] # remove the last comma
+
+            # has_cds cases
             has_cds_cases = "\n".join([f"MAX(CASE WHEN dbx.cds_start IS NOT NULL and s.sourceID = {source_id} THEN 1 ELSE 0 END) AS \"{source_id}.has_cds\"," for source_id in source_ids])
             if len(has_cds_cases) > 0:
                 has_cds_cases = has_cds_cases[:-1] # remove the last comma
@@ -339,7 +346,8 @@ class CHESS_DB_API:
                     SELECT
                             tid,
                             {source_cases},
-                            {attribute_cases},
+                            {geneType_cases},
+                            {transcriptType_cases},
                             {has_cds_cases}
                         FROM
                             TxDBXREF dbx
@@ -350,8 +358,6 @@ class CHESS_DB_API:
                         JOIN AttributeKeyValue akv ON txa.name = akv.key_name AND txa.value = akv.value
                         WHERE
                             s.assemblyID = {assemblyID}
-                            AND
-                            ak.variable = 0
                         GROUP BY
                             tid;
                     """
