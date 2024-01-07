@@ -58,11 +58,6 @@ const main: React.FC = () => {
     dispatch(set_status("idle"));
   }, [dispatch, globalData.src2attr]);
 
-  // listen to any changes in the settings and update the summary accordingly
-  // coordinate data synchronization with the server whenever settings change
-  // whenever settings change - fetch new data
-  const { data, error, isLoading } = useGetTxSummarySliceQuery(settings);
-
   return (
     <div className="main">
       <Outlet />
