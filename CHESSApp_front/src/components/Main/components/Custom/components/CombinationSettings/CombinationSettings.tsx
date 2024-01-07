@@ -91,7 +91,7 @@ const CombinationSettings: React.FC<CombinationSettingsProps> = ({ parentWidth, 
     const summary = useSelector((state: RootState) => state.summary);
 
     return (
-        <div className="custom-container" style={{ overflowY: 'auto', overflowX: 'auto' }}>
+        <div className="custom-container" style={{ overflow: 'auto' }}>
             <div className="custom-header">Combination Settings</div>
             {summary.status === "loading" ? (
                 <Spinner animation="border" role="status">

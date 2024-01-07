@@ -153,6 +153,7 @@ def globalData():
 @main_blueprint.route('/txSummarySlice',methods=['POST'])
 def txSummarySlice():
     settings = request.get_json()
+    print(settings)
 
     # get a slice of the txSummary table and return
     slice = db_methods.get_dbTxSlice(settings)

@@ -40,14 +40,21 @@ const main: React.FC = () => {
     dispatch(set_organism(parseInt(organismID)));
     dispatch(set_assembly(parseInt(assemblyID)));
     dispatch(set_include_sources(sourceIDList));
-    dispatch(set_attributes(globalData.src2attr));
+    let new_attributes = {};
+    for (const [sourceID, attrs] of Object.entries(globalData.src2attr)) {
+      if ( sourceID in sourceIDList ) {
+        new_attributes[sourceID] = attrs;
+      }
+    }
+    console.log("new_attributes", new_attributes)
+    dispatch(set_attributes(new_attributes));
     dispatch(set_status("idle"));
   }, [dispatch, globalData.src2attr]);
 
   // listen to any changes in the settings and update the summary accordingly
   // coordinate data synchronization with the server whenever settings change
   // whenever settings change - fetch new data
-  const settings = useSelector((state: RootState) => state.settings.value);
+  const settings = useSelector((state: RootState) => state.settings);
   const { data, error, isLoading } = useGetTxSummarySliceQuery(settings);
 
   return (
