@@ -9,10 +9,16 @@ import SummaryView from './components/SummaryView/SummaryView';
 import CombinationSettings from './components/CombinationSettings/CombinationSettings';
 
 import { DatabaseState } from '../../../../features/database/databaseSlice';
-import { SettingsState } from '../../../../features/settings/settingsSlice';
+import { SettingsState, add_attribute, remove_attribute } from '../../../../features/settings/settingsSlice';
 import { SummaryState } from '../../../../features/summary/summarySlice';
 import { useGetTxSummarySliceQuery } from '../../../../features/summary/summaryApi';
 
+
+interface RootState {
+    database: DatabaseState;
+    settings: SettingsState;
+  }
+  
 
 const Custom: React.FC = () => {
 
@@ -44,6 +50,42 @@ const Custom: React.FC = () => {
         }
     }, [summary_status]);
 
+    const settings = useSelector((state: RootState) => state.settings);
+    const [buttonStates, setButtonStates] = useState({});
+
+    const initialButtonStatesSet = useRef(false);
+    const dispatch = useDispatch();
+    useEffect(() => {
+      // Set initial button states only once when the component mounts
+      if (!initialButtonStatesSet.current) {
+        const initialButtonStates = {};
+        for (const [sourceID,attrs] of Object.entries(settings.value.attributes)) {
+          for (const [key,values] of Object.entries(attrs)) {
+            for (const kvid of values) {
+                const buttonKey = `${sourceID}_${kvid}`;
+                initialButtonStates[buttonKey] = true;
+            }
+          }
+        }
+        setButtonStates(initialButtonStates);
+        initialButtonStatesSet.current = true;
+      }
+    }, [settings.value.attributes]);
+
+    const handleButtonClick = (sourceID:number,kvid:number,type:string) => {
+        setButtonStates((prevStates) => {
+          const buttonKey = `${sourceID}_${kvid}`;
+          const newState = !prevStates[buttonKey];
+          console.log("button clicked",sourceID,kvid,type,newState,prevStates)
+          if (newState) {
+            dispatch(add_attribute([type,sourceID,kvid]));
+          } else {
+            dispatch(remove_attribute([type,sourceID,kvid]));
+          }
+          return { ...prevStates, [buttonKey]: newState };
+        });
+      };
+
     return (
         <div className="custom-wrapper">
             <PanelGroup direction="horizontal" onLayout={(newSize) => handleResize(0,newSize)}>
@@ -51,7 +93,7 @@ const Custom: React.FC = () => {
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
                         {/* Add the following style to the body to prevent scrolling */}
                         <style>{`body { overflow: hidden; }`}</style>
-                        <SourceSettings />
+                        <SourceSettings buttonStates={buttonStates} onButtonClickProp={handleButtonClick} />
                     </div>
                 </Panel>
                 <PanelResizeHandle className="PanelResizeHandle PanelResizeHandleVertical" />
