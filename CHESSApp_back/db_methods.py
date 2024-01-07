@@ -177,7 +177,7 @@ def get_dbTxSlice(settings):
     query += " FROM dbTxSummary_"+str(settings["genome"])+" dbtx WHERE "
 
     for sourceID, attributes in settings["attributes"].items():
-        query += "dbtx.`"+str(sourceID)+"` = 1"
+        query += "( dbtx.`"+str(sourceID)+"` = 1"
         for key,values in attributes.items():
             # values are a list. test for containment
             query += " AND dbtx.`"+str(sourceID)+"."+key+"` IN ("
@@ -185,8 +185,8 @@ def get_dbTxSlice(settings):
                 query += str(v)+","
             query = query[:-1] # remove last comma
             query += ")"
-        query += " AND "
-    query = query[:-5] # remove last AND
+        query += ") OR "
+    query = query[:-4] # remove last AND
     
     # attach groupby
     query += " GROUP BY "
@@ -201,6 +201,15 @@ def get_dbTxSlice(settings):
 
     # execute query
     res = db.session.execute(text(query))
+
+    summary = dict()
+    # parse the results into a dictionary
+    for row in res:
+        summary.setdefault(row[-1],dict())
+        for i in range(len(row)-1):
+            summary[row[-1]].setdefault(i,dict())
+            summary[row[-1]][i][row[i]] = row[i]
+
     return res
 
 

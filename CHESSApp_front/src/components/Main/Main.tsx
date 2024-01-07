@@ -40,9 +40,11 @@ const main: React.FC = () => {
     dispatch(set_organism(parseInt(organismID)));
     dispatch(set_assembly(parseInt(assemblyID)));
     dispatch(set_include_sources(sourceIDList));
+
+    const genomeSourceIDs = globalData.ass2src[parseInt(assemblyID)];
     let new_attributes = {};
     for (const [sourceID, attrs] of Object.entries(globalData.src2attr)) {
-      if ( sourceID in sourceIDList ) {
+      if ( sourceID in genomeSourceIDs ) {
         new_attributes[sourceID] = attrs;
       }
     }
