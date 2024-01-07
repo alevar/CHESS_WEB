@@ -34,21 +34,26 @@ const main: React.FC = () => {
 
   // when here, need to pre-load all configurations into the settings
   const globalData = useSelector((state: RootState) => state.database.data);
+  const settings = useSelector((state: RootState) => state.settings);
   const dispatch = useDispatch();
 
+  // this useEffect only runs if something changes in the src2attr in globalData
   useEffect(() => {
     dispatch(set_organism(parseInt(organismID)));
     dispatch(set_assembly(parseInt(assemblyID)));
     dispatch(set_include_sources(sourceIDList));
 
-    const genomeSourceIDs = globalData.ass2src[parseInt(assemblyID)];
-    let new_attributes = {};
-    for (const [sourceID, attrs] of Object.entries(globalData.src2attr)) {
-      if ( sourceID in genomeSourceIDs ) {
-        new_attributes[sourceID] = attrs;
+    let new_attributes: {[sourceID:number]:{"gene_type":[],"transcript_type":[]}} = {};
+    for (const sourceID of sourceIDList) {
+      new_attributes[sourceID] = {"gene_type":[],
+                                  "transcript_type":[]};
+      for (const gene_type of globalData.src2gt[sourceID]) {
+        new_attributes[sourceID]["gene_type"].push(gene_type);
+      }
+      for (const transcript_type of globalData.src2tt[sourceID]) {
+        new_attributes[sourceID]["transcript_type"].push(transcript_type);
       }
     }
-    console.log("new_attributes", new_attributes)
     dispatch(set_attributes(new_attributes));
     dispatch(set_status("idle"));
   }, [dispatch, globalData.src2attr]);
@@ -56,7 +61,6 @@ const main: React.FC = () => {
   // listen to any changes in the settings and update the summary accordingly
   // coordinate data synchronization with the server whenever settings change
   // whenever settings change - fetch new data
-  const settings = useSelector((state: RootState) => state.settings);
   const { data, error, isLoading } = useGetTxSummarySliceQuery(settings);
 
   return (

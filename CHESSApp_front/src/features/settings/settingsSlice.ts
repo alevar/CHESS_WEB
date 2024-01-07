@@ -62,11 +62,40 @@ export const settingsSlice = createSlice({
     set_attributes: (state, action: PayloadAction<Record<number,Record<string, number[]>>>) => {
       state.value.attributes = action.payload;
     },
-    add_attribute: (state, action: PayloadAction<[number,number]>) => {
-      state.value.attributes[action.payload[0]].push(action.payload[1]);
+    add_attribute: (state, action: PayloadAction<[string,number,number]>) => {
+      const [key, sourceID, value]:[string,number,number] = action.payload;
+      // Check if the sourceID exists in the attributes
+      if (!state.value.attributes[sourceID]) {
+        state.value.attributes[sourceID] = {};
+      }
+      // Check if the sourceID exists in the attributes[key]
+      if (!state.value.attributes[sourceID][key]) {
+        state.value.attributes[sourceID][key] = [];
+      }
+      // Add the value to the specified key and sourceID
+      state.value.attributes[sourceID][key].push(value);
     },
-    remove_attribute: (state, action: PayloadAction<[number,number]>) => {
-      state.value.attributes[action.payload[0]] = state.value.attributes[action.payload[0]].filter((attr) => attr !== action.payload[1]);
+    remove_attribute: (state, action: PayloadAction<[string, number, number]>) => {
+      const [key, sourceID, value]: [string, number, number] = action.payload;
+    
+      // Check if the sourceID exists in the attributes
+      if (state.value.attributes[sourceID]) {
+        // Check if the key exists within the specified sourceID
+        if (state.value.attributes[sourceID][key]) {
+          // Remove the specified value from the array
+          state.value.attributes[sourceID][key] = state.value.attributes[sourceID][key].filter((v) => v !== value);
+    
+          // remove the key if the array becomes empty
+          if (state.value.attributes[sourceID][key].length === 0) {
+            delete state.value.attributes[sourceID][key];
+          }
+    
+          // remove the sourceID if it has no keys
+          if (Object.keys(state.value.attributes[sourceID]).length === 0) {
+            delete state.value.attributes[sourceID];
+          }
+        }
+      }
     },
     set_format: (state, action: PayloadAction<string>) => {
       // make sure it is either gtf or gff
