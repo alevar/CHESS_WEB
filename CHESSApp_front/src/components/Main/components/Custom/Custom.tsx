@@ -74,17 +74,30 @@ const Custom: React.FC = () => {
 
     const handleButtonClick = (sourceID:number,kvid:number,type:string) => {
         setButtonStates((prevStates) => {
-          const buttonKey = `${sourceID}_${kvid}`;
-          const newState = !prevStates[buttonKey];
-          console.log("button clicked",sourceID,kvid,type,newState,prevStates)
-          if (newState) {
-            dispatch(add_attribute([type,sourceID,kvid]));
-          } else {
-            dispatch(remove_attribute([type,sourceID,kvid]));
-          }
-          return { ...prevStates, [buttonKey]: newState };
+            const buttonKey = `${type}:${sourceID}_${kvid}`;
+            const newState = !prevStates[buttonKey];
+            console.log("button clicked",sourceID,kvid,type,newState,prevStates)
+            if (newState) {
+                dispatch(add_attribute([type,sourceID,kvid]));
+            } else {
+                dispatch(remove_attribute([type,sourceID,kvid]));
+            }
+            return { ...prevStates, [buttonKey]: newState };
         });
-      };
+    };
+
+    // listen to any changes in the settings and update the summary accordingly
+    // coordinate data synchronization with the server whenever settings change
+    // whenever settings change - fetch new data
+    const { data, error, isLoading } = useGetTxSummarySliceQuery(settings);
+
+
+    // accordion item listeners
+    const [activeAccordionKey, setActiveAccordionKey] = useState<string | null>(null);
+    const handleAccordionChange = (key: string | null) => {
+        // You can perform any additional logic here before updating the state
+        setActiveAccordionKey(key);
+    };
 
     return (
         <div className="custom-wrapper">
@@ -93,7 +106,11 @@ const Custom: React.FC = () => {
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
                         {/* Add the following style to the body to prevent scrolling */}
                         <style>{`body { overflow: hidden; }`}</style>
-                        <SourceSettings buttonStates={buttonStates} onButtonClickProp={handleButtonClick} />
+                        <SourceSettings 
+                            buttonStates={buttonStates} 
+                            onButtonClickProp={handleButtonClick}
+                            activeAccordionKey={activeAccordionKey}
+                            onAccordionChange={handleAccordionChange}/>
                     </div>
                 </Panel>
                 <PanelResizeHandle className="PanelResizeHandle PanelResizeHandleVertical" />
