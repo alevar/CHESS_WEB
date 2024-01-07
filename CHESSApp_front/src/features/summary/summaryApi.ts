@@ -13,7 +13,7 @@ export const summaryApi = createApi({
       query: (settings) => ({
         url: '/txSummarySlice',
         method: 'POST',
-        body: settings,
+        body: settings.value,
       }),
       transformResponse: (response: object) => {
         return response;
