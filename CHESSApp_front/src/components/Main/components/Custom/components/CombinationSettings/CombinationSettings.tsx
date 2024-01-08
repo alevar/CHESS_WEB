@@ -56,24 +56,6 @@ const CombinationSettings: React.FC<CombinationSettingsProps> = ({ parentWidth, 
     const settings = useSelector((state: RootState) => state.settings);
     const globalData = useSelector((state: RootState) => state.database);
     const [upsetData, setUpsetData] = useState({});
-        // sets: ['A', 'B', 'C', 'D'],
-        // intersections: [
-        //     { set: 'A', value: 1000 },
-        //     { set: 'B', value: 500 },
-        //     { set: 'C', value: 800 },
-        //     { set: 'D', value: 300 },
-        //     { set: 'A,B', value: 200 },
-        //     { set: 'A,C', value: 400 },
-        //     { set: 'A,D', value: 100 },
-        //     { set: 'B,C', value: 300 },
-        //     { set: 'B,D', value: 200 },
-        //     { set: 'C,D', value: 100 },
-        //     { set: 'A,B,C', value: 100 },
-        //     { set: 'A,B,D', value: 100 },
-        //     { set: 'A,C,D', value: 0 },
-        //     { set: 'B,C,D', value: 100 },
-        //     { set: 'A,B,C,D', value: 0 },
-        // ],
     
     useEffect(() => {
         // Logic to handle settings update
