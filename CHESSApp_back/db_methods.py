@@ -200,6 +200,7 @@ def get_dbTxSlice(genome,attributes):
 
     # execute query
     res = db.session.execute(text(query))
+    print(query)
 
     summary = {} # list of sourceIDs in the intersection : dict( list of attributes in the intersection : count )
     # parse the results into a dictionary
@@ -217,13 +218,14 @@ def get_dbTxSlice(genome,attributes):
                     tx_type_intersection.append(str(row.__getattr__(str(sourceID)+".transcript_type")))
 
         row_source_intersection = ",".join(row_source_intersection)
-        summary[row_source_intersection] = {"gene_type":{},
-                                            "transcript_type":{}}
+        summary.setdefault(row_source_intersection,dict())
         if len(gene_type_intersection) > 0:
             gene_type_intersection = ",".join(gene_type_intersection)
+            summary[row_source_intersection].setdefault("gene_type",dict())
             summary[row_source_intersection]["gene_type"][gene_type_intersection] = row.count
         if len(tx_type_intersection) > 0:
             tx_type_intersection = ",".join(tx_type_intersection)
+            summary[row_source_intersection].setdefault("transcript_type",dict())
             summary[row_source_intersection]["transcript_type"][tx_type_intersection] = row.count
 
     return summary

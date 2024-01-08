@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import * as d3 from 'd3';
+import './UpsetPlot.css';
 
 interface UpsetPlotDataProps {
     data: {
-        sets: string[];
-        set_names: string[];
+        sets: {[key:string]:string};
         intersections: { set: string; value: number }[];
     };
     parentWidth: number;
@@ -59,7 +59,7 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeig
 
         // individual cells
         const cell_width = dot_width / data.intersections.length;
-        const cell_height = dot_height / data.sets.length;
+        const cell_height = dot_height / Object.keys(data.sets).length;
 
         // bars
         const maxValue = d3.max(data.intersections, (d) => d.value);
@@ -70,12 +70,16 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeig
 
         svg.attr('width', width).attr('height', height);
 
+        var div = d3.select("body").append("div")   
+            .attr("class", "tooltip")               
+            .style("opacity", 0);
+
         d3.select(svgRef.current).selectAll("*").remove();
 
         // Create additional lines for extending columns at the top
         svg
             .selectAll('line.columnExtension')
-            .data(data.sets)
+            .data(Object.keys(data.sets))
             .enter()
             .append('line')
             .attr('class', 'columnExtension')
@@ -89,7 +93,7 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeig
         // add text labels for each row
         svg
             .selectAll('text.columnLabel')
-            .data(data.set_names)
+            .data(Object.values(data.sets))
             .enter()
             .append('text')
             .attr('class', 'columnLabel')
@@ -117,11 +121,11 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeig
             .append('g')
             .attr('class', 'gridCellGroup')
             .selectAll('rect')
-            .data((d:any, i:number) => data.sets.map((set) => ({ set, intersection: d, rowIndex: i })))
+            .data((d:any, i:number) => Object.keys(data.sets).map((set) => ({ set, intersection: d, rowIndex: i })))
             .enter()
             .append('rect')
             .attr('class', 'gridCell')
-            .attr('y', (d:any) => data.sets.indexOf(d.set) * cell_height + margin.left)
+            .attr('y', (d:any) => Object.keys(data.sets).indexOf(d.set) * cell_height + margin.left)
             .attr('x', (d:any) => data.intersections.indexOf(d.intersection) * cell_width + margin.top + label_width)
             .attr('width', cell_width)
             .attr('height', cell_height)
@@ -140,11 +144,11 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeig
             .append('g')
             .attr('class', 'gridCellGroup')
             .selectAll('circle')
-            .data((d:any, i:number) => data.sets.map((set) => ({ set, intersection: d, rowIndex: i })))
+            .data((d:any, i:number) => Object.keys(data.sets).map((set) => ({ set, intersection: d, rowIndex: i })))
             .enter()
             .append('circle')
             .attr('class', 'gridCell')
-            .attr('cy', (d:any) => data.sets.indexOf(d.set) * cell_height + margin.left + cell_height / 2)
+            .attr('cy', (d:any) => Object.keys(data.sets).indexOf(d.set) * cell_height + margin.left + cell_height / 2)
             .attr('cx', (d:any) => data.intersections.indexOf(d.intersection) * cell_width + margin.top + label_width + cell_width / 2)
             .attr('r', Math.min(cell_height,cell_width) / 3)
             .style('fill', (d:any) => {
@@ -164,11 +168,11 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeig
             .append('g')
             .attr('class', 'valueBarGroup')
             .selectAll('rect')
-            .data((d:any, i:number) => data.sets.map((set) => ({ set, intersection: d, rowIndex: i })))
+            .data((d:any, i:number) => Object.keys(data.sets).map((set) => ({ set, intersection: d, rowIndex: i })))
             .enter()
             .append('rect')
             .attr('class', 'valueBar')
-            .attr('y', (d:any) => data.sets.length * cell_height + margin.left + empty_height)
+            .attr('y', (d:any) => Object.keys(data.sets).length * cell_height + margin.left + empty_height)
             .attr('x', (d:any) => data.intersections.indexOf(d.intersection) * cell_width + margin.top + label_width + cell_width / 8)
             .attr('width', cell_width / 1.25)
             .attr('height', (d:any) => normalizedValues[d.rowIndex]) // Use normalized values
@@ -201,7 +205,7 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeig
         .append('g')
         .attr('class', 'eventRectGroup')
         .selectAll('rect')
-        .data((d:any, i:number) => data.sets.map((set) => ({ set, intersection: d, rowIndex: i })))
+        .data((d:any, i:number) => Object.keys(data.sets).map((set) => ({ set, intersection: d, rowIndex: i })))
         .enter()
         .append('rect')
         .attr('class', 'eventRect')
@@ -213,15 +217,54 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeig
         .on('click', (event:Event, rowData:any) => handleRowClick(rowData))
         .on('mouseover', (event: Event, rowData: any) => {
             handleRowHover(rowData.rowIndex);
+
+    // Convert comma-separated numbers to their names and join with " ∩ "
+    const setNames = rowData.intersection.set
+        .split(',')
+        .map((number: string) => data.sets[number])
+        .join(' ∩ ');
+
+        d3.select("#tooltip").transition()        
+            .duration(200)      
+            .style("opacity", .9);
+
+            d3.select("#tooltip").html(`<div class="tooltip-box">
+                <div class="tooltip-title">
+                    <strong>${setNames}</strong>
+                </div>
+                <hr class="tooltip-separator">
+                <div class="tooltip-text">
+                    <p>Count: ${rowData.intersection.value}</p>
+                </div>
+            </div>`)  
+            .style("left", (event.clientX) + "px")     
+            .style("top", (event.clientY - 28) + "px");
+
         })
         .on('mouseleave', () => {
             handleRowHover(null);
+            d3.select("#tooltip").transition()        
+                .duration(500)      
+                .style("opacity", 0);
+        })
+        .on('mousemove', (event: Event, rowData: any) => {
+            var tooltip = d3.select('#tooltip')
+                .style('left', (event.clientX+10) + 'px')
+                .style('top', (event.clientY+10) + 'px')
         });
+
+        d3.select('body')
+            .append('div')
+            .attr('id', 'tooltip')
+            .attr('style', 'position: absolute; opacity: 0;');
     }, [data, selectedRows, hoveredRow, parentWidth, parentHeight]);
 
     return (
-        <svg ref={svgRef}>
-        </svg>
+        <div>
+            <svg ref={svgRef}></svg>
+            {/* Tooltip-like overlay */}
+            <div className="tooltip_div"></div>
+        </div>
     );
 };
 
