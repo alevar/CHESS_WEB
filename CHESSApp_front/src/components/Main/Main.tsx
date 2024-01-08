@@ -44,7 +44,7 @@ const main: React.FC = () => {
     dispatch(set_include_sources(sourceIDList));
 
     let new_attributes: {[sourceID:number]:{"gene_type":[],"transcript_type":[]}} = {};
-    for (const sourceID of sourceIDList) {
+    for (const sourceID of globalData.ass2src[parseInt(assemblyID)]) {
       new_attributes[sourceID] = {"gene_type":[],
                                   "transcript_type":[]};
       for (const gene_type of globalData.src2gt[sourceID]) {

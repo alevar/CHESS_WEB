@@ -10,11 +10,13 @@ export const summaryApi = createApi({
   }),
   endpoints: (builder) => ({
     getTxSummarySlice: builder.query<object, void>({
-      query: (settings) => ({
-        url: '/txSummarySlice',
-        method: 'POST',
-        body: settings.value,
-      }),
+      query: (settings) => {
+        return {
+          url: '/txSummarySlice',
+          method: 'POST',
+          body: settings,
+        };
+      },
       transformResponse: (response: object) => {
         return response;
       },

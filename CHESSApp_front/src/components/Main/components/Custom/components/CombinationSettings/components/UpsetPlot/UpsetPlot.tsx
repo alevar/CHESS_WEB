@@ -4,13 +4,14 @@ import * as d3 from 'd3';
 interface UpsetPlotDataProps {
     data: {
         sets: string[];
+        set_names: string[];
         intersections: { set: string; value: number }[];
     };
     parentWidth: number;
     parentHeight: number;
 }
 
-const Grid: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeight }) => {
+const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeight }) => {
     const svgRef = useRef<SVGSVGElement | null>(null);
     const [selectedRows, setSelectedRows] = useState<number[]>([]);
     const [hoveredRow, setHoveredRow] = useState<number | null>(null);
@@ -85,9 +86,10 @@ const Grid: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeight })
             .style('stroke', 'black')
             .style('stroke-width', '1px');
 
+        // add text labels for each row
         svg
             .selectAll('text.columnLabel')
-            .data(data.sets)
+            .data(data.set_names)
             .enter()
             .append('text')
             .attr('class', 'columnLabel')
@@ -223,4 +225,4 @@ const Grid: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeight })
     );
 };
 
-export default Grid;
+export default UpsetPlot;
