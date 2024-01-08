@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button, Accordion, Form } from 'react-bootstrap';
 import { useSelector, useDispatch } from 'react-redux';
 
+import HintIcon from '../../../HintIcon/HintIcon';
+
 import { DatabaseState } from '../../../../../../features/database/databaseSlice';
 import {
   SettingsState,
@@ -84,6 +86,7 @@ function SourceSettings({ buttonStates,
                       style={{ marginTop: 'auto', marginBottom: 'auto' }}
                     />
                   </div>
+                  <HintIcon sourceData={globalData?.sources[sourceID]} />
                 </Accordion.Header>
                 <Accordion.Body>
                   {globalData?.src2gt.hasOwnProperty(Number(sourceID)) && globalData?.src2gt[sourceID].length > 1 && (
