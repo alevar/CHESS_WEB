@@ -200,7 +200,6 @@ def get_dbTxSlice(genome,attributes):
 
     # execute query
     res = db.session.execute(text(query))
-    print(query)
 
     summary = {} # list of sourceIDs in the intersection : dict( list of attributes in the intersection : count )
     # parse the results into a dictionary
