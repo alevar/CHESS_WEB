@@ -12,7 +12,8 @@ export interface SettingsState {
           include_nascent : boolean,
           include_fasta : boolean,
           exclude_y_chromosome : boolean,
-          attributes : Record<number,Record<string, number[]>>
+          attributes : Record<number,Record<string, number[]>>,
+          source_intersections : number[][] // If any intersections are selected for the sources - contains a list of them
         },
   status: "loading" | "idle"
 }
@@ -28,7 +29,8 @@ const initialState: SettingsState = {
           include_nascent : false,
           include_fasta : false,
           exclude_y_chromosome : false,
-          attributes : {}
+          attributes : {},
+          source_intersections : []
         },
   status: "loading"
 }
@@ -97,6 +99,12 @@ export const settingsSlice = createSlice({
         }
       }
     },
+    add_source_intersection: (state, action: PayloadAction<number[]>) => {
+      state.value.source_intersections.push(action.payload);
+    },
+    remove_source_intersection: (state, action: PayloadAction<number[]>) => {
+      state.value.source_intersections = state.value.source_intersections.filter((intersection) => intersection !== action.payload);
+    },
     set_format: (state, action: PayloadAction<string>) => {
       // make sure it is either gtf or gff
       if (action.payload === "GTF" || action.payload === "GFF") {
@@ -119,6 +127,7 @@ export const { set_status,
                set_nascent,
                set_include_sources, add_source, remove_source,
                set_attributes, add_attribute, remove_attribute,
+               add_source_intersection, remove_source_intersection,
                set_format,
                set_nomenclature } = settingsSlice.actions
 

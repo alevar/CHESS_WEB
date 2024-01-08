@@ -11,6 +11,8 @@ import { useGetTxSummarySliceQuery } from '../../../../../../features/summary/su
 import "../../Custom.css"
 
 interface CombinationSettingsProps {
+    selectedIntersections: number[];
+    onIntersectionClick: (ixData: {set:any,intersection:any,index:number}) => void;
     parentWidth: number;
     parentHeight: number;
 }
@@ -26,7 +28,10 @@ interface RootState {
     summary: SummaryState;
 }
 
-const CombinationSettings: React.FC<CombinationSettingsProps> = ({ parentWidth, parentHeight }) => {
+const CombinationSettings: React.FC<CombinationSettingsProps> = ({ selectedIntersections,
+                                                                   onIntersectionClick,
+                                                                   parentWidth, 
+                                                                   parentHeight }) => {
     
     // Update local state when props change
     const [currentParentWidth, setCurrentParentWidth] = useState<number>(parentWidth);
@@ -68,7 +73,12 @@ const CombinationSettings: React.FC<CombinationSettingsProps> = ({ parentWidth, 
                     <span className="visually-hidden">Loading...</span>
                 </Spinner>
             ) : summary.status === "succeeded" ? (
-                <UpsetPlot data={upsetData} parentWidth={currentParentWidth} parentHeight={currentParentHeight} />
+                <UpsetPlot 
+                    data={upsetData} 
+                    selectedIntersections={selectedIntersections}
+                    onIntersectionClick={onIntersectionClick}
+                    parentWidth={currentParentWidth} 
+                    parentHeight={currentParentHeight} />
             ) : (
                 <div>
                     Error loading summary slice

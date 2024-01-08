@@ -9,7 +9,11 @@ import SummaryView from './components/SummaryView/SummaryView';
 import CombinationSettings from './components/CombinationSettings/CombinationSettings';
 
 import { DatabaseState } from '../../../../features/database/databaseSlice';
-import { SettingsState, add_attribute, remove_attribute } from '../../../../features/settings/settingsSlice';
+import { SettingsState, 
+         add_attribute, 
+         remove_attribute, 
+         add_source_intersection,
+         remove_source_intersection } from '../../../../features/settings/settingsSlice';
 import { SummaryState } from '../../../../features/summary/summarySlice';
 import { useGetTxSummarySliceQuery } from '../../../../features/summary/summaryApi';
 
@@ -109,6 +113,22 @@ const Custom: React.FC = () => {
         setActiveAccordionKey(key);
     };
 
+    // UpsetPlot selection listeners
+    const [selectedIntersections, setSelectedIntersections] = useState<number[]>([]);
+    const handleIntersectionClick = (ixData: {set:any,intersection:any,index:number}) => {
+        // dispatch actions to update settings
+        // Toggle selection
+        setSelectedIntersections((prevSelectedIntersections) => {
+            if (prevSelectedIntersections.includes(ixData.index)) {
+                // Remove the index if already selected
+                return prevSelectedIntersections.filter((index) => index !== ixData.index);
+            } else {
+                // Add the index if not selected
+                return [...prevSelectedIntersections, ixData.index];
+            }
+        });
+    };
+
     return (
         <div className="custom-wrapper">
             <PanelGroup direction="horizontal" onLayout={(newSize) => handleResize(0,newSize)}>
@@ -129,12 +149,18 @@ const Custom: React.FC = () => {
                         <Panel id="combinations_panel" defaultSize={30} minSize={20}>
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
                                 <style>{`body { overflow: hidden; }`}</style>
-                                <CombinationSettings parentWidth={combinationsPanelSize.width} parentHeight={combinationsPanelSize.height} />
+                                <CombinationSettings 
+                                    selectedIntersections={selectedIntersections}
+                                    onIntersectionClick={handleIntersectionClick}
+                                    parentWidth={combinationsPanelSize.width} 
+                                    parentHeight={combinationsPanelSize.height} />
                             </div>
                         </Panel>
                         <PanelResizeHandle className="PanelResizeHandle PanelResizeHandleHorizontal" />
                         <Panel id="summary_panel" defaultSize={70} minSize={20}>
-                            <SummaryView />
+                            <SummaryView 
+                                    parentWidth={combinationsPanelSize.width} 
+                                    parentHeight={combinationsPanelSize.height} />
                         </Panel>
                     </PanelGroup>
                 </Panel>

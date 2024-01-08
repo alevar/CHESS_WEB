@@ -85,59 +85,12 @@ def get_seqids():
 #        - gene: gene counts
 @main_blueprint.route('/globalData', methods=['GET'])
 def globalData():
-    # summary = db_methods.get_AllCountSummaryTable()
-    # assembly2nomenclature = db_methods.get_assembly2nomenclature()
-    # datasets = db_methods.get_datasets()
-    # fixedAttributes = db_methods.get_attributeSummary()
-    # upset = db_methods.get_upsetData()
-    # sources = db_methods.get_all_sources()
-
-    # data = {
-    #     "summary":summary,
-    #     "sources":sources,
-    #     "nomenclature":assembly2nomenclature,
-    #     "datasets":datasets,
-    #     "attributes":fixedAttributes,
-    #     "upset":upset
-    # }
-    
     sources = db_methods.get_all_sources()
     organisms = db_methods.get_all_organisms()
     assemblies = db_methods.get_all_assemblies()
     attributes = db_methods.get_attributeSummary()
     gene_types = db_methods.get_geneTypeSummary()
     transcript_types = db_methods.get_transcriptTypeSummary()
-
-        # since we are now working with this new summary table - need to send different data
-    # 1. map of source names to ids
-    # 2. map of assembly names to ids
-    # 3. map of attribute key value pairs to ids
-
-    # also need to reorganize the data in the summary table to reference transcript and gene types form the txdbxref instead
-
-    # settings = {"assemblyID":1,
-    #             "data":{
-    #                 1:{
-    #                     "gbkey":["gene","mRNA"],
-    #                     "gene_type":["protein_coding","lncRNA"],
-    #                     "transcript_type":["protein_coding","lncRNA"],
-    #                     "has_cds":["True","False"]
-    #                 },
-    #                 2:{
-    #                     "gbkey":["Gene","RNA"],
-    #                     "gene_type":["protein_coding","lncRNA"],
-    #                     "transcript_type":["protein_coding","lncRNA"],
-    #                     "has_cds":["True","False"]
-    #                 },
-    #                 3:{
-    #                     "gbkey":["Gene","RNA"],
-    #                     "gene_type":["protein_coding","lncRNA"],
-    #                     "transcript_type":["protein_coding","lncRNA"],
-    #                     "has_cds":["True","False"]
-    #                 }
-    #             }}
-    # test = db_methods.get_dbTxSlice(settings)
-    # print(test)
 
     data = {
         "organisms":organisms,

@@ -7,30 +7,21 @@ interface UpsetPlotDataProps {
         sets: {[key:string]:string};
         intersections: { set: string; value: number }[];
     };
+    selectedIntersections: number[];
+    onIntersectionClick: (ixData: {set:any,intersection:any,index:number}) => void;
     parentWidth: number;
     parentHeight: number;
 }
 
-const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeight }) => {
+const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, 
+                                                   selectedIntersections,
+                                                   onIntersectionClick,
+                                                   parentWidth, 
+                                                   parentHeight }) => {
     const svgRef = useRef<SVGSVGElement | null>(null);
-    const [selectedRows, setSelectedRows] = useState<number[]>([]);
-    const [hoveredRow, setHoveredRow] = useState<number | null>(null);
-
-    const handleRowClick = (rowData: {set:any,intersection:any,rowIndex:number}) => {
-        // Toggle row selection
-        setSelectedRows((prevSelectedRows) => {
-            if (prevSelectedRows.includes(rowData.rowIndex)) {
-                // Remove the row index if already selected
-                return prevSelectedRows.filter((rowIndex) => rowIndex !== rowData.rowIndex);
-            } else {
-                // Add the row index if not selected
-                return [...prevSelectedRows, rowData.rowIndex];
-            }
-        });
-    };
-
-    const handleRowHover = (rowData: number | null) => {
-        setHoveredRow(rowData);
+    const [hoveredIntersection, setHoveredIntersection] = useState<number | null>(null);
+    const handleIntersectionHover = (ixData: number | null) => {
+        setHoveredIntersection(ixData);
     };
 
 
@@ -121,7 +112,7 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeig
             .append('g')
             .attr('class', 'gridCellGroup')
             .selectAll('rect')
-            .data((d:any, i:number) => Object.keys(data.sets).map((set) => ({ set, intersection: d, rowIndex: i })))
+            .data((d:any, i:number) => Object.keys(data.sets).map((set) => ({ set, intersection: d, index: i })))
             .enter()
             .append('rect')
             .attr('class', 'gridCell')
@@ -130,8 +121,8 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeig
             .attr('width', cell_width)
             .attr('height', cell_height)
             .style('fill', (d:any) => {
-                const isSelected = selectedRows.includes(d.rowIndex);
-                const isHovered = hoveredRow === d.rowIndex;
+                const isSelected = selectedIntersections.includes(d.index);
+                const isHovered = hoveredIntersection === d.index;
                 return isSelected ? '#FF9806' : (isHovered ? '#FFBD62' : 'white');
             })
             .style('stroke', "black")
@@ -144,7 +135,7 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeig
             .append('g')
             .attr('class', 'gridCellGroup')
             .selectAll('circle')
-            .data((d:any, i:number) => Object.keys(data.sets).map((set) => ({ set, intersection: d, rowIndex: i })))
+            .data((d:any, i:number) => Object.keys(data.sets).map((set) => ({ set, intersection: d, index: i })))
             .enter()
             .append('circle')
             .attr('class', 'gridCell')
@@ -152,8 +143,8 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeig
             .attr('cx', (d:any) => data.intersections.indexOf(d.intersection) * cell_width + margin.top + label_width + cell_width / 2)
             .attr('r', Math.min(cell_height,cell_width) / 3)
             .style('fill', (d:any) => {
-                const isSelected = selectedRows.includes(d.rowIndex);
-                const isHovered = hoveredRow === d.rowIndex;
+                const isSelected = selectedIntersections.includes(d.index);
+                const isHovered = hoveredIntersection === d.index;
                 const isIncluded = d.intersection.set.includes(d.set);
                 return isSelected ? (isIncluded ? '#FF6F00' : '#807A79') 
                                   : (isIncluded ? ( isHovered ? '#FF9C46' : '#030202') : '#807A79');
@@ -168,17 +159,17 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeig
             .append('g')
             .attr('class', 'valueBarGroup')
             .selectAll('rect')
-            .data((d:any, i:number) => Object.keys(data.sets).map((set) => ({ set, intersection: d, rowIndex: i })))
+            .data((d:any, i:number) => Object.keys(data.sets).map((set) => ({ set, intersection: d, index: i })))
             .enter()
             .append('rect')
             .attr('class', 'valueBar')
             .attr('y', (d:any) => Object.keys(data.sets).length * cell_height + margin.left + empty_height)
             .attr('x', (d:any) => data.intersections.indexOf(d.intersection) * cell_width + margin.top + label_width + cell_width / 8)
             .attr('width', cell_width / 1.25)
-            .attr('height', (d:any) => normalizedValues[d.rowIndex]) // Use normalized values
+            .attr('height', (d:any) => normalizedValues[d.index]) // Use normalized values
             .style('fill', (d:any) => {
-                const isSelected = selectedRows.includes(d.rowIndex);
-                const isHovered = hoveredRow === d.rowIndex;
+                const isSelected = selectedIntersections.includes(d.index);
+                const isHovered = hoveredIntersection === d.index;
                 return isSelected ? '#FF6F00' : (isHovered ? '#FF9C46' : '#030202');
             });
 
@@ -205,7 +196,7 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeig
         .append('g')
         .attr('class', 'eventRectGroup')
         .selectAll('rect')
-        .data((d:any, i:number) => Object.keys(data.sets).map((set) => ({ set, intersection: d, rowIndex: i })))
+        .data((d:any, i:number) => Object.keys(data.sets).map((set) => ({ set, intersection: d, index: i })))
         .enter()
         .append('rect')
         .attr('class', 'eventRect')
@@ -214,12 +205,12 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeig
         .attr('width', cell_width)
         .attr('height', height)
         .style('fill', 'transparent')
-        .on('click', (event:Event, rowData:any) => handleRowClick(rowData))
-        .on('mouseover', (event: Event, rowData: any) => {
-            handleRowHover(rowData.rowIndex);
+        .on('click', (event:Event, ixData:any) => onIntersectionClick(ixData))
+        .on('mouseover', (event: Event, ixData: any) => {
+            handleIntersectionHover(ixData.index);
 
     // Convert comma-separated numbers to their names and join with " ∩ "
-    const setNames = rowData.intersection.set
+    const setNames = ixData.intersection.set
         .split(',')
         .map((number: string) => data.sets[number])
         .join(' ∩ ');
@@ -234,7 +225,7 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeig
                 </div>
                 <hr class="tooltip-separator">
                 <div class="tooltip-text">
-                    <p>Count: ${rowData.intersection.value}</p>
+                    <p>Count: ${ixData.intersection.value}</p>
                 </div>
             </div>`)  
             .style("left", (event.clientX) + "px")     
@@ -242,12 +233,12 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeig
 
         })
         .on('mouseleave', () => {
-            handleRowHover(null);
+            handleIntersectionHover(null);
             d3.select("#tooltip").transition()        
                 .duration(500)      
                 .style("opacity", 0);
         })
-        .on('mousemove', (event: Event, rowData: any) => {
+        .on('mousemove', (event: Event) => {
             var tooltip = d3.select('#tooltip')
                 .style('left', (event.clientX+10) + 'px')
                 .style('top', (event.clientY+10) + 'px')
@@ -257,7 +248,7 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, parentWidth, parentHeig
             .append('div')
             .attr('id', 'tooltip')
             .attr('style', 'position: absolute; opacity: 0;');
-    }, [data, selectedRows, hoveredRow, parentWidth, parentHeight]);
+    }, [data, selectedIntersections, hoveredIntersection, parentWidth, parentHeight]);
 
     return (
         <div>
