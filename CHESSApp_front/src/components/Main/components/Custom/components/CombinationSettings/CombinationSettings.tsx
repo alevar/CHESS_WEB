@@ -26,21 +26,6 @@ interface RootState {
     summary: SummaryState;
 }
 
-const generateRandomData = (): UpsetData => {
-    // Logic to generate random data (you can customize this based on your requirements)
-    // For simplicity, here's an example with random values.
-    const sets = ['A', 'B', 'C', 'D'];
-    const intersections = sets.map(set => ({
-        set,
-        value: Math.floor(Math.random() * 1000),
-    }));
-
-    return {
-        sets,
-        intersections,
-    };
-};
-
 const CombinationSettings: React.FC<CombinationSettingsProps> = ({ parentWidth, parentHeight }) => {
     
     // Update local state when props change
@@ -60,22 +45,19 @@ const CombinationSettings: React.FC<CombinationSettingsProps> = ({ parentWidth, 
     useEffect(() => {
         // Logic to handle settings update
         // Trigger re-render of the UpsetPlot component with updated settings
-        const sets = settings.value.sources_include;
-        const set_names = [];
-        for (const sourceID of sets) {
-            set_names.push(globalData.data.sources[sourceID].name);
+        const sets = {};
+        for (const sourceID of settings.value.sources_include) {
+            sets[sourceID] = globalData.data.sources[sourceID].name;
         }
         const intersections = [];
         for (const [sourceIDs, attrs] of Object.entries(summary.data)) {
             let total_count = 0;
-            for (const [attr, attr_data] of Object.entries(attrs)) {
-                for (const [attr_value, count] of Object.entries(attr_data)) {
-                    total_count += count;
-                }
+            for (const [attr, count] of Object.entries(attrs["transcript_type"])) {
+                total_count += count;
             }
             intersections.push({ set: sourceIDs, value: total_count });
         }
-        setUpsetData({sets,set_names,intersections});
+        setUpsetData({sets,intersections});
     }, [summary]);
 
     return (

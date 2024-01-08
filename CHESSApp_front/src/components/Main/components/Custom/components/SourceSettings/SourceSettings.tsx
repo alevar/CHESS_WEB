@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button, Accordion, Form } from 'react-bootstrap';
 import { useSelector, useDispatch } from 'react-redux';
 
-import HintIcon from '../../../HintIcon/HintIcon';
+import HintIcon from '../../../../../HintIcon/HintIcon';
 
 import { DatabaseState } from '../../../../../../features/database/databaseSlice';
 import {
