@@ -153,13 +153,21 @@ def globalData():
 @main_blueprint.route('/txSummarySlice',methods=['POST'])
 def txSummarySlice():
     settings = request.get_json()
-    slice = "test"
 
-    # get a slice of the txSummary table and return
-    # slice = db_methods.get_dbTxSlice(settings)
-    # print(slice)
+    # cleanup settings to prepare for the DB query
+    clean_settings = dict()
+    for sourceID in settings["sources_include"]:
+        for key,values in settings["attributes"][str(sourceID)].items():
+            clean_settings.setdefault(int(sourceID),dict())
+            clean_settings[sourceID][key] = values
+            
 
-    return jsonify({"txSummarySlice":slice})
+    if len(clean_settings) > 0:
+        # get a slice of the txSummary table and return
+        slice = db_methods.get_dbTxSlice(settings["genome"],clean_settings)
+        return jsonify(slice)
+    else:
+        return jsonify({})
 
 # Route: /fetchData
 # Fetches all data based on user defined settings

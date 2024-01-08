@@ -53,16 +53,16 @@ const Custom: React.FC = () => {
     const settings = useSelector((state: RootState) => state.settings);
     const [buttonStates, setButtonStates] = useState({});
 
-    const initialButtonStatesSet = useRef(false);
     const dispatch = useDispatch();
+    const initialButtonStatesSet = useRef(false);
     useEffect(() => {
       // Set initial button states only once when the component mounts
-      if (!initialButtonStatesSet.current) {
+      if (!initialButtonStatesSet.current && settings.status === "idle") { // only run when all settings have been loaded
         const initialButtonStates = {};
         for (const [sourceID,attrs] of Object.entries(settings.value.attributes)) {
           for (const [key,values] of Object.entries(attrs)) {
             for (const kvid of values) {
-                const buttonKey = `${sourceID}_${kvid}`;
+                const buttonKey = `${key}:${sourceID}_${kvid}`;
                 initialButtonStates[buttonKey] = true;
             }
           }
@@ -76,7 +76,6 @@ const Custom: React.FC = () => {
         setButtonStates((prevStates) => {
             const buttonKey = `${type}:${sourceID}_${kvid}`;
             const newState = !prevStates[buttonKey];
-            console.log("button clicked",sourceID,kvid,type,newState,prevStates)
             if (newState) {
                 dispatch(add_attribute([type,sourceID,kvid]));
             } else {
@@ -89,7 +88,18 @@ const Custom: React.FC = () => {
     // listen to any changes in the settings and update the summary accordingly
     // coordinate data synchronization with the server whenever settings change
     // whenever settings change - fetch new data
-    const { data, error, isLoading } = useGetTxSummarySliceQuery(settings);
+    const { data, error, isLoading, refetch } = useGetTxSummarySliceQuery(settings.value);
+    useEffect(() => {
+        // Fetch new data whenever settings change
+        const fetchData = async () => {
+            try {
+                await refetch();
+            } catch (error) {
+                // Handle error appropriately
+            }
+        };
+        fetchData();
+    }, [settings.value, refetch]);
 
 
     // accordion item listeners

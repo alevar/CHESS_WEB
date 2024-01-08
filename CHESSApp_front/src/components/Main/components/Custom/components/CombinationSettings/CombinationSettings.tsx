@@ -15,7 +15,7 @@ interface CombinationSettingsProps {
     parentHeight: number;
 }
 
-interface SampleData {
+interface UpsetData {
     sets: string[];
     intersections: { set: string; value: number }[];
 }
@@ -26,7 +26,7 @@ interface RootState {
     summary: SummaryState;
 }
 
-const generateRandomData = (): SampleData => {
+const generateRandomData = (): UpsetData => {
     // Logic to generate random data (you can customize this based on your requirements)
     // For simplicity, here's an example with random values.
     const sets = ['A', 'B', 'C', 'D'];
@@ -52,43 +52,49 @@ const CombinationSettings: React.FC<CombinationSettingsProps> = ({ parentWidth, 
     }, [parentWidth, parentHeight]);
 
     // deal with updating component in response to the changes in settings
-    const [settings, setSettings] = useState<SampleData>({
-        sets: ['A', 'B', 'C', 'D'],
-        intersections: [
-            { set: 'A', value: 1000 },
-            { set: 'B', value: 500 },
-            { set: 'C', value: 800 },
-            { set: 'D', value: 300 },
-            { set: 'A,B', value: 200 },
-            { set: 'A,C', value: 400 },
-            { set: 'A,D', value: 100 },
-            { set: 'B,C', value: 300 },
-            { set: 'B,D', value: 200 },
-            { set: 'C,D', value: 100 },
-            { set: 'A,B,C', value: 100 },
-            { set: 'A,B,D', value: 100 },
-            { set: 'A,C,D', value: 0 },
-            { set: 'B,C,D', value: 100 },
-            { set: 'A,B,C,D', value: 0 },
-        ],
-    });
+    const summary = useSelector((state: RootState) => state.summary);
+    const settings = useSelector((state: RootState) => state.settings);
+    const globalData = useSelector((state: RootState) => state.database);
+    const [upsetData, setUpsetData] = useState({});
+        // sets: ['A', 'B', 'C', 'D'],
+        // intersections: [
+        //     { set: 'A', value: 1000 },
+        //     { set: 'B', value: 500 },
+        //     { set: 'C', value: 800 },
+        //     { set: 'D', value: 300 },
+        //     { set: 'A,B', value: 200 },
+        //     { set: 'A,C', value: 400 },
+        //     { set: 'A,D', value: 100 },
+        //     { set: 'B,C', value: 300 },
+        //     { set: 'B,D', value: 200 },
+        //     { set: 'C,D', value: 100 },
+        //     { set: 'A,B,C', value: 100 },
+        //     { set: 'A,B,D', value: 100 },
+        //     { set: 'A,C,D', value: 0 },
+        //     { set: 'B,C,D', value: 100 },
+        //     { set: 'A,B,C,D', value: 0 },
+        // ],
     
     useEffect(() => {
         // Logic to handle settings update
-        console.log("test");
         // Trigger re-render of the UpsetPlot component with updated settings
-    }, [settings]);
-
-    const updateSettings = (newSettings: SampleData) => {
-        setSettings(newSettings);
-    };
-
-    const handleGenerateRandomData = () => {
-        const newRandomData = generateRandomData();
-        updateSettings(newRandomData);
-    };
-
-    const summary = useSelector((state: RootState) => state.summary);
+        const sets = settings.value.sources_include;
+        const set_names = [];
+        for (const sourceID of sets) {
+            set_names.push(globalData.data.sources[sourceID].name);
+        }
+        const intersections = [];
+        for (const [sourceIDs, attrs] of Object.entries(summary.data)) {
+            let total_count = 0;
+            for (const [attr, attr_data] of Object.entries(attrs)) {
+                for (const [attr_value, count] of Object.entries(attr_data)) {
+                    total_count += count;
+                }
+            }
+            intersections.push({ set: sourceIDs, value: total_count });
+        }
+        setUpsetData({sets,set_names,intersections});
+    }, [summary]);
 
     return (
         <div className="custom-container" style={{ overflow: 'auto' }}>
@@ -98,7 +104,7 @@ const CombinationSettings: React.FC<CombinationSettingsProps> = ({ parentWidth, 
                     <span className="visually-hidden">Loading...</span>
                 </Spinner>
             ) : summary.status === "succeeded" ? (
-                <UpsetPlot data={settings} parentWidth={currentParentWidth} parentHeight={currentParentHeight} />
+                <UpsetPlot data={upsetData} parentWidth={currentParentWidth} parentHeight={currentParentHeight} />
             ) : (
                 <div>
                     Error loading summary slice

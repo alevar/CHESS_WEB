@@ -155,7 +155,7 @@ def get_upsetData():
 
     return upsetData
 
-def get_dbTxSlice(settings):
+def get_dbTxSlice(genome,attributes):
     # settings should have:
     # 1. assemblyID
     # 2. data: for each sourceID to include:
@@ -167,18 +167,18 @@ def get_dbTxSlice(settings):
     # construct query
     query = "SELECT "
     # add all columns
-    for sourceID, attributes in settings["attributes"].items():
+    for sourceID, attrs in attributes.items():
         query += "dbtx.`"+str(sourceID)+"`, "
-        for k,v in attributes.items():
+        for k,v in attrs.items():
             query += "dbtx.`"+str(sourceID)+"."+k+"`, "
     # add count
-    query += " COUNT(*)"
+    query += " COUNT(*) as count"
 
-    query += " FROM dbTxSummary_"+str(settings["genome"])+" dbtx WHERE "
+    query += " FROM dbTxSummary_"+str(genome)+" dbtx WHERE "
 
-    for sourceID, attributes in settings["attributes"].items():
+    for sourceID, attrs in attributes.items():
         query += "( dbtx.`"+str(sourceID)+"` = 1"
-        for key,values in attributes.items():
+        for key,values in attrs.items():
             # values are a list. test for containment
             query += " AND dbtx.`"+str(sourceID)+"."+key+"` IN ("
             for v in values:
@@ -190,37 +190,40 @@ def get_dbTxSlice(settings):
     
     # attach groupby
     query += " GROUP BY "
-    for sourceID, attributes in settings["attributes"].items():
+    for sourceID, attrs in attributes.items():
         query += "dbtx.`"+str(sourceID)+"`, "
-        for k,v in attributes.items():
+        for k,v in attrs.items():
             query += "dbtx.`"+str(sourceID)+"."+k+"`, "
     query = query[:-2] # remove last comma
 
     query += ";"
-    print(query)
 
     # execute query
     res = db.session.execute(text(query))
 
-    summary = dict()
+    summary = {} # list of sourceIDs in the intersection : dict( list of attributes in the intersection : count )
     # parse the results into a dictionary
     for row in res:
-        summary.setdefault(row[-1],dict())
-        for i in range(len(row)-1):
-            summary[row[-1]].setdefault(i,dict())
-            summary[row[-1]][i][row[i]] = row[i]
+        row_source_intersection = []
+        gene_type_intersection = []
+        tx_type_intersection = []
+        for sourceID, attrs in attributes.items():
+            if row.__getattr__(str(sourceID)) == 1:
+                row_source_intersection.append(str(sourceID))
 
-    return res
+                if "gene_type" in attrs:
+                    gene_type_intersection.append(str(row.__getattr__(str(sourceID)+".gene_type")))
+                if "transcript_type" in attrs:
+                    tx_type_intersection.append(str(row.__getattr__(str(sourceID)+".transcript_type")))
 
+        row_source_intersection = ",".join(row_source_intersection)
+        summary[row_source_intersection] = {"gene_type":{},
+                                            "transcript_type":{}}
+        if len(gene_type_intersection) > 0:
+            gene_type_intersection = ",".join(gene_type_intersection)
+            summary[row_source_intersection]["gene_type"][gene_type_intersection] = row.count
+        if len(tx_type_intersection) > 0:
+            tx_type_intersection = ",".join(tx_type_intersection)
+            summary[row_source_intersection]["transcript_type"][tx_type_intersection] = row.count
 
-
-# contents of the json with DB state
-# all counts table (contains mappings between all organisms, assemblies, sources)
-# key attributes: gene_type, transcript_type, 
-# sequence IDs
-
-
-
-# TODOs:
-# DB: add info about the type of sequenceID (alt, random, primary, etc)
-# DB: add table of files and a link to the source. One to many relationship (single source - multiple files). Persistent files should be added and fetched for download
+    return summary
