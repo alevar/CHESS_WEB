@@ -64,34 +64,59 @@ const SummaryView: React.FC<SummaryViewProps> = ({ parentWidth, parentHeight }) 
       newSankeyData.nodes.push(source_node);
       source_map[sourceID] = max_id;
       max_id += 1;
-    }
-
-    // then add the gene type nodes
-    for (const [sourceID, gene_types] of Object.entries(summary.data.sourceSummary)) {
+      
       for (let [gene_type, transcript_types] of Object.entries(gene_types)) {
         // add gene type node
-        if (gene_type === "None"){
+        let gene_type_name = "Unknown";
+        if (gene_type === "None" || gene_type === ""){
           gene_type = "Unknown";
         }
-        const gene_type_node = { node: max_id, name: gene_type };
-        newSankeyData.nodes.push(gene_type_node);
-        gene_type_map[gene_type] = max_id;
-        max_id += 1;
-      }
-    }
+        else{
+          gene_type_name = globalData.data.gene_types[gene_type].value;
+        }
+        const gene_type_node = { node: max_id, name: gene_type_name };
+        if (!(gene_type in gene_type_map)){
+          gene_type_map[gene_type] = max_id;
+          max_id += 1;
+          newSankeyData.nodes.push(gene_type_node);
+        }
 
-    // then add the transcript type nodes
-    for (const [sourceID, gene_types] of Object.entries(summary.data.sourceSummary)) {
-      for (const [gene_type, transcript_types] of Object.entries(gene_types)) {
+        // get total number of transcripts for this gene type
+        let total_transcripts = 0;
         for (const [transcript_type, count] of Object.entries(transcript_types)) {
+          total_transcripts += count;
+        }
+
+        // add links from source to gene type
+        const source_node_id = source_map[sourceID];
+        const gene_type_node_id = gene_type_map[gene_type];
+        const link = { source: source_node_id, target: gene_type_node_id, value: total_transcripts };
+        newSankeyData.links.push(link);
+        
+        for (let [transcript_type, count] of Object.entries(transcript_types)) {
           // add transcript type node
-          if (transcript_type === "None"){
+          if (gene_type === "None" || gene_type === ""){
+            gene_type = "Unknown";
+          }
+          let transcript_type_name = "Unknown";
+          if (transcript_type === "None" || gene_type === ""){
             transcript_type = "Unknown";
           }
-          const transcript_type_node = { node: max_id, name: transcript_type };
-          newSankeyData.nodes.push(transcript_type_node);
-          transcript_type_map[transcript_type] = max_id;
-          max_id += 1;
+          else{
+            transcript_type_name = globalData.data.transcript_types[transcript_type].value;
+          }
+          const transcript_type_node = { node: max_id, name: transcript_type_name };
+          if (!(transcript_type in transcript_type_map)){
+            transcript_type_map[transcript_type] = max_id;
+            max_id += 1;
+            newSankeyData.nodes.push(transcript_type_node);
+          }
+
+          // add links from gene type to transcript type
+          const gene_type_node_id = gene_type_map[gene_type];
+          const transcript_type_node_id = transcript_type_map[transcript_type];
+          const link = { source: gene_type_node_id, target: transcript_type_node_id, value: count };
+          newSankeyData.links.push(link);
         }
       }
     }
