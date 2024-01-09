@@ -98,7 +98,8 @@ function SourceSettings({ buttonStates,
                             key={kvid}
                             id={`${sourceID}_${kvid}_button`} // Add this line
                             variant={buttonStates[`${"gene_type"}:${sourceID}_${kvid}`] === true ? 'success' : 'secondary'}
-                            onClick={() => onButtonClick(Number(sourceID), Number(kvid), 'gene_type')}>
+                            onClick={() => onButtonClick(Number(sourceID), Number(kvid), 'gene_type')}
+                            style={{ margin: '2px' }}>
                             {globalData?.attributes[kvid].value}
                           </Button>
                         ))}
@@ -114,7 +115,8 @@ function SourceSettings({ buttonStates,
                           <Button
                             key={kvid}
                             variant={buttonStates[`${"transcript_type"}:${sourceID}_${kvid}`] === true ? 'success' : 'secondary'}
-                            onClick={() => onButtonClick(Number(sourceID), Number(kvid), 'transcript_type')}>
+                            onClick={() => onButtonClick(Number(sourceID), Number(kvid), 'transcript_type')}
+                            style={{ margin: '2px' }}>
                             {globalData?.attributes[kvid].value}
                           </Button>
                         ))}
