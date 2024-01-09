@@ -235,7 +235,7 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
         .on('mouseleave', () => {
             handleIntersectionHover(null);
             d3.select("#tooltip").transition()        
-                .duration(500)      
+                .duration(200)      
                 .style("opacity", 0);
         })
         .on('mousemove', (event: Event) => {

@@ -31,13 +31,19 @@ const Custom: React.FC = () => {
         width: 30, // replace with the actual default width
         height: 30, // replace with the actual default height
     });
+    const [summaryViewPanelSize, setSummaryViewPanelSize] = useState<{ width: number; height: number }>({
+        width: 30, // replace with the actual default width
+        height: 70, // replace with the actual default height
+    });
 
     const handleResize = (id:number,data:number[]) => {
         if (id === 0) {
             setCombinationsPanelSize({ width: data[1], height: combinationsPanelSize.height });
+            setSummaryViewPanelSize({ width: data[1], height: summaryViewPanelSize.height });
         }
         else if (id === 1) {
             setCombinationsPanelSize({ width: combinationsPanelSize.width, height: data[0] });
+            setSummaryViewPanelSize({ width: summaryViewPanelSize.width, height: 100-data[0] });
         }
     };
 
@@ -113,16 +119,21 @@ const Custom: React.FC = () => {
         setActiveAccordionKey(key);
     };
 
+
     // UpsetPlot selection listeners
     const [selectedIntersections, setSelectedIntersections] = useState<number[]>([]);
     const handleIntersectionClick = (ixData: {set:any,intersection:any,index:number}) => {
-        // dispatch actions to update settings
-        // Toggle selection
+        const ix_source_list = ixData.intersection.set.split(',').map(Number).sort((a, b) => a - b);
+        // toggle selections and dispatch actions to update settings
         setSelectedIntersections((prevSelectedIntersections) => {
             if (prevSelectedIntersections.includes(ixData.index)) {
+                // update settings
+                dispatch(remove_source_intersection(ix_source_list));
                 // Remove the index if already selected
                 return prevSelectedIntersections.filter((index) => index !== ixData.index);
             } else {
+                // update settings
+                dispatch(add_source_intersection(ix_source_list));
                 // Add the index if not selected
                 return [...prevSelectedIntersections, ixData.index];
             }
@@ -159,8 +170,8 @@ const Custom: React.FC = () => {
                         <PanelResizeHandle className="PanelResizeHandle PanelResizeHandleHorizontal" />
                         <Panel id="summary_panel" defaultSize={70} minSize={20}>
                             <SummaryView 
-                                    parentWidth={combinationsPanelSize.width} 
-                                    parentHeight={combinationsPanelSize.height} />
+                                    parentWidth={summaryViewPanelSize.width} 
+                                    parentHeight={summaryViewPanelSize.height} />
                         </Panel>
                     </PanelGroup>
                 </Panel>

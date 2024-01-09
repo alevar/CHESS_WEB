@@ -115,12 +115,15 @@ def txSummarySlice():
             clean_settings[sourceID][key] = values
             
 
+    res = {"upsetSummary":[], "sourceSummary":[]}
     if len(clean_settings) > 0:
         # get a slice of the txSummary table and return
-        slice = db_methods.get_dbTxSlice(settings["genome"],clean_settings)
-        return jsonify(slice)
+        upsetSummary, sourceSummary = db_methods.get_dbTxSlice(settings["genome"],clean_settings)
+        res["upsetSummary"] = upsetSummary
+        res["sourceSummary"] = sourceSummary
+        return jsonify(res)
     else:
-        return jsonify({})
+        return jsonify(res)
 
 # Route: /fetchData
 # Fetches all data based on user defined settings

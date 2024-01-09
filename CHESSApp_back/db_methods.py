@@ -201,7 +201,8 @@ def get_dbTxSlice(genome,attributes):
     # execute query
     res = db.session.execute(text(query))
 
-    summary = {} # list of sourceIDs in the intersection : dict( list of attributes in the intersection : count )
+    upsetSummary = {} # list of sourceIDs in the intersection : dict( list of attributes in the intersection : count )
+    sourceSummary = {} # sourceID : { gene_type : { transcript_type : count } }}
     # parse the results into a dictionary
     for row in res:
         row_source_intersection = []
@@ -211,20 +212,39 @@ def get_dbTxSlice(genome,attributes):
             if row.__getattr__(str(sourceID)) == 1:
                 row_source_intersection.append(str(sourceID))
 
+                has_gene_type = False
                 if "gene_type" in attrs:
                     gene_type_intersection.append(str(row.__getattr__(str(sourceID)+".gene_type")))
+                    has_gene_type = True
+                has_transcript_type = False
                 if "transcript_type" in attrs:
                     tx_type_intersection.append(str(row.__getattr__(str(sourceID)+".transcript_type")))
+                    has_transcript_type = True
+                    
+                if has_gene_type and has_transcript_type:
+                    sourceSummary.setdefault(sourceID,dict())
+                    sourceSummary[sourceID].setdefault(gene_type_intersection[-1],dict())
+                    sourceSummary[sourceID][gene_type_intersection[-1]][tx_type_intersection[-1]] = row.count
+                elif has_gene_type:
+                    sourceSummary.setdefault(sourceID,dict())
+                    sourceSummary[sourceID].setdefault(gene_type_intersection[-1],dict())
+                    sourceSummary[sourceID][gene_type_intersection[-1]][""] = row.count
+                elif has_transcript_type:
+                    sourceSummary.setdefault(sourceID,dict())
+                    sourceSummary[sourceID].setdefault("",dict())
+                    sourceSummary[sourceID][""][tx_type_intersection[-1]] = row.count
+                else:
+                    pass
 
         row_source_intersection = ",".join(row_source_intersection)
-        summary.setdefault(row_source_intersection,dict())
+        upsetSummary.setdefault(row_source_intersection,dict())
         if len(gene_type_intersection) > 0:
             gene_type_intersection = ",".join(gene_type_intersection)
-            summary[row_source_intersection].setdefault("gene_type",dict())
-            summary[row_source_intersection]["gene_type"][gene_type_intersection] = row.count
+            upsetSummary[row_source_intersection].setdefault("gene_type",dict())
+            upsetSummary[row_source_intersection]["gene_type"][gene_type_intersection] = row.count
         if len(tx_type_intersection) > 0:
             tx_type_intersection = ",".join(tx_type_intersection)
-            summary[row_source_intersection].setdefault("transcript_type",dict())
-            summary[row_source_intersection]["transcript_type"][tx_type_intersection] = row.count
+            upsetSummary[row_source_intersection].setdefault("transcript_type",dict())
+            upsetSummary[row_source_intersection]["transcript_type"][tx_type_intersection] = row.count
 
-    return summary
+    return upsetSummary, sourceSummary

@@ -55,7 +55,7 @@ const CombinationSettings: React.FC<CombinationSettingsProps> = ({ selectedInter
             sets[sourceID] = globalData.data.sources[sourceID].name;
         }
         const intersections = [];
-        for (const [sourceIDs, attrs] of Object.entries(summary.data)) {
+        for (const [sourceIDs, attrs] of Object.entries(summary.data.upsetSummary)) {
             let total_count = 0;
             for (const [attr, count] of Object.entries(attrs["transcript_type"])) {
                 total_count += count;
