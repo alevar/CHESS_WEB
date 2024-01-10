@@ -11,7 +11,6 @@ const GeneSearch = () => {
     // For now, let's just toggle the visibility of the VisualizeGene component
     setShowVisualizeGene(true);
   };
- 
    return (
      <div>
        <div>

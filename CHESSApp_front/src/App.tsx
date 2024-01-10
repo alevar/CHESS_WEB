@@ -18,6 +18,8 @@ import { SettingsState, set_include_sources } from './features/settings/settings
 
 import "./App.css"
 import GeneSearch from './components/GeneSearch/GeneSearch';
+import IgvView from './components/IGVExplorer/igvView';
+import IgvVisualize from './components/IGVExplorer/igvVisualize';
 
 function App() {
 
@@ -58,6 +60,7 @@ function App() {
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/" element={<Home />} />
             <Route path="/genesearch" element={<GeneSearch />} />
+            <Route path="/igvexplorer" element={<IgvVisualize />} />
             <Route path="/custom" element={<Custom />} />
           </Routes>
         </div>
