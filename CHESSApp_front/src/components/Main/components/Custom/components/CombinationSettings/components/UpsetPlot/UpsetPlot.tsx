@@ -11,13 +11,15 @@ interface UpsetPlotDataProps {
     onIntersectionClick: (ixData: {set:any,intersection:any,index:number}) => void;
     parentWidth: number;
     parentHeight: number;
+    margin?: { top: number; right: number; bottom: number; left: number };
 }
 
 const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, 
                                                    selectedIntersections,
                                                    onIntersectionClick,
                                                    parentWidth, 
-                                                   parentHeight }) => {
+                                                   parentHeight,
+                                                   margin = { top: 20, right: 20, bottom: 20, left: 20 }, }) => {
     const svgRef = useRef<SVGSVGElement | null>(null);
     const [hoveredIntersection, setHoveredIntersection] = useState<number | null>(null);
     const handleIntersectionHover = (ixData: number | null) => {
@@ -30,10 +32,9 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
 
         const svg = d3.select(svgRef.current);
 
-        // Set up grid dimensions
-        const margin = { top: 0, right: 0, bottom: 0, left: 0 };
-        const width = parentWidth * 13;
-        const height = parentHeight * 4;
+        // Set up grid dimensions with margins
+        const width = parentWidth * 13 - margin.left - margin.right;
+        const height = parentHeight * 4 - margin.top - margin.bottom;
 
         // separate into subsections
         const label_width = width * 0.1;
@@ -55,11 +56,11 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
         // bars
         const maxValue = d3.max(data.intersections, (d) => d.value);
         const normalizedValues = data.intersections.map((d) => {
-            return (d.value/maxValue) * bar_height;
+            return (d.value / maxValue) * bar_height;
         });
         const scaleValues = [0, maxValue / 2, maxValue];
 
-        svg.attr('width', width).attr('height', height);
+        svg.attr('width', width + margin.left + margin.right).attr('height', height + margin.top + margin.bottom);
 
         var div = d3.select("body").append("div")   
             .attr("class", "tooltip")               

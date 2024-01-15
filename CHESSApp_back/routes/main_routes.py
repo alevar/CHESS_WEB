@@ -91,6 +91,7 @@ def globalData():
     attributes = db_methods.get_attributeSummary()
     gene_types = db_methods.get_geneTypeSummary()
     transcript_types = db_methods.get_transcriptTypeSummary()
+    nomenclatures = db_methods.get_assembly2nomenclature()
 
     data = {
         "organisms":organisms,
@@ -98,7 +99,8 @@ def globalData():
         "sources":sources,
         "attributes":attributes,
         "gene_types":gene_types,
-        "transcript_types":transcript_types
+        "transcript_types":transcript_types,
+        "nomenclature":nomenclatures
     }
 
     return jsonify(data)

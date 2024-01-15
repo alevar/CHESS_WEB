@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import Spinner from 'react-bootstrap/Spinner';
+import DownloadButton from '../../../DownloadButton/DownloadButton';
 import './Custom.css';
 
 import SourceSettings from './components/SourceSettings/SourceSettings';
@@ -109,7 +109,7 @@ const Custom: React.FC = () => {
             }
         };
         fetchData();
-    }, [settings.value, refetch]);
+    }, [settings.value.attributes, settings.value.sources_include, refetch]);
 
 
     // accordion item listeners
@@ -143,16 +143,24 @@ const Custom: React.FC = () => {
     return (
         <div className="custom-wrapper">
             <PanelGroup direction="horizontal" onLayout={(newSize) => handleResize(0,newSize)}>
-                <Panel id="sources_panel" defaultSize={30} minSize={10}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-                        {/* Add the following style to the body to prevent scrolling */}
-                        <style>{`body { overflow: hidden; }`}</style>
-                        <SourceSettings 
-                            buttonStates={buttonStates} 
-                            onButtonClickProp={handleButtonClick}
-                            activeAccordionKey={activeAccordionKey}
-                            onAccordionChange={handleAccordionChange}/>
-                    </div>
+                <Panel id="side_panel" defaultSize={30} minSize={10}>
+                    <PanelGroup direction="vertical" onLayout={(newSize) => handleResize(1,newSize)}>
+                        <Panel id="sources_panel" defaultSize={90} minSize={90}>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+                                {/* Add the following style to the body to prevent scrolling */}
+                                <style>{`body { overflow: hidden; }`}</style>
+                                <SourceSettings 
+                                    buttonStates={buttonStates} 
+                                    onButtonClickProp={handleButtonClick}
+                                    activeAccordionKey={activeAccordionKey}
+                                    onAccordionChange={handleAccordionChange}/>
+                            </div>
+                        </Panel>
+                        <hr className="custom-hr"/>
+                        <Panel id="download" defaultSize={10} minSize={10}>
+                            <DownloadButton/>
+                        </Panel>
+                    </PanelGroup>
                 </Panel>
                 <PanelResizeHandle className="PanelResizeHandle PanelResizeHandleVertical" />
                 <Panel id="central_panel" minSize={50}>

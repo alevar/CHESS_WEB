@@ -1,0 +1,15 @@
+.custom-button {
+    font-size: 18px; /* Adjust font size */
+    padding: 12px 20px; /* Adjust padding */
+    border-radius: 8px; /* Adjust border radius for rounded corners */
+    background-color: #8a66f7; /* Change background color */
+    color: #fff; /* Change text color */
+    border: 2px solid #8a66f7; /* Add border for a button-like appearance */
+  }
+  
+  .custom-button:hover {
+    background-color: #693cf3; /* Change background color on hover */
+    border-color: #693cf3; /* Change border color on hover */
+    color: #fff; /* Change text color on hover */
+  }
+  
