@@ -92,7 +92,7 @@ const SummaryView: React.FC<SummaryViewProps> = ({ parentWidth, parentHeight }) 
         const gene_type_node_id = gene_type_map[gene_type];
         const link = { source: source_node_id, target: gene_type_node_id, value: total_transcripts };
         newSankeyData.links.push(link);
-        
+
         for (let [transcript_type, count] of Object.entries(transcript_types)) {
           // add transcript type node
           if (gene_type === "None" || gene_type === ""){
@@ -127,7 +127,7 @@ const SummaryView: React.FC<SummaryViewProps> = ({ parentWidth, parentHeight }) 
 
   return (
     <div className="custom-container" style={{ overflow: 'auto' }}>
-        <div className="custom-header">Combination Settings</div>
+        <div className="custom-header">Selection Summary</div>
         {summary.status === "loading" ? (
             <Spinner animation="border" role="status">
                 <span className="visually-hidden">Loading...</span>

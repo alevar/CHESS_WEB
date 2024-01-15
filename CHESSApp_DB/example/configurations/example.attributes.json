@@ -177,7 +177,7 @@
                 "miRNA",
                 "miRNA_gene"
             ],
-            "exception":[
+            "other":[
                 "nonsense_mediated_decay",
                 "retained_intron",
                 "non_stop_decay",
