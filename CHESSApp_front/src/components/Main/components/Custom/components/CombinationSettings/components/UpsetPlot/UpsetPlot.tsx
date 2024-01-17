@@ -4,22 +4,22 @@ import './UpsetPlot.css';
 
 interface UpsetPlotDataProps {
     data: {
-        sets: {[key:string]:string};
+        sets: { [key: string]: string };
         intersections: { set: string; value: number }[];
     };
     selectedIntersections: number[];
-    onIntersectionClick: (ixData: {set:any,intersection:any,index:number}) => void;
+    onIntersectionClick: (ixData: { set: any, intersection: any, index: number }) => void;
     parentWidth: number;
     parentHeight: number;
     margin?: { top: number; right: number; bottom: number; left: number };
 }
 
-const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data, 
-                                                   selectedIntersections,
-                                                   onIntersectionClick,
-                                                   parentWidth, 
-                                                   parentHeight,
-                                                   margin = { top: 20, right: 20, bottom: 20, left: 20 }, }) => {
+const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
+    selectedIntersections,
+    onIntersectionClick,
+    parentWidth,
+    parentHeight,
+    margin = { top: 20, right: 20, bottom: 20, left: 20 }, }) => {
     const svgRef = useRef<SVGSVGElement | null>(null);
     const [hoveredIntersection, setHoveredIntersection] = useState<number | null>(null);
     const handleIntersectionHover = (ixData: number | null) => {
@@ -62,8 +62,8 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
 
         svg.attr('width', width + margin.left + margin.right).attr('height', height + margin.top + margin.bottom);
 
-        var div = d3.select("body").append("div")   
-            .attr("class", "tooltip")               
+        var div = d3.select("body").append("div")
+            .attr("class", "tooltip")
             .style("opacity", 0);
 
         d3.select(svgRef.current).selectAll("*").remove();
@@ -97,7 +97,7 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
         // Draw a bounding rectangle
         svg
             .append('rect')
-            .attr('x', margin.left+label_width)
+            .attr('x', margin.left + label_width)
             .attr('y', margin.top)
             .attr('width', width - margin.left - margin.right - label_width)
             .attr('height', dot_height - margin.top - margin.bottom)
@@ -113,15 +113,15 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
             .append('g')
             .attr('class', 'gridCellGroup')
             .selectAll('rect')
-            .data((d:any, i:number) => Object.keys(data.sets).map((set) => ({ set, intersection: d, index: i })))
+            .data((d: any, i: number) => Object.keys(data.sets).map((set) => ({ set, intersection: d, index: i })))
             .enter()
             .append('rect')
             .attr('class', 'gridCell')
-            .attr('y', (d:any) => Object.keys(data.sets).indexOf(d.set) * cell_height + margin.left)
-            .attr('x', (d:any) => data.intersections.indexOf(d.intersection) * cell_width + margin.top + label_width)
+            .attr('y', (d: any) => Object.keys(data.sets).indexOf(d.set) * cell_height + margin.left)
+            .attr('x', (d: any) => data.intersections.indexOf(d.intersection) * cell_width + margin.top + label_width)
             .attr('width', cell_width)
             .attr('height', cell_height)
-            .style('fill', (d:any) => {
+            .style('fill', (d: any) => {
                 const isSelected = selectedIntersections.includes(d.index);
                 const isHovered = hoveredIntersection === d.index;
                 return isSelected ? '#FF9806' : (isHovered ? '#FFBD62' : 'white');
@@ -136,19 +136,19 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
             .append('g')
             .attr('class', 'gridCellGroup')
             .selectAll('circle')
-            .data((d:any, i:number) => Object.keys(data.sets).map((set) => ({ set, intersection: d, index: i })))
+            .data((d: any, i: number) => Object.keys(data.sets).map((set) => ({ set, intersection: d, index: i })))
             .enter()
             .append('circle')
             .attr('class', 'gridCell')
-            .attr('cy', (d:any) => Object.keys(data.sets).indexOf(d.set) * cell_height + margin.left + cell_height / 2)
-            .attr('cx', (d:any) => data.intersections.indexOf(d.intersection) * cell_width + margin.top + label_width + cell_width / 2)
-            .attr('r', Math.min(cell_height,cell_width) / 3)
-            .style('fill', (d:any) => {
+            .attr('cy', (d: any) => Object.keys(data.sets).indexOf(d.set) * cell_height + margin.left + cell_height / 2)
+            .attr('cx', (d: any) => data.intersections.indexOf(d.intersection) * cell_width + margin.top + label_width + cell_width / 2)
+            .attr('r', Math.min(cell_height, cell_width) / 3)
+            .style('fill', (d: any) => {
                 const isSelected = selectedIntersections.includes(d.index);
                 const isHovered = hoveredIntersection === d.index;
                 const isIncluded = d.intersection.set.includes(d.set);
-                return isSelected ? (isIncluded ? '#FF6F00' : '#807A79') 
-                                  : (isIncluded ? ( isHovered ? '#FF9C46' : '#030202') : '#807A79');
+                return isSelected ? (isIncluded ? '#FF6F00' : '#807A79')
+                    : (isIncluded ? (isHovered ? '#FF9C46' : '#030202') : '#807A79');
             })
             .style('stroke', "black");
 
@@ -160,15 +160,15 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
             .append('g')
             .attr('class', 'valueBarGroup')
             .selectAll('rect')
-            .data((d:any, i:number) => Object.keys(data.sets).map((set) => ({ set, intersection: d, index: i })))
+            .data((d: any, i: number) => Object.keys(data.sets).map((set) => ({ set, intersection: d, index: i })))
             .enter()
             .append('rect')
             .attr('class', 'valueBar')
-            .attr('y', (d:any) => Object.keys(data.sets).length * cell_height + margin.left + empty_height)
-            .attr('x', (d:any) => data.intersections.indexOf(d.intersection) * cell_width + margin.top + label_width + cell_width / 8)
+            .attr('y', (d: any) => Object.keys(data.sets).length * cell_height + margin.left + empty_height)
+            .attr('x', (d: any) => data.intersections.indexOf(d.intersection) * cell_width + margin.top + label_width + cell_width / 8)
             .attr('width', cell_width / 1.25)
-            .attr('height', (d:any) => normalizedValues[d.index]) // Use normalized values
-            .style('fill', (d:any) => {
+            .attr('height', (d: any) => normalizedValues[d.index]) // Use normalized values
+            .style('fill', (d: any) => {
                 const isSelected = selectedIntersections.includes(d.index);
                 const isHovered = hoveredIntersection === d.index;
                 return isSelected ? '#FF6F00' : (isHovered ? '#FF9C46' : '#030202');
@@ -176,7 +176,7 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
 
         // Add vertical axis to the right of the bar section
         const axisScale = d3.scaleLinear()
-            .domain([maxValue,0])
+            .domain([maxValue, 0])
             .range([height, height - bar_height]);
 
         const axis = d3.axisLeft(axisScale)
@@ -187,63 +187,65 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
             .attr('class', 'axis')
             .attr('transform', `translate(${margin.left + label_width}, ${margin.top})`)
             .call(axis);
-        
-    // plot a single rectangle for each intersection for handling mouse events
-    // rectangle is completely transparent
-    svg
-        .selectAll('rect.eventRect')
-        .data(data.intersections)
-        .enter()
-        .append('g')
-        .attr('class', 'eventRectGroup')
-        .selectAll('rect')
-        .data((d:any, i:number) => Object.keys(data.sets).map((set) => ({ set, intersection: d, index: i })))
-        .enter()
-        .append('rect')
-        .attr('class', 'eventRect')
-        .attr('y', margin.top)
-        .attr('x', (d:any) => data.intersections.indexOf(d.intersection) * cell_width + margin.top + label_width)
-        .attr('width', cell_width)
-        .attr('height', height)
-        .style('fill', 'transparent')
-        .on('click', (event:Event, ixData:any) => onIntersectionClick(ixData))
-        .on('mouseover', (event: Event, ixData: any) => {
-            handleIntersectionHover(ixData.index);
 
-    // Convert comma-separated numbers to their names and join with " ∩ "
-    const setNames = ixData.intersection.set
-        .split(',')
-        .map((number: string) => data.sets[number])
-        .join(' ∩ ');
+        // plot a single rectangle for each intersection for handling mouse events
+        // rectangle is completely transparent
+        svg
+            .selectAll('rect.eventRect')
+            .data(data.intersections)
+            .enter()
+            .append('g')
+            .attr('class', 'eventRectGroup')
+            .selectAll('rect')
+            .data((d: any, i: number) => Object.keys(data.sets).map((set) => ({ set, intersection: d, index: i })))
+            .enter()
+            .append('rect')
+            .attr('class', 'eventRect')
+            .attr('y', margin.top)
+            .attr('x', (d: any) => data.intersections.indexOf(d.intersection) * cell_width + margin.top + label_width)
+            .attr('width', cell_width)
+            .attr('height', height)
+            .style('fill', 'transparent')
+            .on('click', (event: Event, ixData: any) => onIntersectionClick(ixData))
+            .on('mouseover', (event: Event, ixData: any) => {
+                handleIntersectionHover(ixData.index);
 
-        d3.select("#tooltip").transition()        
-            .duration(200)      
-            .style("opacity", .9);
+                // Convert comma-separated numbers to their names and join with " ∩ "
+                const setNames = ixData.intersection.set
+                    .split(',')
+                    .map((number: string) => data.sets[number])
+                    .join(' ∩ ');
 
-            d3.select("#tooltip").html(`<div class="tooltip-box">
-                <div class="tooltip-title">
-                    <strong>${setNames}</strong>
-                </div>
-                <hr class="tooltip-separator">
-                <div class="tooltip-text">
-                    <p>Count: ${ixData.intersection.value}</p>
-                </div>
-            </div>`)  
-            .style("left", (event.clientX) + "px")     
-            .style("top", (event.clientY - 28) + "px");
+                d3.select("#tooltip").transition()
+                    .style("opacity", .9);
 
-        })
-        .on('mouseleave', () => {
-            handleIntersectionHover(null);
-            d3.select("#tooltip").transition()        
-                .duration(200)      
-                .style("opacity", 0);
-        })
-        .on('mousemove', (event: Event) => {
-            var tooltip = d3.select('#tooltip')
-                .style('left', (event.clientX+10) + 'px')
-                .style('top', (event.clientY+10) + 'px')
-        });
+                const svgContainer = svgRef.current?.getBoundingClientRect();
+                const tooltipLeft = event.pageX - svgContainer?.left ?? 0;
+                const tooltipTop = event.pageY - svgContainer?.top ?? 0;
+
+                d3.select("#tooltip").html(`<div class="tooltip-box">
+                                                <div class="tooltip-title">
+                                                    <strong>${setNames}</strong>
+                                                </div>
+                                                <hr class="tooltip-separator">
+                                                <div class="tooltip-text">
+                                                    <p>Count: ${ixData.intersection.value}</p>
+                                                </div>
+                                            </div>`)  
+                    .style("left", tooltipLeft + "px")     
+                    .style("top", tooltipTop - 28 + "px");
+
+            })
+            .on('mouseleave', () => {
+                handleIntersectionHover(null);
+                d3.select("#tooltip")
+                    .style("opacity", 0);
+            })
+            .on('mousemove', (event: Event) => {
+                var tooltip = d3.select('#tooltip')
+                    .style('left', (event.clientX + 10) + 'px')
+                    .style('top', (event.clientY + 10) + 'px')
+            });
 
         d3.select('body')
             .append('div')
@@ -254,7 +256,6 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
     return (
         <div>
             <svg ref={svgRef}></svg>
-            {/* Tooltip-like overlay */}
             <div className="tooltip_div"></div>
         </div>
     );
