@@ -28,15 +28,16 @@ const Custom: React.FC = () => {
 
     // handle resize logic
     const [combinationsPanelSize, setCombinationsPanelSize] = useState<{ width: number; height: number }>({
-        width: 30, // replace with the actual default width
-        height: 30, // replace with the actual default height
+        width: 70,
+        height: 30
     });
     const [summaryViewPanelSize, setSummaryViewPanelSize] = useState<{ width: number; height: number }>({
-        width: 30, // replace with the actual default width
-        height: 70, // replace with the actual default height
+        width: 70,
+        height: 70,
     });
 
     const handleResize = (id:number,data:number[]) => {
+        console.log("resize",data)
         if (id === 0) {
             setCombinationsPanelSize({ width: data[1], height: combinationsPanelSize.height });
             setSummaryViewPanelSize({ width: data[1], height: summaryViewPanelSize.height });
@@ -146,8 +147,7 @@ const Custom: React.FC = () => {
                 <Panel id="side_panel" defaultSize={30} minSize={10}>
                     <PanelGroup direction="vertical" onLayout={(newSize) => handleResize(1,newSize)}>
                         <Panel id="sources_panel" defaultSize={90} minSize={90}>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-                                {/* Add the following style to the body to prevent scrolling */}
+                            <div>
                                 <style>{`body { overflow: hidden; }`}</style>
                                 <SourceSettings 
                                     buttonStates={buttonStates} 
@@ -163,10 +163,10 @@ const Custom: React.FC = () => {
                     </PanelGroup>
                 </Panel>
                 <PanelResizeHandle className="PanelResizeHandle PanelResizeHandleVertical" />
-                <Panel id="central_panel" minSize={50}>
+                <Panel id="central_panel" defaultSize={70} minSize={50}>
                     <PanelGroup direction="vertical" onLayout={(newSize) => handleResize(1,newSize)}>
                         <Panel id="combinations_panel" defaultSize={30} minSize={20}>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+                            <div>
                                 <style>{`body { overflow: hidden; }`}</style>
                                 <CombinationSettings 
                                     selectedIntersections={selectedIntersections}

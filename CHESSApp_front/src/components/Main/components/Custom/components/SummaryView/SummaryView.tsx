@@ -26,27 +26,6 @@ const SummaryView: React.FC<SummaryViewProps> = ({ parentWidth, parentHeight }) 
   const settings = useSelector((state: RootState) => state.settings);
   const summary = useSelector((state: RootState) => state.summary);
 
-  // const sankeyData = {
-  //     nodes: [
-  //         { node: 0, name: 'Source 1' },
-  //         { node: 1, name: 'Source 2' },
-  //         { node: 2, name: 'Gene Type 1' },
-  //         { node: 3, name: 'Gene Type 2' },
-  //         { node: 4, name: 'Transcript Type 1' },
-  //         { node: 5, name: 'Transcript Type 2' },
-  //     ],
-  //     links: [
-  //         { source: 0, target: 2, value: 10 },
-  //         { source: 0, target: 3, value: 20 },
-  //         { source: 1, target: 2, value: 15 },
-  //         { source: 1, target: 3, value: 25 },
-  //         { source: 2, target: 4, value: 12 },
-  //         { source: 2, target: 5, value: 13 },
-  //         { source: 3, target: 4, value: 22 },
-  //         { source: 3, target: 5, value: 23 },
-  //     ],
-  // };
-
   // process summary data to extract the data for the current view
   const [sankeyData, setSankeyData] = useState({});
   useEffect(() => {
@@ -127,7 +106,6 @@ const SummaryView: React.FC<SummaryViewProps> = ({ parentWidth, parentHeight }) 
 
   return (
     <div className="custom-container" style={{ overflow: 'auto' }}>
-        <div className="custom-header">Selection Summary</div>
         {summary.status === "loading" ? (
             <Spinner animation="border" role="status">
                 <span className="visually-hidden">Loading...</span>

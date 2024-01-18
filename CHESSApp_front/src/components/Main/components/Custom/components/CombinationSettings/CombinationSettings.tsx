@@ -67,7 +67,6 @@ const CombinationSettings: React.FC<CombinationSettingsProps> = ({ selectedInter
 
     return (
         <div className="custom-container" style={{ overflow: 'auto' }}>
-            <div className="custom-header">Combination Settings</div>
             {summary.status === "loading" ? (
                 <Spinner animation="border" role="status">
                     <span className="visually-hidden">Loading...</span>
