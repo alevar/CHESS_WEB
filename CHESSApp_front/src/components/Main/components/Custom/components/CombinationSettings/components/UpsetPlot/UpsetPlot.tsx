@@ -19,7 +19,7 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
     onIntersectionClick,
     parentWidth,
     parentHeight,
-    margin = { top: 20, right: 20, bottom: 20, left: 20 }, }) => {
+    margin = { top: 50, right: 50, bottom: 50, left: 50 }, }) => {
     const svgRef = useRef<SVGSVGElement | null>(null);
     const [hoveredIntersection, setHoveredIntersection] = useState<number | null>(null);
     const handleIntersectionHover = (ixData: number | null) => {
@@ -30,11 +30,9 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
     useEffect(() => {
         if (!svgRef.current) return;
 
-        const svg = d3.select(svgRef.current);
-
         // Set up grid dimensions with margins
-        const width = parentWidth * 13 - margin.left - margin.right;
-        const height = parentHeight * 4 - margin.top - margin.bottom;
+        const width = parentWidth - margin.left - margin.right;
+        const height = parentHeight - margin.top - margin.bottom;
 
         // separate into subsections
         const label_width = width * 0.1;
@@ -60,7 +58,10 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
         });
         const scaleValues = [0, maxValue / 2, maxValue];
 
-        svg.attr('width', width + margin.left + margin.right).attr('height', height + margin.top + margin.bottom);
+        const svg = d3
+                .select(svgRef.current)
+                .attr('width', parentWidth)
+                .attr('height', parentHeight);
 
         var div = d3.select("body").append("div")
             .attr("class", "tooltip")
