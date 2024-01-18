@@ -29,15 +29,18 @@ const SankeyPlot: React.FC<SankeyPlotProps> = ({
         // Clear any previous SVG content
         d3.select(svgRef.current).selectAll('*').remove();
 
-        // Set up SVG dimensions with margins
-        const width = parentWidth * 15 - margin.left - margin.right;
-        const height = parentHeight * 4 - margin.top - margin.bottom;
+        // Get dimensions of the container
+        const container = svgRef.current.parentElement;
+        const width = container.clientWidth - margin.left - margin.right;
+        const height = container.clientHeight - margin.top - margin.bottom;
+
+        console.log('SankeyPlot', width, height)
 
         // Create SVG container with margins
         const svg = d3
             .select(svgRef.current)
-            .attr('width', parentWidth * 15)
-            .attr('height', parentHeight * 4)
+            .attr('width', container.clientWidth)
+            .attr('height', container.clientHeight)
             .append('g') // Add a group element to apply margins
             .attr('transform', `translate(${margin.left},${margin.top})`);
 
