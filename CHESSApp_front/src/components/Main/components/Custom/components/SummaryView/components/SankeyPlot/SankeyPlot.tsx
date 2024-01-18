@@ -17,7 +17,7 @@ const SankeyPlot: React.FC<SankeyPlotProps> = ({
     data,
     parentWidth,
     parentHeight,
-    margin = { top: 20, right: 20, bottom: 20, left: 20 },
+    margin = { top: 50, right: 50, bottom: 50, left: 50 },
 }) => {
     const svgRef = useRef<SVGSVGElement | null>(null);
 
@@ -30,26 +30,21 @@ const SankeyPlot: React.FC<SankeyPlotProps> = ({
         d3.select(svgRef.current).selectAll('*').remove();
 
         // Get dimensions of the container
-        const container = svgRef.current.parentElement;
-        const width = container.clientWidth - margin.left - margin.right;
-        const height = container.clientHeight - margin.top - margin.bottom;
-
-        console.log('SankeyPlot', width, height)
+        const width = parentWidth - margin.left - margin.right;
+        const height = parentHeight - margin.top - margin.bottom;
 
         // Create SVG container with margins
         const svg = d3
             .select(svgRef.current)
-            .attr('width', container.clientWidth)
-            .attr('height', container.clientHeight)
-            .append('g') // Add a group element to apply margins
-            .attr('transform', `translate(${margin.left},${margin.top})`);
+            .attr('width', parentWidth)
+            .attr('height', parentHeight);
 
         // Set up the Sankey diagram with adjusted extent
         const sankeyGenerator = sankey()
-            .nodeWidth(15)
+            .nodeWidth(25)
             .nodePadding(10)
             .extent([
-                [0, 0],
+                [margin.left, margin.top],
                 [width, height],
             ]);
 
@@ -66,6 +61,12 @@ const SankeyPlot: React.FC<SankeyPlotProps> = ({
             .attr('height', (d) => d.y1 - d.y0)
             .attr('width', (d) => d.x1 - d.x0)
             .attr('fill', (d) => color(d.name))
+            .on('mouseover', function (event, d) {
+                d3.select(this).attr('stroke', 'black').attr('stroke-width', 2);
+            })
+            .on('mouseout', function (event, d) {
+                d3.select(this).attr('stroke', 'none');
+            })
             .append('title')
             .text((d) => `${d.name}\n${d.value}`);
 
@@ -83,7 +84,12 @@ const SankeyPlot: React.FC<SankeyPlotProps> = ({
             .attr('d', sankeyLinkHorizontal())
             .attr('stroke', 'grey')
             .attr('stroke-width', ({ width }) => Math.max(1, width))
-            .sort((a, b) => b.width - a.width)
+            .on('mouseover', function (event, d) {
+                d3.select(this).attr('stroke', 'black').attr('stroke-width', ({ width }) => Math.max(1, width));
+            })
+            .on('mouseout', function (event, d) {
+                d3.select(this).attr('stroke', 'grey').attr('stroke-width', ({ width }) => Math.max(1, width));
+            })
             .append('title')
             .text((d) => `${d.source.name} → ${d.target.name}\n${d.value}`);
 
@@ -100,20 +106,9 @@ const SankeyPlot: React.FC<SankeyPlotProps> = ({
             .attr('text-anchor', (d) => (d.x0 < width / 2 ? 'start' : 'end'))
             .text((d) => d.name);
 
-        // Add zoom behavior
-        const zoom = d3.zoom().on('zoom', (event) => {
-            svg.attr('transform', event.transform);
-        });
-
-        svg.call(zoom);
-
-        return () => {
-            // Clean up zoom behavior on component unmount
-            svg.on('.zoom', null);
-        };
     }, [data, parentWidth, parentHeight, margin]);
 
-    return <svg ref={svgRef}></svg>;
+    return <svg ref={svgRef} width={parentWidth} height={parentHeight}></svg>;
 };
 
 export default SankeyPlot;

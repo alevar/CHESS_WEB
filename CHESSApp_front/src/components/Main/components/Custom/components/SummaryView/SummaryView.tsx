@@ -53,11 +53,11 @@ const SummaryView: React.FC<SummaryViewProps> = ({ parentWidth, parentHeight }) 
         else{
           gene_type_name = globalData.data.gene_types[gene_type].value;
         }
-        const gene_type_node = { node: max_id, name: gene_type_name };
         if (!(gene_type in gene_type_map)){
+          const gene_type_node = { node: max_id, name: gene_type_name };
           gene_type_map[gene_type] = max_id;
-          max_id += 1;
           newSankeyData.nodes.push(gene_type_node);
+          max_id += 1;
         }
 
         // get total number of transcripts for this gene type
@@ -71,7 +71,13 @@ const SummaryView: React.FC<SummaryViewProps> = ({ parentWidth, parentHeight }) 
         const gene_type_node_id = gene_type_map[gene_type];
         const link = { source: source_node_id, target: gene_type_node_id, value: total_transcripts };
         newSankeyData.links.push(link);
+      }
+    }
 
+    // different sources might have contributed to the same gene type, hence we need to sum their transcript values together
+
+    for (const [sourceID, gene_types] of Object.entries(summary.data.sourceSummary)) {      
+      for (let [gene_type, transcript_types] of Object.entries(gene_types)) {
         for (let [transcript_type, count] of Object.entries(transcript_types)) {
           // add transcript type node
           if (gene_type === "None" || gene_type === ""){
@@ -84,11 +90,11 @@ const SummaryView: React.FC<SummaryViewProps> = ({ parentWidth, parentHeight }) 
           else{
             transcript_type_name = globalData.data.transcript_types[transcript_type].value;
           }
-          const transcript_type_node = { node: max_id, name: transcript_type_name };
           if (!(transcript_type in transcript_type_map)){
+            const transcript_type_node = { node: max_id, name: transcript_type_name };
             transcript_type_map[transcript_type] = max_id;
-            max_id += 1;
             newSankeyData.nodes.push(transcript_type_node);
+            max_id += 1;
           }
 
           // add links from gene type to transcript type
@@ -100,7 +106,7 @@ const SummaryView: React.FC<SummaryViewProps> = ({ parentWidth, parentHeight }) 
       }
     }
 
-    console.log("new sankey data", newSankeyData);
+    console.log("sankey data", newSankeyData);
     setSankeyData(newSankeyData);
   }, [summary.data.sourceSummary]);
 
