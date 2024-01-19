@@ -347,17 +347,5 @@
         "synonyms":["exception"],
         "variable":1,
         "description":"A free text field for any additional information."
-    },
-    "db_xref":{
-        "values":{},
-        "synonyms":["db_xref","dbxref","db_xrefs","dbxrefs","Dbxref"],
-        "variable":1,
-        "description":"A free text field for any additional information."
-    },
-    "CDS_db_xref":{
-        "values":{},
-        "synonyms":["CDS_db_xref","CDS_dbxref","CDS_db_xrefs","CDS_dbxrefs"],
-        "variable":1,
-        "description":"A free text field for any additional information."
-    },
+    }
 }

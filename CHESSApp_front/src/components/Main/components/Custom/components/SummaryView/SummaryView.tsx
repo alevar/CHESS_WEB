@@ -127,6 +127,9 @@ const SummaryView: React.FC<SummaryViewProps> = ({ parentWidth, parentHeight }) 
       }
     }
 
+    // group links together
+    newSankeyData.links = groupLinks(newSankeyData.links);
+
     setSankeyData(newSankeyData);
   }, [summary.data.sourceSummary]);
 

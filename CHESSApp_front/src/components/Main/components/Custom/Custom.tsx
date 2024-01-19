@@ -156,7 +156,7 @@ const Custom: React.FC = () => {
             <PanelGroup direction="horizontal" onLayout={(newSize) => handleResize(0,newSize)}>
                 <Panel id="side_panel" defaultSize={default_panel_dims.settings_panel.width} minSize={10}>
                     <PanelGroup direction="vertical" onLayout={(newSize) => handleResize(1,newSize)}>
-                        <Panel id="sources_panel" defaultSize={default_panel_dims.settings_panel.width} minSize={90}>
+                        <Panel id="sources_panel" defaultSize={default_panel_dims.settings_panel.height} minSize={90}>
                             <div>
                                 <style>{`body { overflow: hidden; }`}</style>
                                 <SourceSettings 
@@ -167,7 +167,7 @@ const Custom: React.FC = () => {
                             </div>
                         </Panel>
                         <hr className="custom-hr"/>
-                        <Panel id="download" defaultSize={default_panel_dims.download_panel.width} minSize={10}>
+                        <Panel id="download" defaultSize={default_panel_dims.download_panel.height} minSize={10}>
                             <div>
                                 <DownloadButton/>
                             </div>
