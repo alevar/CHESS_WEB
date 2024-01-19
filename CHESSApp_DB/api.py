@@ -174,13 +174,11 @@ class CHESS_DB_API:
         if transcript.score is not None:
             query += ", score"
             values += (transcript.score,)
-        query += ") VALUES (%s, %s, %s, %s, %s"
+        query += ") VALUES (%s, %s, %s, %s, %s, %s, %s"
         if transcript.cds_start is not None and transcript.cds_end is not None:
             query += ", %s, %s"
         if transcript.score is not None:
             query += ", %s"
-        if transcript.transcript_type_value is not None:
-            query += ", %s, %s"
         query += ")"
 
         return self.execute_query(query, values)
