@@ -320,13 +320,12 @@ def addSources(api_connection,config,args):
     for k,v in all_attributes.items():
         ams_key = ams.check_key(k)
         if ams_key is None:
-            ams_key = ams.add_key(k,int(v["over_max_capacity"]),"")
             verification[k] = v["values"]
+            continue
 
         for value in v["values"]:
             ams_value = ams.check_value(ams_key,value)
             if ams_value is None:
-                ams_value = ams.add_value(ams_key,value)
                 verification.setdefault(k,set()).add(value)
 
     if len(verification)>0:
@@ -335,6 +334,15 @@ def addSources(api_connection,config,args):
             print(k+": "+",".join(v))      
         res = input("Would you like to launch a prompt to resolve these conflicts now? You can also resolve conflicts via addAttributes module later (y/n): ")
         if res.lower() == "y":
+            # add missing attributes to the AMS to prompt resolution
+            for k,v in all_attributes.items():
+                ams_key = ams.check_key(k)
+                if ams_key is None:
+                    ams_key = ams.add_key(k,int(v["over_max_capacity"]),"")
+                for value in v["values"]:
+                    ams_value = ams.check_value(ams_key,value)
+                    if ams_value is None:
+                        ams_value = ams.add_value(ams_key,value)
             ams.prompt()
         else:
             print("Skipping attribute verification")

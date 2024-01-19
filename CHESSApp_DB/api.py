@@ -74,7 +74,6 @@ class CHESS_DB_API:
                 assert False,"Invalid query type."
         except mysql.connector.Error as err:
             print(f"Error: {err}")
-            print(query)
             exit(-1)
         
         self.commit()
@@ -325,7 +324,7 @@ class CHESS_DB_API:
             if len(geneType_cases) > 0:
                 geneType_cases = geneType_cases[:-1] # remove the last comma
             # transcript_type cases
-            transcriptType_cases = "\n".join([f"MAX(CASE WHEN akv.key_name = dbx.type_key and s.sourceID = {source_id} THEN akv.kvid ELSE NULL END) AS \"{source_id}.gene_type\"," for source_id in source_ids])
+            transcriptType_cases = "\n".join([f"MAX(CASE WHEN akv.key_name = dbx.type_key and s.sourceID = {source_id} THEN akv.kvid ELSE NULL END) AS \"{source_id}.transcript_type\"," for source_id in source_ids])
             if len(transcriptType_cases) > 0:
                 transcriptType_cases = transcriptType_cases[:-1] # remove the last comma
 
@@ -346,15 +345,14 @@ class CHESS_DB_API:
                             TxDBXREF dbx
                         JOIN Sources s USING (sourceID)
                         JOIN TXAttribute txa USING (tid, sourceID, transcript_id)
-                        JOIN AttributeValueMap avm ON txa.name = avm.key_name AND txa.value = avm.std_value
+                        JOIN AttributeValueMap avm ON txa.name = avm.key_name AND txa.value = avm.og_value
                         JOIN AttributeKey ak USING (key_name)
-                        JOIN AttributeKeyValue akv ON txa.name = akv.key_name AND txa.value = akv.value
+                        JOIN AttributeKeyValue akv ON txa.name = akv.key_name AND avm.std_value = akv.value
                         WHERE
                             s.assemblyID = {assemblyID}
                         GROUP BY
                             tid;
                     """
-            
             res = self.execute_query(query)
         
         return True
