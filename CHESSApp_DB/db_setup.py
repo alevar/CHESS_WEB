@@ -242,10 +242,63 @@ def merge_attributes(attributes:dict,attributes_to_merge:dict,max_value:int) -> 
     return res
 
 def addSources(api_connection,config,args):
+    # deal with transcript type and gene type resolution
+    # when preparing sources for insert - add mandated attributes such as transcript_type and gene_type
+    # this is required to ensure the same set of kvids can be referenced by each source
+    # instead of one source linking to a set of kvids for gb_key
     if not os.path.exists(args.temp):
         os.makedirs(args.temp)
 
     logFP = open(args.log, 'w') if args.log else None
+
+    # prepare sources before dealing with attributes by running gffread
+    # and asserting that transcript_type and gene_type are added correctly to each normalized transcript
+    si = 0
+    for source,data in config.items():
+        transcript_type_key = data["transcript_type_key"]
+        gene_type_key = data["gene_type_key"]
+        gene_name_key = data["gene_name_key"]
+        filename = data["file"]
+
+        source_format = "gff" if is_gff(filename) else "gtf"
+
+        # run gffread to standardize the transcript set before importing into the database
+        norm_gtf = os.path.abspath(args.temp)+"/"+str(si)+".gtf" # stores temporary file with the normalized input gtf to be added to the database
+        run_gffread(filename,norm_gtf,args.gffread,args.log)
+
+        # correct attributesby ensuring all required attributes exist, and if not - inserting them
+        corrected_gtf = os.path.abspath(args.temp)+"/"+str(si)+".corrected.gtf"
+        with open(norm_gtf, 'r') as inFP, open(corrected_gtf, 'w') as outFP:
+            for line in inFP:
+                if line[0] == "#":
+                    continue
+                lcs = line.rstrip().split("\t")
+                if not len(lcs) == 9:
+                    continue
+
+                attrs = extract_attributes(lcs[8],source_format)
+                transcript_type_value = attrs.get(transcript_type_key,"NA")
+                gene_type_value = attrs.get(gene_type_key,"NA")
+                gene_name_value = attrs.get(gene_name_key,"NA")
+
+                if "transcript_type" not in attrs:
+                    attrs["transcript_type"] = transcript_type_value
+                if "gene_type" not in attrs:
+                    attrs["gene_type"] = gene_type_value
+                if "gene_name" not in attrs:
+                    attrs["gene_name"] = gene_name_value
+
+                attrs_str = ";".join([k+" "+v for k,v in attrs.items()])
+                outFP.write("\t".join(lcs[:8])+"\t"+attrs_str+"\n")
+
+        # remove the normalized file if it already exists
+        if os.path.exists(norm_gtf):
+            os.remove(norm_gtf)
+            
+        data["norm_file"] = corrected_gtf
+        data["source_format"] = source_format
+        si+=1
+
 
     # before all else, process types from all sources
     # this way if the user input is required - it can be handled before the main bulk of the data is processed
@@ -288,15 +341,15 @@ def addSources(api_connection,config,args):
         sourceName = data["name"].replace("'","\\'")
         assemblyName = data["assemblyName"].replace("'","\\'")
         filename = data["file"]
-        transcript_type_key = data["transcript_type_key"]
-        gene_type_key = data["gene_type_key"]
 
         # get mapping information from the database for the inputs
         assemblyID = api_connection.get_assemblyID(assemblyName)
         # load sequence identifiers from the current file first (just a set of all values in column 1)
         input_seqid_set = set()
         with open(filename,"r") as inFP:
-            [input_seqid_set.add(line.split("\t")[0]) for line in inFP if line[0]!="#" and len(line.split("\t"))==9]
+            for line in inFP:
+                if line[0]!="#" and len(line.split("\t"))==9:
+                    input_seqid_set.add(line.split("\t")[0])
         sequenceIDMap = api_connection.get_seqidMap(assemblyID,input_seqid_set)
 
         # extract current GTF for the database
@@ -305,11 +358,8 @@ def addSources(api_connection,config,args):
         api_connection.to_gtf(assemblyID,sequenceIDMap,db_gtf_fname)
 
         # gffread/gffcompare/etc
-        source_format = "gff" if is_gff(filename) else "gtf"
-
-        # run gffread to standardize the transcript set before importing into the database
-        norm_input_gtf = os.path.abspath(args.temp)+"/input.gffread.gtf" # stores temporary file with the normalized input gtf to be added to the database
-        run_gffread(filename,norm_input_gtf,args.gffread,args.log)
+        source_format = data["source_format"]
+        norm_input_gtf = data["norm_file"]
 
         # run gffcompare between the database GTF and the normalized input file
         gffcmp_gtf_fname = os.path.abspath(args.temp)+"/input.gffread.gffcmp"
@@ -322,7 +372,7 @@ def addSources(api_connection,config,args):
 
         # iterate over the contents of the file and add them to the database
         for transcript_lines in read_gffread_gtf(norm_input_gtf):
-            transcript = TX(transcript_lines,sequenceIDMap,transcript_type_key,gene_type_key)
+            transcript = TX(transcript_lines,sequenceIDMap)
             working_tid = None # tid PK of the transcript being worked on as it appears in the Transcripts table
             working_tid = tracking.get(transcript.tid,None)
             if working_tid is None:

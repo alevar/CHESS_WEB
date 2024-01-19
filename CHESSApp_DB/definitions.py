@@ -99,3 +99,59 @@ def chain_inv(chain:list) -> list:
         res.append((chain[i-1][1],chain[i][0]))
         
     return res
+
+def to_attribute_string(attrs:dict,gff:bool=False,feature_type:str=None)->str:
+    """
+    This function converts a dictionary of attributes to an attribute string. Guarantees order of essential attributes.
+
+    Parameters:
+    attrs (dict): A dictionary of attributes.
+    gff (bool, optional): A flag indicating whether to convert to GFF format. Defaults to False.
+    feature_type (str, optional): The feature type of the GFF file. Defaults to None.
+
+    Returns:
+    str: An attribute string.
+    """
+    order = ["ID","Parent","transcript_id","gene_id","gene_name","gene_type","db_xref","description","max_TPM","sample_count","assembly_id","tag"]
+    res = ""
+    sep = " "
+    quote = "\""
+    end = "; "
+    if gff:
+        assert feature_type in ["gene","transcript","exon","CDS"],"wrong type: "+str(feature_type)
+        sep = "="
+        quote = ""
+        end = ";"
+        
+    for k in order:
+        if k in attrs:
+            if gff:
+                assert ";" not in attrs[k],"invalid character in attribute: "+attrs[k]
+            
+            if gff and feature_type=="gene" and k=="transcript_id":
+                continue
+            elif gff and feature_type=="gene" and k=="gene_id":
+                res+="ID="+quote+attrs[k]+quote+end
+            elif gff and feature_type=="transcript" and k=="transcript_id":
+                res+="ID="+quote+attrs[k]+quote+end
+            elif gff and feature_type=="transcript" and k=="gene_id":
+                res+="Parent="+quote+attrs[k]+quote+end
+            elif gff and feature_type in ["exon","CDS"] and k=="transcript_id":
+                res+="Parent="+quote+attrs[k]+quote+end
+            elif gff and feature_type in ["exon","CDS"] and k=="gene_id":
+                continue
+            else:        
+                res+=k+sep+quote+attrs[k]+quote+end
+    
+    # add any other attributes in sorted order
+    for k in sorted(list(attrs)):
+        if k not in order:
+            if gff:
+                assert ";" not in attrs[k],"invalid character in attribute: "+attrs[k]
+            res+=k+sep+quote+attrs[k]+quote+end
+    
+    if not gff:
+        res = res.rstrip()
+    if gff:
+        res = res.rstrip(";")
+    return res

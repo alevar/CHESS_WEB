@@ -4,7 +4,7 @@ from definitions import *
 
 # declares a transcript class used for parsing data into the database
 class TX:
-    def __init__(self,transcript_lines:list=None,seqid_map:dict=None,transcript_type_key:str=None,gene_type_key:str=None,gene_name_key:str=None):
+    def __init__(self,transcript_lines:list=None,seqid_map:dict=None):
         self.seqid = None
         self.strand = None
         self.start = None
@@ -17,12 +17,9 @@ class TX:
         self.cds_end = None
         self.attributes = None
         self.score = "."
-
-        self.transcript_type_key = transcript_type_key
+        
         self.transcript_type_value = None
-        self.gene_type_key = gene_type_key
         self.gene_type_value = None
-        self.gene_name_key = gene_name_key
         self.gene_name_value = None
 
         if transcript_lines is not None and seqid_map is not None:
@@ -40,6 +37,9 @@ class TX:
     def check_valid_transcript_attributes(self,attributes:dict):
         assert "transcript_id" in attributes,"transcript_id attribute not found"
         assert "gene_id" in attributes,"gene_id attribute not found"
+        assert "gene_name" in attributes,"gene_name attribute not found"
+        assert "transcript_name" in attributes,"transcript_name attribute not found"
+        assert "gene_type" in attributes,"gene_type attribute not found"
 
     def from_strlist(self,transcript_lines:list,seqid_map:dict):
         tx_lcs = transcript_lines[0].rstrip().split("\t")
@@ -48,13 +48,6 @@ class TX:
         self.attributes = extract_attributes(tx_lcs[8],gff=False)
         self.attributes = {k:v.replace("'","\\").replace("\"","\\") for k,v in self.attributes.items()}
         self.check_valid_transcript_attributes(self.attributes)
-
-        if self.transcript_type_key is not None:
-            self.transcript_type_value = self.attributes.get(self.transcript_type_key,None)
-        if self.gene_type_key is not None:
-            self.gene_type_value = self.attributes.get(self.gene_type_key,None)
-        if self.gene_name_key is not None:
-            self.gene_name_value = self.attributes.get(self.gene_name_key,None)
 
         self.seqid = tx_lcs[0]
         assert self.seqid in seqid_map,"sequence ID not found in sequence ID map"
@@ -66,6 +59,10 @@ class TX:
 
         self.tid = self.attributes["transcript_id"]
         self.gid = self.attributes["gene_id"]
+
+        self.transcript_type_value = self.attributes["transcript_type"]
+        self.gene_type_value = self.attributes["gene_type"]
+        self.gene_name_value = self.attributes["gene_name"]
 
         # get exon chain (and cds if available)
         self.exons = []

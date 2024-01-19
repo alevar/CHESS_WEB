@@ -15,7 +15,6 @@ import {
     add_source_intersection,
     remove_source_intersection
 } from '../../../../features/settings/settingsSlice';
-import { SummaryState } from '../../../../features/summary/summarySlice';
 import { useGetTxSummarySliceQuery } from '../../../../features/summary/summaryApi';
 
 import './Custom.css';
