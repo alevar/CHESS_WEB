@@ -276,20 +276,23 @@ def addSources(api_connection,config,args):
                 if not len(lcs) == 9:
                     continue
 
-                attrs = extract_attributes(lcs[8],source_format)
-                transcript_type_value = attrs.get(transcript_type_key,"NA")
-                gene_type_value = attrs.get(gene_type_key,"NA")
-                gene_name_value = attrs.get(gene_name_key,"NA")
+                if lcs[2] =="transcript":
+                    attrs = extract_attributes(lcs[8],False)
+                    transcript_type_value = attrs.get(transcript_type_key,"NA")
+                    gene_type_value = attrs.get(gene_type_key,"NA")
+                    gene_name_value = attrs.get(gene_name_key,"NA")
 
-                if "transcript_type" not in attrs:
-                    attrs["transcript_type"] = transcript_type_value
-                if "gene_type" not in attrs:
-                    attrs["gene_type"] = gene_type_value
-                if "gene_name" not in attrs:
-                    attrs["gene_name"] = gene_name_value
+                    if "transcript_type" not in attrs:
+                        attrs["transcript_type"] = transcript_type_value
+                    if "gene_type" not in attrs:
+                        attrs["gene_type"] = gene_type_value
+                    if "gene_name" not in attrs:
+                        attrs["gene_name"] = gene_name_value
 
-                attrs_str = ";".join([k+" "+v for k,v in attrs.items()])
-                outFP.write("\t".join(lcs[:8])+"\t"+attrs_str+"\n")
+                    attrs_str = to_attribute_string(attrs,False,"transcript")
+                    outFP.write("\t".join(lcs[:8])+"\t"+attrs_str+"\n")
+                else:
+                    outFP.write(line)
 
         # remove the normalized file if it already exists
         if os.path.exists(norm_gtf):
@@ -305,42 +308,41 @@ def addSources(api_connection,config,args):
     all_attributes = dict()
     for source,data in config.items():
         # process attributes
-        attrs = load_attributes_from_gtf(data["file"],args.max_values)
+        attrs = load_attributes_from_gtf(data["norm_file"],args.max_values)
         all_attributes = merge_attributes(all_attributes,attrs,args.max_values)
     
     # check that everything is compatible with the database - if there are any conflicts exit, prompting user to add those entries manually via json configuration through addAttributes
     # eventually to be superceeded by a proper admin panel
     # verify attributes in the sources and prompt user to resolve conflicts if exist
-    verification = dict()
-    ams = AttributeManagementSystem(api_connection)
-    for k,v in all_attributes.items():
-        db_key = ams.check_key(k)
-        if db_key is None:
-            verification[k] = v["values"]
-            continue
-        else: # if the key is compatible - need to check the values
-            for value in v["values"]:
-                db_value = ams.check_value(db_key,value)
-                if db_value is None:
-                    verification.setdefault(k,set()).add(value)
 
-    if len(verification)>0 and not args.skipUnknownAttributes:
-        print("The following attributes are not present in the database or have values that are not present in the database:")
+    ams = AttributeManagementSystem(api_connection)
+    verification = dict()
+    for k,v in all_attributes.items():
+        ams_key = ams.check_key(k)
+        if ams_key is None:
+            ams_key = ams.add_key(k,int(v["over_max_capacity"]),"")
+            verification[k] = v["values"]
+
+        for value in v["values"]:
+            ams_value = ams.check_value(ams_key,value)
+            if ams_value is None:
+                ams_value = ams.add_value(ams_key,value)
+                verification.setdefault(k,set()).add(value)
+
+    if len(verification)>0:
+        print("Some attributes are not present in the database or have values that are not present in the database:")  
         for k,v in verification.items():
-            print(k)
-            print("\t"+",".join(v))
-        
-        res = input("Would you like to launch a prompt to resolve these conflicts now? You can also resolve conflicts via addAttributes module later or run this module with skipUnknownAttributes flag enabled (y/n): ")
+            print(k+": "+",".join(v))      
+        res = input("Would you like to launch a prompt to resolve these conflicts now? You can also resolve conflicts via addAttributes module later (y/n): ")
         if res.lower() == "y":
-            ams.prompt(verification)
+            ams.prompt()
         else:
             print("Skipping attribute verification")
-            exit(1)
 
     for source,data in config.items():
         sourceName = data["name"].replace("'","\\'")
         assemblyName = data["assemblyName"].replace("'","\\'")
-        filename = data["file"]
+        filename = data["norm_file"]
 
         # get mapping information from the database for the inputs
         assemblyID = api_connection.get_assemblyID(assemblyName)
@@ -359,11 +361,10 @@ def addSources(api_connection,config,args):
 
         # gffread/gffcompare/etc
         source_format = data["source_format"]
-        norm_input_gtf = data["norm_file"]
-
+        
         # run gffcompare between the database GTF and the normalized input file
         gffcmp_gtf_fname = os.path.abspath(args.temp)+"/input.gffread.gffcmp"
-        run_gffcompare(norm_input_gtf,db_gtf_fname,gffcmp_gtf_fname,args.gffcompare,args.log)
+        run_gffcompare(filename,db_gtf_fname,gffcmp_gtf_fname,args.gffcompare,args.log)
 
         # insert source data into Sources table
         working_sourceID = api_connection.insert_source(data,source_format)
@@ -371,7 +372,7 @@ def addSources(api_connection,config,args):
         tracking = load_tracking(gffcmp_gtf_fname+".tracking")
 
         # iterate over the contents of the file and add them to the database
-        for transcript_lines in read_gffread_gtf(norm_input_gtf):
+        for transcript_lines in read_gffread_gtf(filename):
             transcript = TX(transcript_lines,sequenceIDMap)
             working_tid = None # tid PK of the transcript being worked on as it appears in the Transcripts table
             working_tid = tracking.get(transcript.tid,None)

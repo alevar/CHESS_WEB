@@ -43,3 +43,14 @@ Functionality:
 !!!!! Sex chromosome resolution - PAR regions. implement the algorithm in the original paper
 
 When examining transcripts at a locus (gene tab). Use https://lineup.js.org/app/#happiness . We can present various stats, like plddt, sources, expression, intron conservation, etc. When clicking on a transcript, can load a view of introns and exons of that transcript (as two side-by-side) panels
+
+!!! Provide annotation mode:
+1. User uploads a gtf file
+2. extract intron chains and send to the server
+3. server queries mysql to get all transcripts with matching intron chains
+4. server returns a list of transcripts with matching intron chains
+5. client parses the response, compares chains once more and annotates output, witch graphical display
+
+
+!!! Add search bar to search for anything by attribute. Whatever get's typed in, is then searched against the attributes tables.
+- Matching transcripts and genes are returned to the user

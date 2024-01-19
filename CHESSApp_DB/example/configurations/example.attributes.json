@@ -1,6 +1,12 @@
 {
     "gene_type":{
         "values":{
+            "NA":[
+                "NA",
+                "na",
+                "N/A",
+                "n/a"
+            ],
             "protein_coding":[
                 "protein_coding",
                 "coding",
@@ -108,14 +114,22 @@
     },
     "transcript_type":{
         "values":{
+            "NA":[
+                "NA",
+                "na",
+                "N/A",
+                "n/a"
+            ],
             "protein_coding":[
                 "protein_coding",
                 "coding",
                 "protein-coding",
                 "protein coding",
-                "proteincoding"
+                "proteincoding",
+                "mRNA"
             ],
             "pseudogene":[
+                "transcribed_pseudogene",
                 "pseudogene",
                 "pseudo",
                 "pseudogenes",
@@ -180,7 +194,9 @@
                 "nonsense_mediated_decay",
                 "retained_intron",
                 "non_stop_decay",
-                "protein_coding_LoF"
+                "protein_coding_LoF",
+                "precursor_RNA",
+                "Gene"
             ],
             "TEC":[
                 "TEC"
@@ -331,5 +347,17 @@
         "synonyms":["exception"],
         "variable":1,
         "description":"A free text field for any additional information."
-    }
+    },
+    "db_xref":{
+        "values":{},
+        "synonyms":["db_xref","dbxref","db_xrefs","dbxrefs","Dbxref"],
+        "variable":1,
+        "description":"A free text field for any additional information."
+    },
+    "CDS_db_xref":{
+        "values":{},
+        "synonyms":["CDS_db_xref","CDS_dbxref","CDS_db_xrefs","CDS_dbxrefs"],
+        "variable":1,
+        "description":"A free text field for any additional information."
+    },
 }

@@ -50,6 +50,8 @@ class AttributeManagementSystem:
         self.to_resolve_stack = [] # stack of keys linked to sets of values to be resolved
         # the resolution prompt will pop the top of the stack and present the user with resolution strategies
     
+    def close(self):
+        self.dbcon.disconnect()
     
     def prompt(self):
         while self.next_state():

@@ -18,6 +18,9 @@ class TX:
         self.attributes = None
         self.score = "."
         
+        self.transcript_type_key = "transcript_type"
+        self.gene_type_key = "gene_type"
+        self.gene_name_key = "gene_name"
         self.transcript_type_value = None
         self.gene_type_value = None
         self.gene_name_value = None
@@ -37,9 +40,9 @@ class TX:
     def check_valid_transcript_attributes(self,attributes:dict):
         assert "transcript_id" in attributes,"transcript_id attribute not found"
         assert "gene_id" in attributes,"gene_id attribute not found"
-        assert "gene_name" in attributes,"gene_name attribute not found"
-        assert "transcript_name" in attributes,"transcript_name attribute not found"
-        assert "gene_type" in attributes,"gene_type attribute not found"
+        assert self.gene_name_key in attributes,"gene_name attribute not found"
+        assert self.transcript_type_key in attributes,"transcript_type attribute not found"
+        assert self.gene_type_key in attributes,"gene_type attribute not found"
 
     def from_strlist(self,transcript_lines:list,seqid_map:dict):
         tx_lcs = transcript_lines[0].rstrip().split("\t")
@@ -60,9 +63,9 @@ class TX:
         self.tid = self.attributes["transcript_id"]
         self.gid = self.attributes["gene_id"]
 
-        self.transcript_type_value = self.attributes["transcript_type"]
-        self.gene_type_value = self.attributes["gene_type"]
-        self.gene_name_value = self.attributes["gene_name"]
+        self.transcript_type_value = self.attributes[self.transcript_type_key]
+        self.gene_type_value = self.attributes[self.gene_type_key]
+        self.gene_name_value = self.attributes[self.gene_name_key]
 
         # get exon chain (and cds if available)
         self.exons = []
