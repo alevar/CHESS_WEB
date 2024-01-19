@@ -156,11 +156,12 @@ def get_upsetData():
     return upsetData
 
 def get_dbTxSlice(genome,attributes):
-    # settings should have:
+    # parameters:
     # 1. assemblyID
-    # 2. data: for each sourceID to include:
-    #   - key (standard name)
-    #   - value (kvid)
+    # 2. attributes: for each sourceID to include:
+    #   - sourceID
+    #       - key (standard name)
+    #       - value (kvid)
     # returns a slice of the dbTxSummary table with matching data
     # summarized by the number of transcripts in each category
 
@@ -216,6 +217,7 @@ def get_dbTxSlice(genome,attributes):
                 if "gene_type" in attrs:
                     gene_type_intersection.append(str(row.__getattr__(str(sourceID)+".gene_type")))
                     has_gene_type = True
+
                 has_transcript_type = False
                 if "transcript_type" in attrs:
                     tx_type_intersection.append(str(row.__getattr__(str(sourceID)+".transcript_type")))
@@ -224,15 +226,8 @@ def get_dbTxSlice(genome,attributes):
                 if has_gene_type and has_transcript_type:
                     sourceSummary.setdefault(sourceID,dict())
                     sourceSummary[sourceID].setdefault(gene_type_intersection[-1],dict())
-                    sourceSummary[sourceID][gene_type_intersection[-1]][tx_type_intersection[-1]] = row.count
-                elif has_gene_type:
-                    sourceSummary.setdefault(sourceID,dict())
-                    sourceSummary[sourceID].setdefault(gene_type_intersection[-1],dict())
-                    sourceSummary[sourceID][gene_type_intersection[-1]][""] = row.count
-                elif has_transcript_type:
-                    sourceSummary.setdefault(sourceID,dict())
-                    sourceSummary[sourceID].setdefault("",dict())
-                    sourceSummary[sourceID][""][tx_type_intersection[-1]] = row.count
+                    sourceSummary[sourceID][gene_type_intersection[-1]].setdefault(tx_type_intersection[-1],0)
+                    sourceSummary[sourceID][gene_type_intersection[-1]][tx_type_intersection[-1]] += row.count
                 else:
                     pass
 

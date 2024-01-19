@@ -164,8 +164,8 @@ class CHESS_DB_API:
         return tx_res
     
     def insert_dbxref(self, transcript:TX, tid:int, sourceID:int):
-        query = f"INSERT INTO TxDBXREF (tid, sourceID, transcript_id, start, end"
-        values = (tid, sourceID, transcript.tid, transcript.start, transcript.end)
+        query = f"INSERT INTO TxDBXREF (tid, sourceID, transcript_id, start, end, type_key, type_value"
+        values = (tid, sourceID, transcript.tid, transcript.start, transcript.end, transcript.transcript_type_key, transcript.transcript_type_value)
         if transcript.cds_start is not None and transcript.cds_end is not None:
             query += ", cds_start"
             values += (transcript.cds_start,)
@@ -174,11 +174,6 @@ class CHESS_DB_API:
         if transcript.score is not None:
             query += ", score"
             values += (transcript.score,)
-        if transcript.transcript_type_value is not None:
-            query += ", type_key"
-            values += (transcript.transcript_type_key,)
-            query += ", type_value"
-            values += (transcript.transcript_type_value,)
         query += ") VALUES (%s, %s, %s, %s, %s"
         if transcript.cds_start is not None and transcript.cds_end is not None:
             query += ", %s, %s"
