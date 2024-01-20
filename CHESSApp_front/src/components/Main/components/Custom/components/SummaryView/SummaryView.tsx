@@ -21,6 +21,10 @@ interface RootState {
   summary: SummaryState;
 }
 
+interface SankeyNode {
+  node: number;
+  name: string;
+}
 interface SankeyLink {
   source: string;
   target: string;
@@ -28,7 +32,6 @@ interface SankeyLink {
 }
 
 function groupLinks(arr: SankeyLink[]): SankeyLink[] {
-  console.log(arr)
   const source_target_map = {};
   for (const link of arr) {
     const source_target = link.source + "_" + link.target;
@@ -36,15 +39,76 @@ function groupLinks(arr: SankeyLink[]): SankeyLink[] {
       source_target_map[source_target]["value"] += link.value;
     }
     else {
-      source_target_map[source_target] = {source: link.source, target: link.target, value: link.value};
+      source_target_map[source_target] = { source: link.source, target: link.target, value: link.value };
     }
   }
 
-  console.log("arr",arr)
-  console.log("source_target_map",source_target_map)
   return Object.values(source_target_map);
 }
 
+function buildSankeyData(data: any, globalData: any, threshold:number): { nodes: SankeyNode[], links: SankeyLink[] } {
+  let maxId = 0;
+  const sourceMap: { [key: string]: number } = {};
+  const geneTypeMap: { [key: string]: number } = {};
+  const transcriptTypeMap: { [key: string]: number } = {};
+
+  const sankeyData: { nodes: SankeyNode[], links: SankeyLink[] } = { nodes: [], links: [] };
+
+  function addNode(name: string, map: { [key: string]: number }): number {
+    if (!(name in map)) {
+      const nodeId = maxId++;
+      map[name] = nodeId;
+      sankeyData.nodes.push({ node: nodeId, name });
+      return nodeId;
+    }
+    return map[name];
+  }
+
+  function addLink(sourceId: number, targetId: number, value: number): void {
+    sankeyData.links.push({ source: sourceId, target: targetId, value });
+  }
+
+  // Add source nodes and build initial structure
+  for (const [sourceID, geneTypes] of Object.entries(data)) {
+    const sourceNode = { node: addNode(globalData.data.sources[sourceID].name, sourceMap), name: globalData.data.sources[sourceID].name };
+
+    for (const [geneType, transcriptTypes] of Object.entries(geneTypes)) {
+      let geneTypeName = (geneType === "None" || geneType === "") ? "Unknown" : globalData.data.gene_types[geneType].value;
+      const transcriptCount = getTotalTranscripts(transcriptTypes);
+
+      if (transcriptCount < threshold) {
+        geneTypeName = "Other";
+      }
+
+      const geneTypeNode = { node: addNode(geneTypeName, geneTypeMap), name: geneTypeName };
+
+      // Add link from source to gene type
+      addLink(sourceNode.node, geneTypeNode.node, transcriptCount);
+
+      for (const [transcriptType, count] of Object.entries(transcriptTypes)) {
+        let transcriptTypeName = (transcriptType === "None" || transcriptType === "") ? "Unknown" : globalData.data.transcript_types[transcriptType].value;
+        
+        if (count < threshold) {
+          transcriptTypeName = "Other";
+        }
+        
+        const transcriptTypeNode = { node: addNode(transcriptTypeName, transcriptTypeMap), name: transcriptTypeName };
+
+        // Add link from gene type to transcript type
+        addLink(geneTypeNode.node, transcriptTypeNode.node, count);
+      }
+    }
+  }
+
+  // Group links together
+  sankeyData.links = groupLinks(sankeyData.links);
+
+  return sankeyData;
+}
+
+function getTotalTranscripts(transcriptTypes: { [key: string]: number }): number {
+  return Object.values(transcriptTypes).reduce((total, count) => total + count, 0);
+}
 
 const SummaryView: React.FC<SummaryViewProps> = ({ parentWidth, parentHeight }) => {
   const globalData = useSelector((state: RootState) => state.database);
@@ -54,98 +118,29 @@ const SummaryView: React.FC<SummaryViewProps> = ({ parentWidth, parentHeight }) 
   // process summary data to extract the data for the current view
   const [sankeyData, setSankeyData] = useState({});
   useEffect(() => {
-    let max_id = 0; // the next available ID for a node in sankey data
-    let source_map = {}; // map of sourceIDs to sankey node IDs
-    let gene_type_map = {}; // map of gene type IDs to sankey node IDs
-    let transcript_type_map = {}; // map of transcript type IDs to sankey node IDs
+    const sankeyData = buildSankeyData(summary.data.sourceSummary,globalData,100);
 
-    let newSankeyData = {nodes:[],links:[]};
-
-    // first add the source nodes
-    for (const [sourceID, gene_types] of Object.entries(summary.data.sourceSummary)) {
-      // add source node
-      const source_node = { node: max_id, name: globalData.data.sources[sourceID].name };
-      newSankeyData.nodes.push(source_node);
-      source_map[sourceID] = max_id;
-      max_id += 1;
-      
-      for (let [gene_type, transcript_types] of Object.entries(gene_types)) {
-        // add gene type node
-        let gene_type_name = "Unknown";
-        if (gene_type === "None" || gene_type === ""){
-          gene_type = "Unknown";
-        }
-        else{
-          gene_type_name = globalData.data.gene_types[gene_type].value;
-        }
-        const gene_type_node = { node: max_id, name: gene_type_name };
-        if (!(gene_type in gene_type_map)){
-          gene_type_map[gene_type] = max_id;
-          max_id += 1;
-          newSankeyData.nodes.push(gene_type_node);
-        }
-
-        // get total number of transcripts for this gene type
-        let total_transcripts = 0;
-        for (const [transcript_type, count] of Object.entries(transcript_types)) {
-          total_transcripts += count;
-        }
-
-        // add links from source to gene type
-        const source_node_id = source_map[sourceID];
-        const gene_type_node_id = gene_type_map[gene_type];
-        const link = { source: source_node_id, target: gene_type_node_id, value: total_transcripts };
-        newSankeyData.links.push(link);
-
-        for (let [transcript_type, count] of Object.entries(transcript_types)) {
-          // add transcript type node
-          if (gene_type === "None" || gene_type === ""){
-            gene_type = "Unknown";
-          }
-          let transcript_type_name = "Unknown";
-          if (transcript_type === "None" || gene_type === ""){
-            transcript_type = "Unknown";
-          }
-          else{
-            transcript_type_name = globalData.data.transcript_types[transcript_type].value;
-          }
-          const transcript_type_node = { node: max_id, name: transcript_type_name };
-          if (!(transcript_type in transcript_type_map)){
-            transcript_type_map[transcript_type] = max_id;
-            max_id += 1;
-            newSankeyData.nodes.push(transcript_type_node);
-          }
-
-          console.log(gene_type, gene_type_name, transcript_type, transcript_type_name, count)
-
-          // add links from gene type to transcript type
-          const gene_type_node_id = gene_type_map[gene_type];
-          const transcript_type_node_id = transcript_type_map[transcript_type];
-          const link = { source: gene_type_node_id, target: transcript_type_node_id, value: count };
-          newSankeyData.links.push(link);
-        }
-      }
-    }
-
-    // group links together
-    newSankeyData.links = groupLinks(newSankeyData.links);
-
-    setSankeyData(newSankeyData);
+    setSankeyData(sankeyData);
   }, [summary.data.sourceSummary]);
 
   return (
-    <div className="custom-container" style={{ overflow: 'auto' }}>
-        {summary.status === "loading" ? (
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Loading...</span>
-            </Spinner>
-        ) : summary.status === "succeeded" ? (
-            <SankeyPlot data={sankeyData} parentWidth={parentWidth} parentHeight={parentHeight}/>
-        ) : (
-            <div>
-                Error loading summary slice
-            </div>
-        )}
+    <div className="summary-container" style={{ overflow: 'auto' }}>
+      {summary.status === "loading" ? (
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
+      ) : summary.status === "succeeded" ? (
+        <div style={{ width: parentWidth, height:parentHeight, overflow: 'scroll' }}>
+          <SankeyPlot data={sankeyData} parentWidth={parentWidth} parentHeight={parentHeight} />
+          <div>
+            {/* Any additional info goes into this scrollable container */}
+          </div>
+        </div>
+      ) : (
+        <div>
+          Error loading summary slice
+        </div>
+      )}
     </div>
   );
 };

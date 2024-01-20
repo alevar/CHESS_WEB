@@ -200,16 +200,19 @@ def get_dbTxSlice(genome,attributes):
     query += ";"
 
     # execute query
-    print(text(query))
     res = db.session.execute(text(query))
 
     upsetSummary = {} # list of sourceIDs in the intersection : dict( list of attributes in the intersection : count )
     sourceSummary = {} # sourceID : { gene_type : { transcript_type : count } }}
+    summary = {}
     # parse the results into a dictionary
     for row in res:
         row_source_intersection = []
         gene_type_intersection = []
         tx_type_intersection = []
+        # organize summary as: intersection: individual values for each source
+        # when subsetting based on upset selection - just don't include the entries with the specific intersection
+        tmp_summary = dict()
         for sourceID, attrs in attributes.items():
             if row.__getattr__(str(sourceID)) == 1:
                 row_source_intersection.append(str(sourceID))
@@ -225,12 +228,22 @@ def get_dbTxSlice(genome,attributes):
                     has_transcript_type = True
                     
                 if has_gene_type and has_transcript_type:
-                    sourceSummary.setdefault(sourceID,dict())
-                    sourceSummary[sourceID].setdefault(gene_type_intersection[-1],dict())
-                    sourceSummary[sourceID][gene_type_intersection[-1]].setdefault(tx_type_intersection[-1],0)
-                    sourceSummary[sourceID][gene_type_intersection[-1]][tx_type_intersection[-1]] += row.count
+                    tmp_summary.setdefault(sourceID,dict())
+                    tmp_summary[sourceID].setdefault(gene_type_intersection[-1],dict())
+                    tmp_summary[sourceID][gene_type_intersection[-1]].setdefault(tx_type_intersection[-1],0)
+                    tmp_summary[sourceID][gene_type_intersection[-1]][tx_type_intersection[-1]] += row.count
                 else:
                     pass
+
+        row_source_intersection = ",".join(row_source_intersection)
+        summary.setdefault(row_source_intersection,dict())
+        for sourceID, values in tmp_summary.items():
+            summary[row_source_intersection].setdefault(sourceID,dict())
+            for gene_type, tx_types in values.items():
+                summary[row_source_intersection][sourceID].setdefault(gene_type,dict())
+                for tx_type, count in tx_types.items():
+                    summary[row_source_intersection][sourceID][gene_type].setdefault(tx_type,0)
+                    summary[row_source_intersection][sourceID][gene_type][tx_type] += count
 
         row_source_intersection = ",".join(row_source_intersection)
         upsetSummary.setdefault(row_source_intersection,dict())

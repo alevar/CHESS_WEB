@@ -51,8 +51,8 @@ function SourceSettings({ buttonStates,
 
   return (
     <div className="row" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
-      <div className="container" style={{ height: '80vh', overflowY: 'auto' }}>
-        <div style={{ padding: '15px', fontSize: '1.5rem' }}>Source Settings</div>
+      <div className="container" style={{ height: '35vh', overflowY: 'auto' }}>
+        <div style={{ padding: '15px', fontSize: '1.5rem' }}>Sources</div>
         <Accordion 
             alwaysOpen 
             activeKey={activeAccordionKey} 

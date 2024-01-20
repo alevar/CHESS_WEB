@@ -11,6 +11,7 @@ export const summaryApi = createApi({
   endpoints: (builder) => ({
     getTxSummarySlice: builder.query<object, void>({
       query: (settings) => {
+        console.log("settings: ", settings)
         return {
           url: '/txSummarySlice',
           method: 'POST',

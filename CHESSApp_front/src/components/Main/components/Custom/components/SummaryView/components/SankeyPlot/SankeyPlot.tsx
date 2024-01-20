@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
+import { Row, Col } from 'react-bootstrap'
 
 interface SankeyPlotProps {
     data: {
@@ -108,7 +109,12 @@ const SankeyPlot: React.FC<SankeyPlotProps> = ({
 
     }, [data, parentWidth, parentHeight, margin]);
 
-    return <svg ref={svgRef} width={parentWidth} height={parentHeight}></svg>;
+    return (
+        <div>
+            <svg ref={svgRef} width={parentWidth} height={parentHeight}>
+            </svg>
+        </div>
+    );
 };
 
 export default SankeyPlot;
