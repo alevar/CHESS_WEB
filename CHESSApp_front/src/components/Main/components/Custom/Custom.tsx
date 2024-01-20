@@ -124,7 +124,6 @@ const Custom: React.FC = () => {
         fetchData();
     }, [settings.value, refetch]);
 
-
     // accordion item listeners
     const [activeAccordionKey, setActiveAccordionKey] = useState<string | null>(null);
     const handleAccordionChange = (key: string | null) => {
@@ -136,19 +135,18 @@ const Custom: React.FC = () => {
     // UpsetPlot selection listeners
     const [selectedIntersections, setSelectedIntersections] = useState<number[]>([]);
     const handleIntersectionClick = (ixData: { set: any, intersection: any, index: number }) => {
-        const ix_source_list = ixData.intersection.set.split(',').map(Number).sort((a, b) => a - b);
         // toggle selections and dispatch actions to update settings
         setSelectedIntersections((prevSelectedIntersections) => {
-            if (prevSelectedIntersections.includes(ixData.index)) {
+            if (prevSelectedIntersections.includes(ixData.intersection.set)) {
                 // update settings
-                dispatch(remove_source_intersection(ix_source_list));
+                dispatch(remove_source_intersection(ixData.intersection.set));
                 // Remove the index if already selected
-                return prevSelectedIntersections.filter((index) => index !== ixData.index);
+                return prevSelectedIntersections.filter((set) => set !== ixData.intersection.set);
             } else {
                 // update settings
-                dispatch(add_source_intersection(ix_source_list));
+                dispatch(add_source_intersection(ixData.intersection.set));
                 // Add the index if not selected
-                return [...prevSelectedIntersections, ixData.index];
+                return [...prevSelectedIntersections, ixData.intersection.set];
             }
         });
     };

@@ -9,8 +9,7 @@ export interface SummaryState {
 
 const initialState: SummaryState = {
   status: 'loading',
-  data: {"sourceSummary":{},
-         "upsetSummary":{}},
+  data: {"summary":{}},
   error: null,
 };
 

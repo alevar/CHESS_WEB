@@ -8,7 +8,10 @@ import { SettingsState } from '../../../../../../features/settings/settingsSlice
 import { SummaryState } from '../../../../../../features/summary/summarySlice';
 import { useGetTxSummarySliceQuery } from '../../../../../../features/summary/summaryApi';
 
+import '../../../../../../utils/utils';
+
 import "../../Custom.css"
+import { sum_of_leaves } from '../../../../../../utils/utils';
 
 interface CombinationSettingsProps {
     selectedIntersections: number[];
@@ -55,11 +58,8 @@ const CombinationSettings: React.FC<CombinationSettingsProps> = ({ selectedInter
             sets[sourceID] = globalData.data.sources[sourceID].name;
         }
         const intersections = [];
-        for (const [sourceIDs, attrs] of Object.entries(summary.data.upsetSummary)) {
-            let total_count = 0;
-            for (const [attr, count] of Object.entries(attrs["transcript_type"])) {
-                total_count += count;
-            }
+        for (const [sourceIDs, attrs] of Object.entries(summary.data.summary)) {
+            let total_count = sum_of_leaves(attrs);
             intersections.push({ set: sourceIDs, value: total_count });
         }
         setUpsetData({sets,intersections});
