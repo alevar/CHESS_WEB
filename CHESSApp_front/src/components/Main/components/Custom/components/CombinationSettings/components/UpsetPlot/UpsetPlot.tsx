@@ -26,7 +26,6 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
         setHoveredIntersection(ixData);
     };
 
-
     useEffect(() => {
         if (!svgRef.current) return;
 
@@ -63,7 +62,7 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
                 .attr('width', parentWidth)
                 .attr('height', parentHeight);
 
-        var div = d3.select("body").append("div")
+        var tooltip_div = d3.select("body").append("div")
             .attr("class", "tooltip")
             .style("opacity", 0);
 
@@ -215,14 +214,7 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
                 const setNames = ixData.intersection.set
                     .split(',')
                     .map((number: string) => data.sets[number])
-                    .join(' ∩ ');
-
-                d3.select("#tooltip").transition()
-                    .style("opacity", .9);
-
-                const svgContainer = svgRef.current?.getBoundingClientRect();
-                const tooltipLeft = event.pageX - svgContainer?.left ?? 0;
-                const tooltipTop = event.pageY - svgContainer?.top ?? 0;
+                    .join(' ∩ ');                    
 
                 d3.select("#tooltip").html(`<div class="tooltip-box">
                                                 <div class="tooltip-title">
@@ -232,14 +224,16 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
                                                 <div class="tooltip-text">
                                                     <p>Count: ${ixData.intersection.value}</p>
                                                 </div>
-                                            </div>`)  
-                    .style("left", tooltipLeft + "px")     
-                    .style("top", tooltipTop - 28 + "px");
+                                            </div>`)
+                    .style("opacity", .9)
+                    .style("left", (event.clientX + 10) + 'px')    
+                    .style("top", (event.clientY + 10) + 'px');
 
             })
             .on('mouseleave', () => {
                 handleIntersectionHover(null);
                 d3.select("#tooltip")
+                    .html(``)
                     .style("opacity", 0);
             })
             .on('mousemove', (event: Event) => {

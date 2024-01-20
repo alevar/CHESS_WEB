@@ -4,6 +4,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import DownloadButton from '../../../DownloadButton/DownloadButton';
 
 import SourceSettings from './components/SourceSettings/SourceSettings';
+import DataSettings from './components/DataSettings/DataSettings';
 import SummaryView from './components/SummaryView/SummaryView';
 import CombinationSettings from './components/CombinationSettings/CombinationSettings';
 
@@ -27,7 +28,8 @@ interface RootState {
 const Custom: React.FC = () => {
 
     const default_panel_dims = {
-        settings_panel: { width: 30, height: 90 },
+        source_settings_panel: { width: 30, height: 45 },
+        dataset_settings_panel: { width: 30, height: 45 },
         download_panel: { width: 30, height: 10 },
         combinations_panel: { width: 70, height: 30 },
         summary_panel: { width: 70, height: 70 }
@@ -154,9 +156,9 @@ const Custom: React.FC = () => {
     return (
         <div ref={customPageRef} className="custom-wrapper">
             <PanelGroup direction="horizontal" onLayout={(newSize) => handleResize(0,newSize)}>
-                <Panel id="side_panel" defaultSize={default_panel_dims.settings_panel.width} minSize={10}>
+                <Panel id="side_panel" defaultSize={default_panel_dims.source_settings_panel.width} minSize={10}>
                     <PanelGroup direction="vertical" onLayout={(newSize) => handleResize(1,newSize)}>
-                        <Panel id="sources_panel" defaultSize={default_panel_dims.settings_panel.height} minSize={90}>
+                        <Panel id="sources_panel" defaultSize={default_panel_dims.source_settings_panel.height} minSize={30}>
                             <div>
                                 <style>{`body { overflow: hidden; }`}</style>
                                 <SourceSettings 
@@ -167,15 +169,22 @@ const Custom: React.FC = () => {
                             </div>
                         </Panel>
                         <hr className="custom-hr"/>
-                        <Panel id="download" defaultSize={default_panel_dims.download_panel.height} minSize={10}>
+                        <Panel id="dataset_panel" defaultSize={default_panel_dims.dataset_settings_panel.height} minSize={30}>
                             <div>
-                                <DownloadButton/>
+                                <style>{`body { overflow: hidden; }`}</style>
+                                <DataSettings />
+                            </div>
+                        </Panel>
+                        <hr className="custom-hr"/>
+                        <Panel id="download" defaultSize={default_panel_dims.download_panel.height} minSize={10} maxSize={10}>
+                            <div>
+                                <DownloadButton />
                             </div>
                         </Panel>
                     </PanelGroup>
                 </Panel>
                 <PanelResizeHandle className="PanelResizeHandle PanelResizeHandleVertical" />
-                <Panel id="central_panel" defaultSize={100-default_panel_dims.settings_panel.width} minSize={50}>
+                <Panel id="central_panel" defaultSize={100-default_panel_dims.source_settings_panel.width} minSize={50}>
                     <PanelGroup direction="vertical" onLayout={(newSize) => handleResize(1,newSize)}>
                         <Panel id="combinations_panel" defaultSize={default_panel_dims.combinations_panel.height} minSize={20}>
                             <div>
