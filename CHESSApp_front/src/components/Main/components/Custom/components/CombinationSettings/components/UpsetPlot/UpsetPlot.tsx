@@ -21,9 +21,9 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
     parentHeight,
     margin = { top: 50, right: 50, bottom: 50, left: 50 }, }) => {
     const svgRef = useRef<SVGSVGElement | null>(null);
-    const [hoveredIntersection, setHoveredIntersection] = useState<number | null>(null);
-    const handleIntersectionHover = (ixData: number | null) => {
-        setHoveredIntersection(ixData);
+    const [hoveredIntersection, setHoveredIntersection] = useState<string | null>(null);
+    const handleIntersectionHover = (ixData: { set: any, intersection: any, index: number } | null) => {
+        setHoveredIntersection(ixData?.intersection.set);
     };
 
     useEffect(() => {
@@ -55,7 +55,6 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
         const normalizedValues = data.intersections.map((d) => {
             return (d.value / maxValue) * bar_height;
         });
-        const scaleValues = [0, maxValue / 2, maxValue];
 
         const svg = d3
                 .select(svgRef.current)
@@ -122,8 +121,8 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
             .attr('width', cell_width)
             .attr('height', cell_height)
             .style('fill', (d: any) => {
-                const isSelected = selectedIntersections.includes(d.index);
-                const isHovered = hoveredIntersection === d.index;
+                const isSelected = selectedIntersections.includes(d.intersection.set);
+                const isHovered = hoveredIntersection === d.intersection.set;
                 return isSelected ? '#FF9806' : (isHovered ? '#FFBD62' : 'white');
             })
             .style('stroke', "black")
@@ -144,8 +143,8 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
             .attr('cx', (d: any) => data.intersections.indexOf(d.intersection) * cell_width + margin.top + label_width + cell_width / 2)
             .attr('r', Math.min(cell_height, cell_width) / 3)
             .style('fill', (d: any) => {
-                const isSelected = selectedIntersections.includes(d.index);
-                const isHovered = hoveredIntersection === d.index;
+                const isSelected = selectedIntersections.includes(d.intersection.set);
+                const isHovered = hoveredIntersection === d.intersection.set;
                 const isIncluded = d.intersection.set.includes(d.set);
                 return isSelected ? (isIncluded ? '#FF6F00' : '#807A79')
                     : (isIncluded ? (isHovered ? '#FF9C46' : '#030202') : '#807A79');
@@ -169,8 +168,8 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
             .attr('width', cell_width / 1.25)
             .attr('height', (d: any) => normalizedValues[d.index]) // Use normalized values
             .style('fill', (d: any) => {
-                const isSelected = selectedIntersections.includes(d.index);
-                const isHovered = hoveredIntersection === d.index;
+                const isSelected = selectedIntersections.includes(d.intersection.set);
+                const isHovered = hoveredIntersection === d.intersection.set;
                 return isSelected ? '#FF6F00' : (isHovered ? '#FF9C46' : '#030202');
             });
 
@@ -208,7 +207,7 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
             .style('fill', 'transparent')
             .on('click', (event: Event, ixData: any) => onIntersectionClick(ixData))
             .on('mouseover', (event: Event, ixData: any) => {
-                handleIntersectionHover(ixData.index);
+                handleIntersectionHover(ixData);
 
                 // Convert comma-separated numbers to their names and join with " ∩ "
                 const setNames = ixData.intersection.set

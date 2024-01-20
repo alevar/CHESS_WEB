@@ -117,12 +117,11 @@ def txSummarySlice():
             clean_settings[sourceID][key] = values
             
 
-    res = {"upsetSummary":[], "sourceSummary":[]}
+    res = {"summary":[]}
     if len(clean_settings) > 0:
         # get a slice of the txSummary table and return
-        upsetSummary, sourceSummary = db_methods.get_dbTxSlice(settings["genome"],clean_settings)
-        res["upsetSummary"] = upsetSummary
-        res["sourceSummary"] = sourceSummary
+        summary = db_methods.get_dbTxSlice(settings["genome"],clean_settings)
+        res["summary"] = summary
         return jsonify(res)
     else:
         return jsonify(res)

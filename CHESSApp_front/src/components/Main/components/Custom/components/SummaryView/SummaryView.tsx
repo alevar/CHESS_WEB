@@ -46,7 +46,7 @@ function groupLinks(arr: SankeyLink[]): SankeyLink[] {
   return Object.values(source_target_map);
 }
 
-function buildSankeyData(data: any, globalData: any, threshold:number): { nodes: SankeyNode[], links: SankeyLink[] } {
+function buildSankeyData(data: any, globalData: any, settings:any, threshold:number): { nodes: SankeyNode[], links: SankeyLink[] } {
   let maxId = 0;
   const sourceMap: { [key: string]: number } = {};
   const geneTypeMap: { [key: string]: number } = {};
@@ -69,33 +69,39 @@ function buildSankeyData(data: any, globalData: any, threshold:number): { nodes:
   }
 
   // Add source nodes and build initial structure
-  for (const [sourceID, geneTypes] of Object.entries(data)) {
-    const sourceNode = { node: addNode(globalData.data.sources[sourceID].name, sourceMap), name: globalData.data.sources[sourceID].name };
+  for (const [sourceCombination, sources] of Object.entries(data)) {
+    // skip combinations which are not in the source_intersections setting
+    if ((settings.value.source_intersections.length>0) && !(settings.value.source_intersections.includes(sourceCombination))) {
+      continue;
+    }
+    for (const [sourceID, geneTypes ] of Object.entries(sources)) {
+      const sourceNode = { node: addNode(globalData.data.sources[sourceID].name, sourceMap), name: globalData.data.sources[sourceID].name };
 
-    for (const [geneType, transcriptTypes] of Object.entries(geneTypes)) {
-      let geneTypeName = (geneType === "None" || geneType === "") ? "Unknown" : globalData.data.gene_types[geneType].value;
-      const transcriptCount = getTotalTranscripts(transcriptTypes);
+      for (const [geneType, transcriptTypes] of Object.entries(geneTypes)) {
+        let geneTypeName = (geneType === "None" || geneType === "") ? "Unknown" : globalData.data.gene_types[geneType].value;
+        const transcriptCount = getTotalTranscripts(transcriptTypes);
 
-      if (transcriptCount < threshold) {
-        geneTypeName = "Other";
-      }
-
-      const geneTypeNode = { node: addNode(geneTypeName, geneTypeMap), name: geneTypeName };
-
-      // Add link from source to gene type
-      addLink(sourceNode.node, geneTypeNode.node, transcriptCount);
-
-      for (const [transcriptType, count] of Object.entries(transcriptTypes)) {
-        let transcriptTypeName = (transcriptType === "None" || transcriptType === "") ? "Unknown" : globalData.data.transcript_types[transcriptType].value;
-        
-        if (count < threshold) {
-          transcriptTypeName = "Other";
+        if (transcriptCount < threshold) {
+          geneTypeName = "Other";
         }
-        
-        const transcriptTypeNode = { node: addNode(transcriptTypeName, transcriptTypeMap), name: transcriptTypeName };
 
-        // Add link from gene type to transcript type
-        addLink(geneTypeNode.node, transcriptTypeNode.node, count);
+        const geneTypeNode = { node: addNode(geneTypeName, geneTypeMap), name: geneTypeName };
+
+        // Add link from source to gene type
+        addLink(sourceNode.node, geneTypeNode.node, transcriptCount);
+
+        for (const [transcriptType, count] of Object.entries(transcriptTypes)) {
+          let transcriptTypeName = (transcriptType === "None" || transcriptType === "") ? "Unknown" : globalData.data.transcript_types[transcriptType].value;
+          
+          if (count < threshold) {
+            transcriptTypeName = "Other";
+          }
+          
+          const transcriptTypeNode = { node: addNode(transcriptTypeName, transcriptTypeMap), name: transcriptTypeName };
+
+          // Add link from gene type to transcript type
+          addLink(geneTypeNode.node, transcriptTypeNode.node, count);
+        }
       }
     }
   }
@@ -118,10 +124,10 @@ const SummaryView: React.FC<SummaryViewProps> = ({ parentWidth, parentHeight }) 
   // process summary data to extract the data for the current view
   const [sankeyData, setSankeyData] = useState({});
   useEffect(() => {
-    const sankeyData = buildSankeyData(summary.data.sourceSummary,globalData,100);
+    const sankeyData = buildSankeyData(summary.data.summary,globalData,settings,100);
 
     setSankeyData(sankeyData);
-  }, [summary.data.sourceSummary]);
+  }, [summary.data.summary, settings.value.source_intersections]);
 
   return (
     <div className="summary-container" style={{ overflow: 'auto' }}>
