@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch, Provider } from 'react-redux';
+import React from 'react';
+import { Provider } from 'react-redux';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Spinner from 'react-bootstrap/Spinner';
 
 import Main from "./components/Main/Main";
 import Custom from "./components/Main/components/Custom/Custom";
+import Explore from "./components/Main/components/Explore/Explore";
 import Home from "./components/Main/components/Home/Home";
 import Header from "./components/Header/Header";
 import About from "./components/About/About";
@@ -46,6 +46,7 @@ const App: React.FC = () => {
             <Route path="/main/:organismID/:assemblyID/:sourceIDs" element={<Main />}>
               <Route path="home" element={<Home />} />
               <Route path="custom" element={<Custom />} />
+              <Route path="explore" element={<Explore />} />
             </Route>
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<ContactUs />} />

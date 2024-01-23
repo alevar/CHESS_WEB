@@ -32,9 +32,9 @@ const Home = () => {
           </div>
         </div>
         <div className="col-md-4 d-flex">
-          <div className="card flex-fill" onClick={() => handleCardClick(base_path+"/genes")}>
+          <div className="card flex-fill" onClick={() => handleCardClick(base_path+"/explore")}>
             <div className="card-body">
-              Explore Individual Genes
+              Explore Data
             </div>
           </div>
         </div>
