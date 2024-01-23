@@ -54,3 +54,9 @@ When examining transcripts at a locus (gene tab). Use https://lineup.js.org/app/
 
 !!! Add search bar to search for anything by attribute. Whatever get's typed in, is then searched against the attributes tables.
 - Matching transcripts and genes are returned to the user
+
+
+Todo:
+1. change font and font color in sankey
+2. "other" in refseq
+3. "nomenclature" -> "chromosome numbering scheme"
