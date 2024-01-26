@@ -9,6 +9,7 @@ import Custom from "./components/Main/components/Custom/Custom";
 import Explore from "./components/Main/components/Explore/Explore";
 import Home from "./components/Main/components/Home/Home";
 import Header from "./components/Header/Header";
+import Footer from "./components/Footer/Footer";
 import About from "./components/About/About";
 import ContactUs from "./components/ContactUs/ContactUs";
 
@@ -40,18 +41,21 @@ const App: React.FC = () => {
   return (
     <Provider store={store}>
       <Router>
-        <div className="App">
+        <div className="App d-flex flex-column min-vh-100">
           <Header />
-          <Routes>
-            <Route path="/main/:organismID/:assemblyID/:sourceIDs" element={<Main />}>
-              <Route path="home" element={<Home />} />
-              <Route path="custom" element={<Custom />} />
-              <Route path="explore" element={<Explore />} />
-            </Route>
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<ContactUs />} />
-            <Route path="/*" element={<Navigate to="/main/1/1/4/home" />} />
-          </Routes>
+          <main>
+            <Routes>
+              <Route path="/main/:organismID/:assemblyID/:sourceIDs" element={<Main />}>
+                <Route path="home" element={<Home />} />
+                <Route path="custom" element={<Custom />} />
+                <Route path="explore" element={<Explore />} />
+              </Route>
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<ContactUs />} />
+              <Route path="/*" element={<Navigate to="/main/1/1/4/home" />} />
+            </Routes>
+          </main>
+          <Footer />
         </div>
       </Router>
     </Provider>
