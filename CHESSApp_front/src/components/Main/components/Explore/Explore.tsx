@@ -9,6 +9,11 @@ import { TX, Locus } from '../../../../utils/utils';
 
 const Explore: React.FC = () => {
 
+  // SashimiPlot TX clicker
+  const handleTXClick = (tx: TX) => {
+    console.log(tx);
+  };
+
   const dimensions = {
     width: 1000,
     height: 300,
@@ -77,12 +82,32 @@ const Explore: React.FC = () => {
         <Col className="sidebar border border-right col-md-3 col-lg-2 p-0 bg-body-tertiary">
           <SideBar />
         </Col>
-        <Col className="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-          <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 className="h2">Dashboard</h1>
+        <Col id="mainView" className="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+          {/* Top Div with Text */}
+          <div className="mb-3 border-bottom">
+            <h2>Lorem Ipsum Text</h2>
           </div>
-          <SashimiPlot locus={locus} dimensions={dimensions} />
-          <PDB pdbData={pdbData} />
+
+          {/* Two Columns Split 10 to 2 */}
+          <Row>
+            <Col md={10}>
+              <SashimiPlot locus={locus} dimensions={dimensions} onTxClick={handleTXClick} />
+            </Col>
+            <Col md={2}>
+              {/* Empty column */}
+            </Col>
+          </Row>
+
+          {/* Single Column Space with PDB and Text */}
+          <Row>
+            <Col>
+              <div>
+                <h2>PDB</h2>
+                <p>Lorem Ipsum Text</p>
+              </div>
+              <PDB pdbData={pdbData} />
+            </Col>
+          </Row>
         </Col>
       </Row>
     </Container>
