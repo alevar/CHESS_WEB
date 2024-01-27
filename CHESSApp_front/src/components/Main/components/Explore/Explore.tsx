@@ -11,7 +11,9 @@ const Explore: React.FC = () => {
 
   const dimensions = {
     width: 1000,
-    height: 300
+    height: 300,
+    arrowSize: 10,
+    arrowSpacing: 50,
   }
 
   const txData_raw = [
