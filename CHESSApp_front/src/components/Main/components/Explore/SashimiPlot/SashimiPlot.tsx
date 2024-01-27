@@ -8,10 +8,12 @@ interface SashimiProps {
     width: number, 
     height: number,
     arrowSize:number,
-    arrowSpacing:number };
+    arrowSpacing:number 
+  };
+  onTxClick: (tx: TX) => void;
 }
 
-const SashimiPlot: React.FC<SashimiProps> = ({ locus, dimensions }) => {
+const SashimiPlot: React.FC<SashimiProps> = ({ locus, dimensions, onTxClick }) => {
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
@@ -118,6 +120,32 @@ const SashimiPlot: React.FC<SashimiProps> = ({ locus, dimensions }) => {
         prev_cds = [graph_cds_start, graph_cds_end];
       });
       t_i += 1; // increment index
+
+      // for each transcript add trigger boxes used for selection
+      const triggerBox = svg
+        .append('rect')
+        .attr('x', 0)
+        .attr('y', (t_i - 1) * tx_height)
+        .attr('width', dimensions.width)
+        .attr('height', tx_height)
+        .style('fill', 'transparent')
+        .style('stroke', 'none')
+        .style('stroke-width', 0)
+        .on('click', () => {
+          onTxClick(tx);
+        })
+        .on('mouseover', () => {
+          triggerBox
+          .style('stroke', '#000000')
+          .style('stroke-width', 1)
+          .style('fill', 'rgba(255, 0, 0, 0.1)');
+        })
+        .on('mouseout', () => {
+          triggerBox
+          .style('stroke', 'none')
+          .style('stroke-width', 0)
+          .style('fill', 'transparent');
+        });
     }
   }, [locus, dimensions]);
 
