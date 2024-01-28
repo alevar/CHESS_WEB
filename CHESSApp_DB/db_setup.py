@@ -595,6 +595,9 @@ def compile(api_connection,args):
     # build summary table
     api_connection.build_dbTxSummaryTable()
 
+    # build gene summary table
+    api_connection.build_dbGeneSummaryTable()
+
     # extract transcript counts across sources and assemblies into a separate table
     api_connection.build_AllCountSummaryTable()
     summary = api_connection.get_AllCountSummaryTable()

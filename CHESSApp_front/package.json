@@ -26,6 +26,7 @@
     "d3-sankey": "^0.12.3",
     "plotly.js": "^2.27.1",
     "react": "^18.2.0",
+    "react-autosuggest": "^10.1.0",
     "react-bootstrap": "^2.9.1",
     "react-dom": "^18.2.0",
     "react-grid-layout": "^1.4.4",

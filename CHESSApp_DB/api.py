@@ -297,7 +297,7 @@ class CHESS_DB_API:
             index_strings += f", INDEX ({', '.join([f'`{source_id}.has_cds` ASC' for source_id in source_ids])})"
             for source_id in source_ids:
                 index_strings += f", INDEX (`{source_id}` ASC)"
-                index_strings += f", INDEX (`{source_id}.has_cds` ASC)"
+                index_strings += f", INDEX (`{source_id}.transcript_id` ASC)"
                 index_strings += ", INDEX ("+", ".join([f"`{source_id}.{key}` ASC" for key in attribute_keys])+")"
                 for attribute_key in attribute_keys:
                     index_strings += f", INDEX (`{source_id}.{attribute_key}` ASC)"
@@ -307,6 +307,7 @@ class CHESS_DB_API:
                     CREATE TABLE {table_name} (
                         `tid` INT,
                         {", ".join([f"`{source_id}` INT" for source_id in source_ids])},
+                        {", ".join([f"`{source_id}.transcript_id` VARCHAR(50)" for source_id in source_ids])},
                         {", ".join([f"`{source_id}.{key}` INT" for key in attribute_keys for source_id in source_ids])},
                         PRIMARY KEY (tid),
                         {index_strings}
@@ -328,6 +329,11 @@ class CHESS_DB_API:
             if len(transcriptType_cases) > 0:
                 transcriptType_cases = transcriptType_cases[:-1] # remove the last comma
 
+            # attach source-specific transcript ID  to the table
+            transcriptID_cases = "\n".join([f"MAX(CASE WHEN s.sourceID = {source_id} THEN dbx.transcript_id ELSE NULL END) AS \"{source_id}.transcript_id\"," for source_id in source_ids])
+            if len(transcriptID_cases) > 0:
+                transcriptID_cases = transcriptID_cases[:-1] # remove the last comma
+
             # has_cds cases
             has_cds_cases = "\n".join([f"MAX(CASE WHEN dbx.cds_start IS NOT NULL and s.sourceID = {source_id} THEN 1 ELSE 0 END) AS \"{source_id}.has_cds\"," for source_id in source_ids])
             if len(has_cds_cases) > 0:
@@ -338,6 +344,7 @@ class CHESS_DB_API:
                     SELECT
                             tid,
                             {source_cases},
+                            {transcriptID_cases},
                             {geneType_cases},
                             {transcriptType_cases},
                             {has_cds_cases}
@@ -356,6 +363,50 @@ class CHESS_DB_API:
             res = self.execute_query(query)
         
         return True
+    
+    def build_dbGeneSummaryTable(self):
+        # build a table summarizing gene information for quick lookup
+        # geneID
+        # location
+        # sources in which it exists
+        # name in each source
+        # ID of each source
+        # list of transcript IDs for each source
+
+         # get list of assemblies
+        query = "SELECT assemblyID FROM Assembly"
+        assemblies = [x[0] for x in self.execute_query(query)]
+
+        for assemblyID in assemblies:
+            table_name = f"dbGeneSummary_{assemblyID}"
+            # drop existing table
+            self.drop_table(table_name)
+
+            # get source IDs
+            query = "SELECT sourceID FROM Sources where assemblyID = "+str(assemblyID)
+            source_ids = [x[0] for x in self.execute_query(query)]
+
+            index_strings = f"""INDEX ({", ".join([f"`{source_id}` ASC" for source_id in source_ids])})"""
+            index_strings += f", INDEX ({', '.join([f'`{source_id}.gene_id` ASC' for source_id in source_ids])})"
+            index_strings += f""", INDEX ({'`seqid` ASC, `strand` ASC, `start` ASC, `end` ASC'})"""
+
+            # create table
+            query = f"""
+                    CREATE TABLE {table_name} (
+                        `gene_name` INT,
+                        `seqid` INT,
+                        `strand` INT,
+                        `start` INT,
+                        `end` INT,
+                        {", ".join([f"`{source_id}` INT" for source_id in source_ids])},
+                        {", ".join([f"`{source_id}.gene_id` INT" for source_id in source_ids])},
+                        PRIMARY KEY (gene_name),
+                        {index_strings}
+                    );
+                    """
+            
+            res = self.execute_query(query)
+        return
     
     def build_AllCountSummaryTable(self):
         self.drop_table("AllCountSummary")
