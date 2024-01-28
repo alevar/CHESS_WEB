@@ -35,9 +35,6 @@ const App: React.FC = () => {
     return <div>Error: {error}</div>;
   }
 
-  if (!isLoading && data) {
-  }
-
   return (
     <Provider store={store}>
       <Router>
@@ -49,6 +46,7 @@ const App: React.FC = () => {
                 <Route path="home" element={<Home />} />
                 <Route path="custom" element={<Custom />} />
                 <Route path="explore" element={<Explore />} />
+                <Route path="explore/:gene_id" element={<Explore />} />
               </Route>
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<ContactUs />} />

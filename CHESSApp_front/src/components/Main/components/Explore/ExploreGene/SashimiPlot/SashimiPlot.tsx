@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
-import { TX, Locus } from '../../../../../utils/utils';
+import { TX, Locus } from '../../../../../../utils/utils';
 
 interface SashimiProps {
   locus: Locus;
@@ -138,7 +138,7 @@ const SashimiPlot: React.FC<SashimiProps> = ({ locus, dimensions, onTxClick }) =
           triggerBox
           .style('stroke', '#000000')
           .style('stroke-width', 1)
-          .style('fill', 'rgba(255, 0, 0, 0.1)');
+          .style('fill', 'rgba(0, 0, 0, 0.1)');
         })
         .on('mouseout', () => {
           triggerBox
