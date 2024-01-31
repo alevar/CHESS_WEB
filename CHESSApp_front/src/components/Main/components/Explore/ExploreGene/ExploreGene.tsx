@@ -7,6 +7,10 @@ import { TX, Locus } from '../../../../../utils/utils';
 
 const Explore: React.FC = () => {
 
+    // all deduplicated transcripts at locus
+    // when transcript selected - shows
+    //    - sashimi of transcripts for eachsource(unique ORFs, UTRs, etc)
+
     // when explore component loads - display a table with genes listed as a table along with some stats
     // items of the list can be filtered via the same settings panel as custom
     // genes can be enetered for additional information by clicking on them
