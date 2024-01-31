@@ -266,7 +266,11 @@ def addSources(api_connection,config,args):
         norm_gtf = os.path.abspath(args.temp)+"/"+str(si)+".gtf" # stores temporary file with the normalized input gtf to be added to the database
         run_gffread(filename,norm_gtf,args.gffread,args.log)
 
-        # correct attributesby ensuring all required attributes exist, and if not - inserting them
+        # Assign gene IDs to each transcript if missing
+        gene_assigned_gtf = os.path.abspath(args.temp)+"/"+str(si)+".gene_assigned.gtf"
+        # add_missing_gene_ids(corrected_gtf,gene_assigned_gtf,args.log)
+
+        # correct attributes by ensuring all required attributes exist, and if not - inserting them
         corrected_gtf = os.path.abspath(args.temp)+"/"+str(si)+".corrected.gtf"
         with open(norm_gtf, 'r') as inFP, open(corrected_gtf, 'w') as outFP:
             for line in inFP:
