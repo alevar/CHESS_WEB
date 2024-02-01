@@ -240,6 +240,19 @@ class CHESS_DB_API:
             tx.end = int(row[5])
             tx.introns.append((int(row[13]),int(row[14])))
 
+    def tid2lid_map(self,assemblyID:int):
+        # // retrieve a map of tids from Transcript table to lid from Locus table
+        query = f"SELECT t.tid, l.lid FROM TxDBXREF t JOIN Gene g on t.gid = g.gid JOIN Locus l on g.lid = l.lid WHERE \
+                                                                                            l.assemblyID = {assemblyID}"
+        
+        select_ref = self.execute_query(query)
+
+        tid2lid = dict()
+        for row in select_ref:
+            tid2lid[row[0]] = row[1]
+        
+        return tid2lid
+
     def to_gtf(self,assemblyID:int,seqid_map:dict,outfname:str):
         # reverse seqid_map
         seqid_map_rev = {v:k for k,v in seqid_map.items()}
