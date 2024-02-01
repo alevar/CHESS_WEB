@@ -370,6 +370,7 @@ def addSources(api_connection,config,args):
         db_gtf_fname = os.path.abspath(args.temp)+"/db.before_"+sourceName+".gtf"
         print("Extracting gtf from the current database before adding "+sourceName)
         api_connection.to_gtf(assemblyID,sequenceIDMap,db_gtf_fname)
+        tid2lid = api_connection.tid2lid_map(assemblyID)
 
         # gffread/gffcompare/etc
         source_format = data["source_format"]
@@ -386,10 +387,15 @@ def addSources(api_connection,config,args):
         # iterate over the contents of the file and add them to the database
         for transcript_lines in read_gffread_gtf(filename):
             transcript = TX(transcript_lines,sequenceIDMap)
-            working_tid = None # tid PK of the transcript being worked on as it appears in the Transcripts table
-            working_tid = tracking.get(transcript.tid,None)
+            
+            working_tid = tracking.get(transcript.tid,None) # tid PK of the transcript being worked on as it appears in the Transcripts table
+            working_lid = tid2lid.get(working_tid,None)
+
             if working_tid is None:
                 working_tid = api_connection.insert_transcript(transcript,assemblyID)
+
+            if working_lid is None:
+                working_lid = api_connection.insert_locus(transcript,working_tid,assemblyID)
 
             # add transcript source pairing to the TxDBXREF table
             api_connection.insert_dbxref(transcript,working_tid,working_sourceID)
