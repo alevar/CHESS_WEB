@@ -120,7 +120,7 @@ def read_gffread_gtf(infname:str):
 def run_gffread(infname:str,outfname:str,gffread:str,log:str):
         assert os.path.exists(infname),"input file does not exist: "+infname
 
-        cmd = [gffread,"-T","-F",
+        cmd = [gffread,"-T","-F","--cluster-only",
                "-o",outfname,
                infname]
 
@@ -136,6 +136,10 @@ def run_gffread(infname:str,outfname:str,gffread:str,log:str):
         proc.wait()
 
         logFP.close() if logFP else None
+
+def normalize_gtf(infname:str,outfname:str,gffread:str,log:str):
+    run_gffread(infname,outfname,gffread,log)
+    return
 
 def run_gffcompare(query:str,reference:str,outfname:str,gffcompare:str,log:str):
     assert os.path.exists(query),"query file does not exist: "+query
@@ -258,17 +262,13 @@ def addSources(api_connection,config,args):
         transcript_type_key = data["transcript_type_key"]
         gene_type_key = data["gene_type_key"]
         gene_name_key = data["gene_name_key"]
-        filename = data["file"]
+        source_gtf_fname = data["file"]
 
-        source_format = "gff" if is_gff(filename) else "gtf"
+        source_format = "gff" if is_gff(source_gtf_fname) else "gtf"
 
         # run gffread to standardize the transcript set before importing into the database
         norm_gtf = os.path.abspath(args.temp)+"/"+str(si)+".gtf" # stores temporary file with the normalized input gtf to be added to the database
-        run_gffread(filename,norm_gtf,args.gffread,args.log)
-
-        # Assign gene IDs to each transcript if missing
-        gene_assigned_gtf = os.path.abspath(args.temp)+"/"+str(si)+".gene_assigned.gtf"
-        # add_missing_gene_ids(corrected_gtf,gene_assigned_gtf,args.log)
+        normalize_gtf(source_gtf_fname,norm_gtf,args.gffread,args.log)
 
         # correct attributes by ensuring all required attributes exist, and if not - inserting them
         corrected_gtf = os.path.abspath(args.temp)+"/"+str(si)+".corrected.gtf"
