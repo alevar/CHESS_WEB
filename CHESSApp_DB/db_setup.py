@@ -370,7 +370,6 @@ def addSources(api_connection,config,args):
         db_gtf_fname = os.path.abspath(args.temp)+"/db.before_"+sourceName+".gtf"
         print("Extracting gtf from the current database before adding "+sourceName)
         api_connection.to_gtf(assemblyID,sequenceIDMap,db_gtf_fname)
-        tid2lid = api_connection.tid2lid_map(assemblyID)
 
         # gffread/gffcompare/etc
         source_format = data["source_format"]
@@ -385,20 +384,22 @@ def addSources(api_connection,config,args):
         tracking = load_tracking(gffcmp_gtf_fname+".tracking")
 
         # iterate over the contents of the file and add them to the database
+        # construct gene_id to Gene.gid map, add every new gene as an entry into Gene Table
+        gene_map = dict()
         for transcript_lines in read_gffread_gtf(filename):
             transcript = TX(transcript_lines,sequenceIDMap)
+            working_gid = gene_map.get(transcript.gene_id,None)
+            if working_gid is None:
+                working_gid = api_connection.insert_gene(transcript,working_sourceID)
+                gene_map[transcript.gene_id] = working_gid
             
             working_tid = tracking.get(transcript.tid,None) # tid PK of the transcript being worked on as it appears in the Transcripts table
-            working_lid = tid2lid.get(working_tid,None)
 
             if working_tid is None:
                 working_tid = api_connection.insert_transcript(transcript,assemblyID)
 
-            if working_lid is None:
-                working_lid = api_connection.insert_locus(transcript,working_tid,assemblyID)
-
             # add transcript source pairing to the TxDBXREF table
-            api_connection.insert_dbxref(transcript,working_tid,working_sourceID)
+            api_connection.insert_dbxref(transcript,working_tid,working_gid,working_sourceID)
 
             # deal with the attributes
             for attribute_key,attribute_value in transcript.attributes.items():

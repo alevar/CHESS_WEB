@@ -10,7 +10,7 @@ class TX:
         self.start = None
         self.end = None
         self.tid = None # not kept in attributes
-        self.gid = None # not kept in attributes
+        self.gene_id = None # not kept in attributes
         self.exons = []
         self.introns = []
         self.cds_start = None
@@ -61,7 +61,7 @@ class TX:
         self.score = 0 if tx_lcs[5]=="." else tx_lcs[5]
 
         self.tid = self.attributes["transcript_id"]
-        self.gid = self.attributes["gene_id"]
+        self.gene_id = self.attributes["gene_id"]
 
         self.transcript_type_value = self.attributes[self.transcript_type_key]
         self.gene_type_value = self.attributes[self.gene_type_key]
