@@ -142,7 +142,7 @@ class CHESS_DB_API:
     def insert_intron(self, assemblyID:int,sequenceID:int,strand:str,start:int,end:int):
         query = f"INSERT IGNORE INTO Intron (assemblyID, sequenceID, strand, start, end) VALUES ({assemblyID},{sequenceID},'{strand}','{start}','{end}')"
         return self.execute_query(query)
-
+    
     def insert_transcript(self, transcript:TX, assemblyID:int):
         query = f"INSERT INTO Transcript (assemblyID,sequenceID,strand,start,end) VALUES ('{assemblyID}','{transcript.seqid}',{transcript.strand},'{transcript.start}','{transcript.end}')"
         tx_res = self.execute_query(query)
@@ -162,9 +162,15 @@ class CHESS_DB_API:
         
         return tx_res
     
-    def insert_dbxref(self, transcript:TX, tid:int, sourceID:int):
-        query = f"INSERT INTO TxDBXREF (tid, sourceID, transcript_id, start, end, type_key, type_value"
-        values = (tid, sourceID, transcript.tid, transcript.start, transcript.end, transcript.transcript_type_key, transcript.transcript_type_value)
+    def insert_gene(self, transcript:TX, sourceID:int):
+        query = f"INSERT INTO Gene (gene_id, sourceID, name, type_key, type_value) VALUES (%s, %s, %s, %s, %s)"
+        values = (transcript.gene_id, sourceID, transcript.gene_name_value, transcript.gene_type_key, transcript.gene_type_value)
+
+        return self.execute_query(query, values)
+    
+    def insert_dbxref(self, transcript:TX, tid:int, gid:int, sourceID:int):
+        query = f"INSERT INTO TxDBXREF (tid, sourceID, transcript_id, start, end, type_key, type_value, gid"
+        values = (tid, sourceID, transcript.tid, transcript.start, transcript.end, transcript.transcript_type_key, transcript.transcript_type_value, gid)
         if transcript.cds_start is not None and transcript.cds_end is not None:
             query += ", cds_start"
             values += (transcript.cds_start,)
@@ -173,7 +179,7 @@ class CHESS_DB_API:
         if transcript.score is not None:
             query += ", score"
             values += (transcript.score,)
-        query += ") VALUES (%s, %s, %s, %s, %s, %s, %s"
+        query += ") VALUES (%s, %s, %s, %s, %s, %s, %s, %s"
         if transcript.cds_start is not None and transcript.cds_end is not None:
             query += ", %s, %s"
         if transcript.score is not None:
