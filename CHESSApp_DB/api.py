@@ -375,43 +375,72 @@ class CHESS_DB_API:
         return res[0]
     
     def insert_locus(self,assemblyID:int,sequenceID:int,strand:str,start:int,end:int):
-        query = f"INSERT INTO Locus (assemblyID, sequenceID, strand, start, end) VALUES ({assemblyID},{sequenceID},'{strand}','{start}','{end}')"
+        query = f"INSERT INTO Locus (assemblyID, sequenceID, strand, start, end) VALUES ({assemblyID},{sequenceID},{strand},'{start}','{end}')"
         return self.execute_query(query)
     
     def set_gene_lid(self,gid:int,lid:int):
         query = f"UPDATE Gene SET lid = {lid} WHERE gid = {gid}"
         return self.execute_query(query)
+
+    def get_genome_sequences(self):
+        # returns a list of assemblyID,sequenceID,strand
+        query = "SELECT DISTINCT assemblyID, sequenceID, strand FROM Transcript"
+        return self.execute_query(query)
     
     def build_lociTable(self):
-        query = """
-            SELECT
-                TX.tid,
-                G.gid
-            FROM
-                TxDBXREF TX
-            JOIN
-                Gene G ON TX.gid = G.gid
-        """
+        # do for each assembly, sequence and strand:
+        genome_sequences = self.get_genome_sequences()
+        for assemblyID,sequenceID,strand in genome_sequences:
+            query = """
+                SELECT
+                    TX.tid,
+                    G.gid
+                FROM
+                    TxDBXREF TX
+                JOIN
+                    Gene G ON TX.gid = G.gid
+                JOIN Transcript T ON TX.tid = T.tid
+                WHERE T.assemblyID = """+str(assemblyID)+""" AND T.sequenceID = """+str(sequenceID)+""" AND T.strand = '"""+str(strand)+"""';
+            """
 
-        loci = dict()
+            nodes = self.execute_query(query)
 
-        nodes = self.execute_query(query)
+            loci = self.find_loci(nodes)
 
-        loci = self.find_loci(nodes[:3000])
+            # traverse connected components and insert into loci ang gene tables
+            for lid, locus in enumerate(loci):
+                gene_set = set([x[1] for x in locus])
 
-        # traverse connected components and insert into loci ang gene tables
-        for lid, locus in enumerate(loci):
-            gene_set = set([x[1] for x in locus])
+                # get coordinates for the locus: minimum start and maximum end and sequence ID and strand
+                locus_coords = self.genes2locus(gene_set)
 
-            # get coordinates for the locus: minimum start and maximum end and sequence ID and strand
-            locus_coords = self.genes2locus(gene_set)
+                # add locus to the Locus table
+                lid = self.insert_locus(locus_coords[2],locus_coords[3],locus_coords[4],locus_coords[0],locus_coords[1])
+        
+                # update genes with the lid
+                for gid in gene_set:
+                    self.set_gene_lid(gid,lid)
 
-            # add locus to the Locus table
-            lid = self.insert_locus(locus_coords["assemblyID"],locus_coords["sequenceID"],locus_coords["strand"],locus_coords["end"],locus_coords["strand"])
-    
-            # update genes with the lid
-            for gid in gene_set:
-                self.set_gene_lid(gid,lid)
+    def build_locusSummaryTable(self):
+        query = """ SELECT
+                        Locus.lid,
+                        GROUP_CONCAT(DISTINCT Gene.gene_id) AS gene_ids,
+                        GROUP_CONCAT(DISTINCT Gene.name) AS gene_names,
+                        GROUP_CONCAT(DISTINCT TxDBXREF.transcript_id) AS transcript_ids,
+                        Locus.assemblyID,
+                        Locus.sequenceID,
+                        Locus.strand,
+                        MIN(Locus.start) AS start_coordinate,
+                        MAX(Locus.end) AS end_coordinate
+                    FROM
+                        Locus
+                    LEFT JOIN
+                        Gene ON Locus.lid = Gene.lid
+                    LEFT JOIN
+                        TxDBXREF ON Locus.lid = TxDBXREF.gid
+                    GROUP BY
+                        Locus.lid, Locus.assemblyID, Locus.sequenceID, Locus.strand;
+                    """
 
     def build_dbTxSummaryTable(self):
         # a single table of all transcripts in the database with all relevant information included. No need too store any positions, etc
@@ -760,12 +789,6 @@ class CHESS_DB_API:
     
     def get_sequeceData(self):
         return
-    
-    def get_assemblyID(self,name:str) -> int:
-        query = "SELECT assemblyID FROM Assembly WHERE assemblyName = '"+name+"'"
-        res = self.execute_query(query)
-        assert len(res) == 1,"Invalid assembly name: "+name
-        return res[0][0]
     
     def get_organismID(self,name:str) -> int:
         query = "SELECT organismID FROM Organism WHERE scientificName = '"+name+"'"
