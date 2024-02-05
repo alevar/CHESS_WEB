@@ -601,7 +601,8 @@ def compile(api_connection,args):
     api_connection.check_table("SequenceIDMap")
     api_connection.check_table("Organism")
 
-    api_connection.build_lociTable()
+    # api_connection.build_locusTable()
+    api_connection.build_locusSummaryTable()
     
     # build summary table
     api_connection.build_dbTxSummaryTable()

@@ -387,7 +387,7 @@ class CHESS_DB_API:
         query = "SELECT DISTINCT assemblyID, sequenceID, strand FROM Transcript"
         return self.execute_query(query)
     
-    def build_lociTable(self):
+    def build_locusTable(self):
         # do for each assembly, sequence and strand:
         genome_sequences = self.get_genome_sequences()
         for assemblyID,sequenceID,strand in genome_sequences:
@@ -422,16 +422,81 @@ class CHESS_DB_API:
                     self.set_gene_lid(gid,lid)
 
     def build_locusSummaryTable(self):
-        query = """ SELECT
+        # generate summary tables
+        # for each locus
+        #    for each source report lists of
+        #        gene_ids
+        #        gene_names
+        #        transcript_ids
+        #        assemblyID
+        query = "SELECT assemblyID FROM Assembly"
+        assemblies = [x[0] for x in self.execute_query(query)]
+
+        for assemblyID in assemblies:
+            table_name = f"dbLocusSummary_{assemblyID}"
+            # drop existing table
+            self.drop_table(table_name)
+
+            # get source IDs
+            query = "SELECT sourceID FROM Sources where assemblyID = "+str(assemblyID)
+            source_ids = [x[0] for x in self.execute_query(query)]
+
+            # create indices
+            index_strings = "INDEX (`lid` ASC)"
+            index_strings += f", INDEX (`sequenceID` ASC, `strand` ASC, `start` ASC, `end` ASC)"
+
+            # create table
+            query = f"""
+                    CREATE TABLE {table_name} (
+                        `lid` INT,
+                        `sequenceID` INT,
+                        `strand` BIT,
+                        `start` INT,
+                        `end` INT,
+                        {", ".join([f"`{source_id}.gene_id` TEXT" for source_id in source_ids])},
+                        {", ".join([f"`{source_id}.transcript_id` TEXT" for source_id in source_ids])},
+                        {", ".join([f"`{source_id}.gene_name` TEXT" for source_id in source_ids])},
+                        PRIMARY KEY (lid),
+                        {index_strings}
+                    );
+                    """
+            
+            res = self.execute_query(query)
+            
+            # populate table
+            # Generate and execute the INSERT INTO query
+            gene_id_inserts = "\n".join([f"GROUP_CONCAT(DISTINCT CASE WHEN Gene.sourceID = {source_id} THEN Gene.gene_id ELSE NULL END) AS `{source_id}.gene_id`" for source_id in source_ids])
+            if len(gene_id_inserts) > 0:
+                gene_id_inserts = gene_id_inserts[:-1] # remove the last comma
+            
+            gene_name_inserts = "\n".join([f"GROUP_CONCAT(DISTINCT CASE WHEN Gene.sourceID = {source_id} THEN Gene.name ELSE NULL END) AS `{source_id}.gene_name`" for source_id in source_ids])
+            if len(gene_name_inserts) > 0:
+                gene_name_inserts = gene_name_inserts[:-1] # remove the last comma
+            
+            transcript_id_inserts = "\n".join([f"GROUP_CONCAT(DISTINCT CASE WHEN TxDBXREF.sourceID = {source_id} THEN TxDBXREF.transcript_id ELSE NULL END) AS `{source_id}.transcript_id`" for source_id in source_ids])
+            if len(transcript_id_inserts) > 0:
+                transcript_id_inserts = transcript_id_inserts[:-1] # remove the last comma
+
+            insert_into_query = f"""
+                    INSERT INTO {table_name} (
+                        `lid`,
+                        `sequenceID`,
+                        `strand`,
+                        `start`,
+                        `end`,
+                        {", ".join([f"`{source_id}.gene_id`" for source_id in source_ids] +
+                                    [f"`{source_id}.transcript_id`" for source_id in source_ids] +
+                                    [f"`{source_id}.gene_name`" for source_id in source_ids])}
+                    )
+                    SELECT
                         Locus.lid,
-                        GROUP_CONCAT(DISTINCT Gene.gene_id) AS gene_ids,
-                        GROUP_CONCAT(DISTINCT Gene.name) AS gene_names,
-                        GROUP_CONCAT(DISTINCT TxDBXREF.transcript_id) AS transcript_ids,
-                        Locus.assemblyID,
                         Locus.sequenceID,
                         Locus.strand,
-                        MIN(Locus.start) AS start_coordinate,
-                        MAX(Locus.end) AS end_coordinate
+                        Locus.start,
+                        Locus.end,
+                        {gene_id_inserts},
+                        {transcript_id_inserts},
+                        {gene_name_inserts}
                     FROM
                         Locus
                     LEFT JOIN
@@ -439,9 +504,12 @@ class CHESS_DB_API:
                     LEFT JOIN
                         TxDBXREF ON Locus.lid = TxDBXREF.gid
                     GROUP BY
-                        Locus.lid, Locus.assemblyID, Locus.sequenceID, Locus.strand;
+                        Locus.lid, Locus.sequenceID, Locus.strand;
                     """
 
+            # Execute the INSERT INTO query
+            res = self.execute_query(insert_into_query)
+            
     def build_dbTxSummaryTable(self):
         # a single table of all transcripts in the database with all relevant information included. No need too store any positions, etc
         # this table is a lot faster to query since no joins are necessary and all information is as condensed as possible
