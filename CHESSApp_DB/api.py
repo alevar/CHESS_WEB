@@ -286,6 +286,133 @@ class CHESS_DB_API:
         query = f"DROP TABLE IF EXISTS {table_name} "
         return self.execute_query(query)
     
+    def find_loci(self,  nodes):
+        """Finds loci via shared transcripts
+        Identical to finding connected components in a graph.
+        DB returns a list of nodes: tid to gid. DFS scans to find all groups where either a transcript is shared or a gene is shared
+
+        Args:
+        nodes: A list of nodes, where each node is a tuple of two values.
+
+        Returns:
+        A list of lists, where each inner list represents a connected component.
+        """
+
+        class UnionFind:
+            def __init__(self, n):
+                self.parent = [i for i in range(n)]
+                self.rank = [0] * n
+
+            def find(self, x):
+                if self.parent[x] != x:
+                    self.parent[x] = self.find(self.parent[x])  # Path compression
+                return self.parent[x]
+
+            def union(self, x, y):
+                root_x = self.find(x)
+                root_y = self.find(y)
+                if root_x == root_y:
+                    return  # Already in the same set
+
+                # Union by rank to optimize tree height
+                if self.rank[root_x] < self.rank[root_y]:
+                    self.parent[root_x] = root_y
+                elif self.rank[root_x] > self.rank[root_y]:
+                    self.parent[root_y] = root_x
+                else:
+                    self.parent[root_y] = root_x
+                    self.rank[root_x] += 1
+
+        uf = UnionFind(len(nodes))
+        components = {}
+
+        # Optimize connectivity checks:
+        for i, node in enumerate(nodes):
+            for j in range(i + 1, len(nodes)):
+                if (node[0] == nodes[j][0] or node[1] == nodes[j][1]) and uf.find(i) != uf.find(j):
+                    uf.union(i, j)
+
+        # Construct components based on final union-find structure:
+        for i, node in enumerate(nodes):
+            root = uf.find(i)
+            components.setdefault(root, []).append(node)
+
+        return list(components.values())
+    
+    def genes2locus(self,gids:set[int]) -> list:
+        # construct locus coordinate using transcripts linked to a set of genes
+        query = """
+            SELECT
+                MIN(Tx.start) AS start,
+                MAX(Tx.end) AS end,
+                T.assemblyID,
+                T.sequenceID,
+                T.strand
+            FROM
+                Gene G
+            JOIN
+                TxDBXREF Tx ON G.gid = Tx.gid
+            JOIN
+                Transcript T ON Tx.tid = T.tid
+            WHERE
+                G.gid IN ("""
+        
+        query += ", ".join([str(gid) for gid in gids])
+
+        query += """)
+            GROUP BY
+                T.assemblyID, T.sequenceID, T.strand
+            HAVING
+                COUNT(DISTINCT T.assemblyID) = 1
+                AND COUNT(DISTINCT T.sequenceID) = 1
+                AND COUNT(DISTINCT T.strand) = 1;
+            """
+        
+        res = self.execute_query(query)
+
+        assert len(res) == 1,"Invalid gene set. Multiple loci found for a single gene set."
+
+        return res[0]
+    
+    def insert_locus(self,assemblyID:int,sequenceID:int,strand:str,start:int,end:int):
+        query = f"INSERT INTO Locus (assemblyID, sequenceID, strand, start, end) VALUES ({assemblyID},{sequenceID},'{strand}','{start}','{end}')"
+        return self.execute_query(query)
+    
+    def set_gene_lid(self,gid:int,lid:int):
+        query = f"UPDATE Gene SET lid = {lid} WHERE gid = {gid}"
+        return self.execute_query(query)
+    
+    def build_lociTable(self):
+        query = """
+            SELECT
+                TX.tid,
+                G.gid
+            FROM
+                TxDBXREF TX
+            JOIN
+                Gene G ON TX.gid = G.gid
+        """
+
+        loci = dict()
+
+        nodes = self.execute_query(query)
+
+        loci = self.find_loci(nodes[:3000])
+
+        # traverse connected components and insert into loci ang gene tables
+        for lid, locus in enumerate(loci):
+            gene_set = set([x[1] for x in locus])
+
+            # get coordinates for the locus: minimum start and maximum end and sequence ID and strand
+            locus_coords = self.genes2locus(gene_set)
+
+            # add locus to the Locus table
+            lid = self.insert_locus(locus_coords["assemblyID"],locus_coords["sequenceID"],locus_coords["strand"],locus_coords["end"],locus_coords["strand"])
+    
+            # update genes with the lid
+            for gid in gene_set:
+                self.set_gene_lid(gid,lid)
+
     def build_dbTxSummaryTable(self):
         # a single table of all transcripts in the database with all relevant information included. No need too store any positions, etc
         # this table is a lot faster to query since no joins are necessary and all information is as condensed as possible
@@ -450,9 +577,7 @@ class CHESS_DB_API:
                         LEFT JOIN
                             Sources S ON TX.sourceID = S.sourceID
                         LEFT JOIN
-                            TranscriptToGene TG ON T.tid = TG.tid
-                        LEFT JOIN
-                            Gene G ON TG.gid = G.gid
+                            Gene G ON TX.gid = G.gid
                         GROUP BY
                             O.scientificName, A.assemblyName, S.name WITH ROLLUP
                         HAVING
