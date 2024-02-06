@@ -275,5 +275,83 @@ def findLoci(genome:int,term:str):
     # 2. term: search term
     # returns a list of loci that match the search term
     # construct query
-    query = "SELECT gene_id, gene_name FROM dbLocusSummary WHERE gene_name LIKE %s"
-        cursor.execute(query, ('%' + keyword + '%',))
+
+    sources = get_all_sources()
+    sources = [x["id"] for x in sources.values()]
+    
+    # get all sources for the genome
+    sources = get_all_sources()
+    query = f"""SELECT * FROM dbLocusSummary_{genome} dbl
+                    WHERE 
+                        MATCH (
+                            {','.join([f'dbl.`{x}.gene_id`' for x in sources])},
+                            {','.join([f'dbl.`{x}.gene_name`' for x in sources])} 
+                        ) 
+                        AGAINST ('{term}' IN NATURAL LANGUAGE MODE);"""
+    
+    # execute query
+    res = db.session.execute(text(query))
+
+    loci = []
+    # parse the results into a dictionary
+    for row in res:
+        loci.append(list(row))
+
+    return loci
+
+def get_locus(lid:int):
+    # parameters:
+    # 1. locusID
+    # returns a dictionary with the locus details
+    # results are structured as follows:
+    # locus: {
+    #  lid: {
+    #   source: {
+    #    gid: {
+    #     tid: {
+    #      transcript_id,
+    #      exon_chain,
+    #      cds_chain,
+    #     name,
+    #     gene_id,
+    #     }
+    #    }
+    #   }
+    # }
+
+    # construct query
+    query = f"""SELECT 
+                    l.lid AS lid, 
+                    l.sequenceID AS sesqid,
+                    l.strand AS strand,
+                    l.start AS locus_start,
+                    l.end AS locus_end,
+                    g.sourceID AS sourceID,
+                    g.gid AS gid, 
+                    g.gene_id AS gene_id,
+                    g.name AS gene_name,
+                    tx.tid AS tid, 
+                    tx.transcript_id AS transcript_id,
+                    tx.start AS transcript_start,
+                    tx.end AS transcript_end,
+                    tx.cds_start AS cds_start,
+                    tx.cds_end AS cds_end,
+                    i.start AS intron_start,
+                    i.end AS intron_end
+                FROM Locus l
+                    JOIN Gene g on l.lid = g.lid
+                    JOIN TxDBXREF tx on g.gid = tx.gid
+                    JOIN Transcript t on tx.tid = t.tid
+                    JOIN TranscriptToIntron ti on t.tid = ti.tid
+                    JOIN Intron i on ti.iid = i.iid
+                WHERE l.lid = {lid};"""
+    
+    # execute query
+    res = db.session.execute(text(query))
+
+    locus = {}
+    # parse the results into a dictionary
+    for row in res:
+        locus.setdefault(row.lid,dict())
+        locus[row.lid].setdefault(row.sourceID,dict())
+        locus[row.lid][row.sourceID].setdefault(row.gid,dict())
