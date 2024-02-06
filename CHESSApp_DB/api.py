@@ -456,6 +456,8 @@ class CHESS_DB_API:
                         {", ".join([f"`{source_id}.gene_id` TEXT" for source_id in source_ids])},
                         {", ".join([f"`{source_id}.gene_name` TEXT" for source_id in source_ids])},
                         PRIMARY KEY (lid),
+                        FULLTEXT KEY ({", ".join([f"`{source_id}.gene_id`" for source_id in source_ids])},
+                                      {", ".join([f"`{source_id}.gene_name`" for source_id in source_ids])}) WITH PARSER NGRAM,
                         {index_strings}
                     );
                     """

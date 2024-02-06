@@ -211,3 +211,13 @@ def findLoci():
     settings = request.get_json()
     loci = db_methods.findLoci(settings['genome'], settings['term'])
     return jsonify(loci)
+
+# Route: /getLocus
+# get the details of a specific locus
+# Returns: JSON object with locus details
+# including all genes and transcripts
+@main_blueprint.route('/getLocus', methods=['POST'])
+def getLocus():
+    settings = request.get_json()
+    locus = db_methods.getLocus(settings['locusID'])
+    return jsonify(locus)
