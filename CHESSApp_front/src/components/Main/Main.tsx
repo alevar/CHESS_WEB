@@ -10,7 +10,6 @@ import { SettingsState,
          set_organism,
          set_attributes,
          set_include_sources } from '../../features/settings/settingsSlice';
-import { useGetTxSummarySliceQuery } from '../../features/summary/summaryApi';
 
 interface RootState {
   database: DatabaseState;

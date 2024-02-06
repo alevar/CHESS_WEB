@@ -1,11 +1,18 @@
 import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
+import Spinner from 'react-bootstrap/Spinner';
+
 import SideBar from './SideBar/SideBar';
+import GeneSearch from './ExploreGene/GeneSearch/GeneSearch';
 import GeneTable from './ExploreGene/GeneTable/GeneTable';
 import ExploreGene from './ExploreGene/ExploreGene';
 
-import { useGetGenesSliceQuery } from '../../../../features/genes/genesApi';
+import { DatabaseState } from '../../../../features/database/databaseSlice';
+import { SettingsState } from '../../../../features/settings/settingsSlice';
+
+import { useGetLociSummaryQuery } from '../../../../features/loci/lociApi';
 
 // when a user lands on explore - present all genes
 // filtering will only work within the currently displayed panel
@@ -17,8 +24,41 @@ import { useGetGenesSliceQuery } from '../../../../features/genes/genesApi';
 // solution - add primary key of the gene summary table to each entry in the transcript summary table
 // that way we can select from both and join them to give a single result
 
+interface RootState {
+  database: DatabaseState;
+  settings: SettingsState;
+}
+
 const Explore: React.FC = () => {
   const { gene_id } = useParams();
+
+  const settings = useSelector((state: RootState) => state.settings);
+
+  const { data, error, isLoading } = useGetLociSummaryQuery(settings.value);
+
+  if (isLoading) {
+    return (
+      <div className="loading">
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  const geneData = {
+    GeneName: ['GeneA', 'GeneB', 'GeneC'],
+    ExpressionLevel: [10, 20, 15],
+    Chromosome: ['chr1', 'chr2', 'chr3'],
+  };
+
+  const handleSearch = (query: string) => {
+    
+  };
 
   return (
     <Container fluid>
@@ -30,7 +70,10 @@ const Explore: React.FC = () => {
           {gene_id ? (
             <ExploreGene/>
           ) : (
-            <GeneTable />
+            <div>
+              <GeneSearch onSearch={handleSearch} />
+              <GeneTable data={geneData} />
+            </div>
           )}
         </Col>
       </Row>
