@@ -244,3 +244,36 @@ def get_dbTxSlice(genome,attributes):
                     summary[row_source_intersection][sourceID][gene_type][tx_type] += count
 
     return summary
+
+
+def get_dbLocusSlice(genome,attributes):
+    # parameters:
+    # 1. assemblyID
+    # 2. attributes: for each sourceID to include:
+    #   - sourceID
+    #       - key (standard name)
+    #       - value (kvid)
+    # returns a slice of the dbTxSummary table with matching data
+    # summarized by the number of transcripts in each category
+
+    # construct query
+    query = "SELECT *  FROM dbLocusSummary_"+str(genome)+" dbl;"
+
+    # execute query
+    res = db.session.execute(text(query))
+
+    loci = []
+    # parse the results into a dictionary
+    for row in res:
+        loci.append(list(row))
+
+    return loci
+
+def findLoci(genome:int,term:str):
+    # parameters:
+    # 1. assemblyID
+    # 2. term: search term
+    # returns a list of loci that match the search term
+    # construct query
+    query = "SELECT gene_id, gene_name FROM dbLocusSummary WHERE gene_name LIKE %s"
+        cursor.execute(query, ('%' + keyword + '%',))

@@ -450,11 +450,10 @@ class CHESS_DB_API:
                     CREATE TABLE {table_name} (
                         `lid` INT,
                         `sequenceID` INT,
-                        `strand` BIT,
+                        `strand` INT,
                         `start` INT,
                         `end` INT,
                         {", ".join([f"`{source_id}.gene_id` TEXT" for source_id in source_ids])},
-                        {", ".join([f"`{source_id}.transcript_id` TEXT" for source_id in source_ids])},
                         {", ".join([f"`{source_id}.gene_name` TEXT" for source_id in source_ids])},
                         PRIMARY KEY (lid),
                         {index_strings}
@@ -465,18 +464,14 @@ class CHESS_DB_API:
             
             # populate table
             # Generate and execute the INSERT INTO query
-            gene_id_inserts = "\n".join([f"GROUP_CONCAT(DISTINCT CASE WHEN Gene.sourceID = {source_id} THEN Gene.gene_id ELSE NULL END) AS `{source_id}.gene_id`" for source_id in source_ids])
+            gene_id_inserts = "\n".join([f"GROUP_CONCAT(DISTINCT CASE WHEN Gene.sourceID = {source_id} THEN Gene.gene_id ELSE NULL END) AS `{source_id}.gene_id`," for source_id in source_ids])
             if len(gene_id_inserts) > 0:
                 gene_id_inserts = gene_id_inserts[:-1] # remove the last comma
             
-            gene_name_inserts = "\n".join([f"GROUP_CONCAT(DISTINCT CASE WHEN Gene.sourceID = {source_id} THEN Gene.name ELSE NULL END) AS `{source_id}.gene_name`" for source_id in source_ids])
+            gene_name_inserts = "\n".join([f"GROUP_CONCAT(DISTINCT CASE WHEN Gene.sourceID = {source_id} THEN Gene.name ELSE NULL END) AS `{source_id}.gene_name`," for source_id in source_ids])
             if len(gene_name_inserts) > 0:
                 gene_name_inserts = gene_name_inserts[:-1] # remove the last comma
             
-            transcript_id_inserts = "\n".join([f"GROUP_CONCAT(DISTINCT CASE WHEN TxDBXREF.sourceID = {source_id} THEN TxDBXREF.transcript_id ELSE NULL END) AS `{source_id}.transcript_id`" for source_id in source_ids])
-            if len(transcript_id_inserts) > 0:
-                transcript_id_inserts = transcript_id_inserts[:-1] # remove the last comma
-
             insert_into_query = f"""
                     INSERT INTO {table_name} (
                         `lid`,
@@ -485,7 +480,6 @@ class CHESS_DB_API:
                         `start`,
                         `end`,
                         {", ".join([f"`{source_id}.gene_id`" for source_id in source_ids] +
-                                    [f"`{source_id}.transcript_id`" for source_id in source_ids] +
                                     [f"`{source_id}.gene_name`" for source_id in source_ids])}
                     )
                     SELECT
@@ -495,14 +489,11 @@ class CHESS_DB_API:
                         Locus.start,
                         Locus.end,
                         {gene_id_inserts},
-                        {transcript_id_inserts},
                         {gene_name_inserts}
                     FROM
                         Locus
                     LEFT JOIN
                         Gene ON Locus.lid = Gene.lid
-                    LEFT JOIN
-                        TxDBXREF ON Locus.lid = TxDBXREF.gid
                     GROUP BY
                         Locus.lid, Locus.sequenceID, Locus.strand;
                     """

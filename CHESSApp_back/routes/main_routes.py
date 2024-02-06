@@ -168,8 +168,6 @@ def get_attribute_counts():
 def generate_file():
     return jsonify({'status': 'success'})
 
-
-
 # Route: /getChartData
 # Route implemented for testing purposes only
 # Fetches some data to be displayed as a chart onthe main interface
@@ -179,3 +177,37 @@ def get_chart_data():
     query = text("SELECT seqid, featuretype, COUNT(*) FROM features GROUP BY seqid, featuretype")
     results = db.session.execute(query)
     return jsonify([{'seqid': x.seqid, 'featuretype': x.featuretype, 'count': x.count} for x in results])
+
+
+# Route: /getLociSummary
+# Retrieve a summary of the loci table for a specified assemblyID
+# Returns: JSON object with loci summary data
+@main_blueprint.route('/getLociSummary', methods=['POST'])
+def getLociSummary():
+    settings = request.get_json()
+
+    # cleanup settings to prepare for the DB query
+    clean_settings = dict()
+    for sourceID in settings["sources_include"]:
+        for key,values in settings["attributes"][str(sourceID)].items():
+            clean_settings.setdefault(int(sourceID),dict())
+            clean_settings[sourceID][key] = values
+            
+
+    res = {"summary":[]}
+    if len(clean_settings) > 0:
+        # get a slice of the locusSummary table and return
+        summary = db_methods.get_dbLocusSlice(settings["genome"],clean_settings)
+        res["summary"] = summary
+        return jsonify(res)
+    else:
+        return jsonify(res)
+
+# Route: /findLoci
+# find loci matching the requested term for a given assembly
+# Returns: JSON object with loci data
+@main_blueprint.route('/findLoci', methods=['POST'])
+def findLoci():
+    settings = request.get_json()
+    loci = db_methods.findLoci(settings['genome'], settings['term'])
+    return jsonify(loci)
