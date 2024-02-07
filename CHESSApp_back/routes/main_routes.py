@@ -92,6 +92,7 @@ def globalData():
     gene_types = db_methods.get_geneTypeSummary()
     transcript_types = db_methods.get_transcriptTypeSummary()
     nomenclatures = db_methods.get_assembly2nomenclature()
+    sequenceIDMap = db_methods.get_seqidMap()
 
     data = {
         "organisms":organisms,
@@ -100,7 +101,8 @@ def globalData():
         "attributes":attributes,
         "gene_types":gene_types,
         "transcript_types":transcript_types,
-        "nomenclature":nomenclatures
+        "nomenclature":nomenclatures,
+        "sequenceIDMap":sequenceIDMap
     }
 
     return jsonify(data)
@@ -218,6 +220,7 @@ def findLoci():
 # including all genes and transcripts
 @main_blueprint.route('/getLocus', methods=['POST'])
 def getLocus():
-    settings = request.get_json()
-    locus = db_methods.getLocus(settings['locusID'])
+    data = request.data.decode('utf-8')
+    lid = int(data)
+    locus = db_methods.getLocus(lid)
     return jsonify(locus)

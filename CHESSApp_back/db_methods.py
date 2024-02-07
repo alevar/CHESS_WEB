@@ -30,8 +30,10 @@ def get_all_assemblies():
     return json_res
 
 # get full source information
-def get_all_sources():
+def get_all_sources(genome=None):
     query = text("SELECT * FROM Sources")
+    if genome:
+        query  = text(f"SELECT * FROM Sources WHERE assemblyID = {genome}")
     res = db.session.execute(query)
 
     # parse list into a dictionary
@@ -48,6 +50,18 @@ def get_all_sources():
             "assemblyID":row.assemblyID
         }
     return sources
+
+def get_seqidMap():
+    query = text("SELECT * FROM SequenceIDMap")
+    res = db.session.execute(query)
+
+    # parse list into a dictionary
+    seqids = dict()
+    for row in res:
+        seqids.setdefault(row.assemblyID,{})
+        seqids[row.assemblyID].setdefault(row.sequenceID,dict())
+        seqids[row.assemblyID][row.sequenceID][row.nomenclature] = row.sequenceName
+    return seqids
 
 def get_attributeSummary():
     query = text("SELECT * FROM AttributeSummary")
@@ -276,16 +290,23 @@ def findLoci(genome:int,term:str):
     # returns a list of loci that match the search term
     # construct query
 
-    sources = get_all_sources()
-    sources = [x["id"] for x in sources.values()]
+    sources = get_all_sources(genome)
+    sourceIDs = [x["id"] for x in sources.values()]
     
     # get all sources for the genome
-    sources = get_all_sources()
-    query = f"""SELECT * FROM dbLocusSummary_{genome} dbl
+    query = f"""SELECT 
+                    dbl.lid AS locusID,
+                    dbl.sequenceID AS seqid,
+                    dbl.strand AS strand,
+                    dbl.start AS start,
+                    dbl.end AS end,
+                    {','.join([f'dbl.`{x}.gene_id`' for x in sourceIDs])},
+                    {','.join([f'dbl.`{x}.gene_name`' for x in sourceIDs])}
+                FROM dbLocusSummary_{genome} dbl
                     WHERE 
                         MATCH (
-                            {','.join([f'dbl.`{x}.gene_id`' for x in sources])},
-                            {','.join([f'dbl.`{x}.gene_name`' for x in sources])} 
+                            {','.join([f'dbl.`{x}.gene_id`' for x in sourceIDs])},
+                            {','.join([f'dbl.`{x}.gene_name`' for x in sourceIDs])} 
                         ) 
                         AGAINST ('{term}' IN NATURAL LANGUAGE MODE);"""
     
@@ -293,37 +314,48 @@ def findLoci(genome:int,term:str):
     res = db.session.execute(text(query))
 
     loci = []
+    columns = ["locusID","seqid","strand","start","end"]+[sources[x]["name"]+" Gene ID" for x in sourceIDs]+[sources[x]["name"]+" Gene Name" for x in sourceIDs]
     # parse the results into a dictionary
     for row in res:
-        loci.append(list(row))
+        loci.append([row.locusID,row.seqid,row.strand,row.start,row.end]+[row.__getattr__(f"{x}.gene_id") for x in sourceIDs]+[row.__getattr__(f"{x}.gene_name") for x in sourceIDs])
 
-    return loci
+    return {"columns":columns,"loci":loci}
 
-def get_locus(lid:int):
+def getLocus(lid:int):
     # parameters:
     # 1. locusID
     # returns a dictionary with the locus details
     # results are structured as follows:
-    # locus: {
-    #  lid: {
-    #   source: {
-    #    gid: {
-    #     tid: {
-    #      transcript_id,
-    #      exon_chain,
-    #      cds_chain,
-    #     name,
-    #     gene_id,
+    #   transcripts: {
+    #    tid: {
+    #      intron_chain,
+    #      transcript_start,
+    #      transcript_end,
+    #      sources: {
+    #       sourceID: {
+    #        transcript_id,
+    #        transcript_start,
+    #        transcript_end,
+    #        cds_start,
+    #        cds_end,
+    #        gids: []
+    #       }
     #     }
     #    }
     #   }
-    # }
+    #   genes: {
+    #    gid: {
+    #     gene_id,
+    #     gene_name,
+    #     sourceID
+    #    }
+    #   }
 
     # construct query
     query = f"""SELECT 
                     l.lid AS lid, 
-                    l.sequenceID AS sesqid,
-                    l.strand AS strand,
+                    l.sequenceID AS seqid,
+                    CAST(l.strand AS SIGNED) AS strand,
                     l.start AS locus_start,
                     l.end AS locus_end,
                     g.sourceID AS sourceID,
@@ -339,19 +371,52 @@ def get_locus(lid:int):
                     i.start AS intron_start,
                     i.end AS intron_end
                 FROM Locus l
-                    JOIN Gene g on l.lid = g.lid
-                    JOIN TxDBXREF tx on g.gid = tx.gid
-                    JOIN Transcript t on tx.tid = t.tid
-                    JOIN TranscriptToIntron ti on t.tid = ti.tid
-                    JOIN Intron i on ti.iid = i.iid
+                    JOIN Gene g ON l.lid = g.lid
+                    JOIN TxDBXREF tx ON g.gid = tx.gid
+                    JOIN Transcript t ON tx.tid = t.tid
+                    LEFT JOIN TranscriptToIntron ti ON t.tid = ti.tid
+                    LEFT JOIN Intron i ON ti.iid = i.iid
                 WHERE l.lid = {lid};"""
     
     # execute query
     res = db.session.execute(text(query))
 
-    locus = {}
+    locus = {"position":{},"data":{"transcripts":{},"genes":{}}}
     # parse the results into a dictionary
-    for row in res:
-        locus.setdefault(row.lid,dict())
-        locus[row.lid].setdefault(row.sourceID,dict())
-        locus[row.lid][row.sourceID].setdefault(row.gid,dict())
+    for row_i,row in enumerate(res):
+        if row_i == 0:
+            locus["position"] = {"seqid":row.seqid,
+                                 "strand":row.strand,
+                                 "start":row.locus_start,
+                                 "end":row.locus_end}
+
+        locus["data"]["transcripts"].setdefault(row.tid,{"intron_chain":[],
+        })
+
+        locus["data"].setdefault(row.sourceID,dict())
+        locus["data"][row.sourceID].setdefault(row.gid,{"transcripts":{},"gene_id":row.gene_id,"gene_name":row.gene_name})
+        locus["data"][row.sourceID][row.gid]["transcripts"].setdefault(row.tid,{"transcript_id":row.transcript_id,
+                                                                        "intron_chain":[],
+                                                                        "transcript_start":row.transcript_start,
+                                                                        "transcript_end":row.transcript_end,
+                                                                        "cds_start":row.cds_start,
+                                                                        "cds_end":row.cds_end})
+        if row.intron_start is not None and row.intron_end is not None:
+            locus["data"][row.sourceID][row.gid]["transcripts"][row.tid]["intron_chain"].append([row.intron_start,row.intron_end])
+        else:
+            locus["data"][row.sourceID][row.gid]["transcripts"][row.tid]["intron_chain"] = []
+        locus["data"][row.sourceID][row.gid]["transcripts"][row.tid]["transcript_start"] = row.transcript_start
+        locus["data"][row.sourceID][row.gid]["transcripts"][row.tid]["transcript_end"] = row.transcript_end
+        locus["data"][row.sourceID][row.gid]["transcripts"][row.tid]["cds_start"] = row.cds_start
+        locus["data"][row.sourceID][row.gid]["transcripts"][row.tid]["cds_end"] = row.cds_end
+
+        # first tid - then sources
+        # this way we deduplicate transcripts and make explansion easier
+
+        # tid: 
+
+
+    return locus
+
+
+
