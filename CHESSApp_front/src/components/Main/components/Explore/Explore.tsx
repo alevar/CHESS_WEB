@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
 import Spinner from 'react-bootstrap/Spinner';
 
@@ -12,7 +12,8 @@ import ExploreGene from './ExploreGene/ExploreGene';
 import { DatabaseState } from '../../../../features/database/databaseSlice';
 import { SettingsState } from '../../../../features/settings/settingsSlice';
 
-import { useGetLociSummaryQuery } from '../../../../features/loci/lociApi';
+import { useGetLociSummaryQuery,
+         useFindLociQuery } from '../../../../features/loci/lociApi';
 
 // when a user lands on explore - present all genes
 // filtering will only work within the currently displayed panel
@@ -30,13 +31,15 @@ interface RootState {
 }
 
 const Explore: React.FC = () => {
-  const { gene_id } = useParams();
+  const navigate = useNavigate();
 
+  const { locus_id } = useParams();
   const settings = useSelector((state: RootState) => state.settings);
 
-  const { data, error, isLoading } = useGetLociSummaryQuery(settings.value);
+  const [query, setQuery] = React.useState<any>({"genome":settings.value.genome,"term":"TUBB8B"});
+  const { data: lociData, error: lociError, isLoading: lociLoading } = useFindLociQuery(query);
 
-  if (isLoading) {
+  if (lociLoading) {
     return (
       <div className="loading">
         <Spinner animation="border" role="status">
@@ -46,18 +49,17 @@ const Explore: React.FC = () => {
     );
   }
 
-  if (error) {
-    return <div>Error: {error}</div>;
+  if (lociError) {
+    return <div>Error: {lociError}</div>;
   }
-
-  const geneData = {
-    GeneName: ['GeneA', 'GeneB', 'GeneC'],
-    ExpressionLevel: [10, 20, 15],
-    Chromosome: ['chr1', 'chr2', 'chr3'],
+  
+  const handleSearch = (newQuery: string) => {
+    setQuery({"genome": settings.value.genome, "term": newQuery});
   };
 
-  const handleSearch = (query: string) => {
-    
+  const handleRowClick = (row: any[]) => {
+    // navigate to the requested locus
+    navigate(`${location.pathname}/${row[0]}`)
   };
 
   return (
@@ -67,12 +69,12 @@ const Explore: React.FC = () => {
           <SideBar />
         </Col>
         <Col id="mainView" className="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-          {gene_id ? (
-            <ExploreGene/>
+          {locus_id ? (
+            <ExploreGene locusID={locus_id}/>
           ) : (
             <div>
               <GeneSearch onSearch={handleSearch} />
-              <GeneTable data={geneData} />
+              <GeneTable data={lociData} onRowClick={handleRowClick} />
             </div>
           )}
         </Col>

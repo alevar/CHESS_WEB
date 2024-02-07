@@ -1,11 +1,45 @@
 import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
+
+import Spinner from 'react-bootstrap/Spinner';
 import SashimiPlot from './SashimiPlot/SashimiPlot';
 import PDB from './PDB/PDB';
 
 import { TX, Locus } from '../../../../../utils/utils';
 
-const Explore: React.FC = () => {
+import { DatabaseState } from '../../../../../features/database/databaseSlice';
+import { SettingsState } from '../../../../../features/settings/settingsSlice';
+import { useGetLocusQuery } from '../../../../../features/loci/lociApi';
+
+interface ExploreProps {
+    locusID: number,
+}
+
+interface RootState {
+    database: DatabaseState;
+    settings: SettingsState;
+}
+
+const Explore: React.FC<ExploreProps> = ({ locusID }) => {
+    const settings = useSelector((state: RootState) => state.settings);
+    const database = useSelector((state: RootState) => state.database);
+
+    const { data: locusData, error: locusError, isLoading: locusLoading } = useGetLocusQuery(locusID);
+
+    if (locusLoading) {
+        return (
+            <div className="loading">
+                <Spinner animation="border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </Spinner>
+            </div>
+        );
+    }
+
+    if (locusError) {
+        return <div>Error: {lociError}</div>;
+    }
 
     // all deduplicated transcripts at locus
     // when transcript selected - shows
@@ -27,67 +61,25 @@ const Explore: React.FC = () => {
         arrowSpacing: 50,
     };
 
-    const txData_raw = [
-        {
-            "seqid": "chr18",
-            "strand": "-",
-            "tid": "CHS.24353.6",
-            "gene_name": "KCTD1",
-            "exons": [[26454910, 26455901], [26459620, 26459925], [26476515, 26476659], [26501072, 26501250], [26546728, 26548553]],
-            "cds": [26455746, 26548536]
-        },
-        {
-            "seqid": "chr18",
-            "strand": "-",
-            "tid": "CHS.24353.1",
-            "gene_name": ",KCTD1",
-            "exons": [[26454910, 26455901], [26459620, 26459925], [26476515, 26476659], [26501072, 26501250], [26549244, 26549435]],
-            "cds": [26455746, 26501235]
-        },
-        {
-            "seqid": "chr18",
-            "strand": "-",
-            "tid": "CHS.24353.7",
-            "gene_name": "KCTD1",
-            "exons": [[26454910, 26455901], [26459620, 26459925], [26476515, 26476659], [26501072, 26501250], [26548891, 26549435]],
-            "cds": [26455746, 26501235]
-        },
-        {
-            "seqid": "chr18",
-            "strand": "-",
-            "tid": "CHS.24353.8",
-            "gene_name": "KCTD1",
-            "exons": [[26454910, 26455901], [26459620, 26459925], [26476515, 26476659], [26501072, 26501250], [26549729, 26549819]],
-            "cds": [26455746, 26501235]
-        },
-        {
-            "seqid": "chr18",
-            "strand": "-",
-            "tid": "CHS.24353.9",
-            "gene_name": "KCTD1",
-            "exons": [[26454910, 26455901], [26459620, 26459925], [26476515, 26476659], [26501072, 26501250], [26629147, 26629237], [26640311, 26640344]],
-            "cds": [26455746, 26501235]
-        },
-    ]
-
     const locus = new Locus();
 
-    for (const tx of txData_raw) {
-        const txObj = new TX();
-        txObj.seqid = tx.seqid;
-        txObj.strand = tx.strand;
-        txObj.tid = tx.tid;
-        txObj.add_attr("gene_name", tx.gene_name);
-        for (const exon of tx.exons) {
-            if (exon.length === 2) {
-                txObj.add_exon(exon as [number, number]);
+    for (const [sourceID, sourceData] of Object.entries(locusData.data)) {
+        for (const [gid, geneData] of Object.entries(sourceData)) {
+            for (let [tid, txData] of Object.entries(geneData.transcripts)) {
+                const txObj = new TX();
+                const seqid_name = database.data.sequenceIDMap[settings.value.genome][locusData.position.seqid][settings.value.nomenclature];
+                txObj.tid = tid;
+                for (const exon of txData.exons) {
+                    txObj.add_exon(exon as [number, number]);
+                }
+                txObj.build_orf(txData.cds_start, txData.cds_end);
+                locus.add_tx(txObj);
             }
         }
-        txObj.build_orf(tx.cds[0], tx.cds[1]);
-
-        locus.add_tx(txObj);
     }
 
+    console.log(locusData)
+    console.log(locus)
     locus.set_scaling();
 
     const pdbData = "1MO8"; // eventually to be replaced with a query to the server for the appropriate PDB data
