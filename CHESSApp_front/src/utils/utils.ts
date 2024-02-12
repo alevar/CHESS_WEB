@@ -1,4 +1,5 @@
 import { NestedObject, Interval, Coord, Attributes } from './types';
+import SashimiPlot from '../components/Main/components/Explore/ExploreGene/SashimiPlot/SashimiPlot';
 
 export const sum_of_leaves = (obj: NestedObject): number => {
   let total = 0;
@@ -73,6 +74,12 @@ export class TX {
 
   txs: TX[] = []; // if a transcript has alternative versions - they are stored here
 
+  parent_tid: string | null = null;
+
+  gene_dbID: string | null = null;
+  gene_id: string | null = null;
+  gene_name: string | null = null;
+
   clear(): void {
     this.seqid = null;
     this.strand = null;
@@ -83,6 +90,22 @@ export class TX {
     this.attrs = {};
 
     this.txs = [];
+
+    this.parent_tid = null;
+
+    this.gene_dbID = null;
+    this.gene_id = null;
+    this.gene_name = null;
+  }
+
+  set_gene(dbID: string, gene_id: string, gene_name: string): void {
+    this.gene_dbID = dbID;
+    this.gene_id = gene_id;
+    this.gene_name = gene_name;
+  }
+
+  set_parent(parent_tid: string): void {
+    this.parent_tid = parent_tid;
   }
 
   set_seqid(seqid: string): void {
@@ -183,6 +206,9 @@ export class TX {
   set_end(end: number): void {
     this.exons[this.exons.length - 1] = [this.exons[this.exons.length - 1][0], end];
   }
+
+  build_svg(): void {
+  }    
 }
 
 export class Locus {
