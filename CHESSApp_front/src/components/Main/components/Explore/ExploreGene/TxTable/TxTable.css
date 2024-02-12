@@ -1,52 +1,56 @@
 table {
     border: 1px solid lightgray;
-  }
-  
-  tbody {
+}
+
+tbody {
     border-bottom: 1px solid lightgray;
-  }
-  
-  th {
+}
+
+th {
     border-bottom: 1px solid lightgray;
     border-right: 1px solid lightgray;
     padding: 2px 4px;
-  }
-  
-  td {
+}
+
+td {
     border-right: 1px solid lightgray;
     padding: 2px 4px;
-  }
-  
-  td:last-child {
+}
+
+td:last-child {
     border-right: 0;
-  }
+}
 
-  tfoot {
+tfoot {
     color: gray;
-  }
-  
-  tfoot th {
-    font-weight: normal;
-  }
+}
 
-  .view {
-    margin: auto;
-    width: 600px;
-  }
-  
-  .wrapper {
-    position: relative;
-    overflow: auto;
-    border: 1px solid black;
+tfoot th {
+    font-weight: normal;
+}
+
+button.chevron {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    display: inline-block;
+}
+
+button.chevron.right {
+    border-width: 4px 0 4px 6px;
+    border-color: transparent transparent transparent #000;
+}
+
+button.chevron.down {
+    border-width: 6px 4px 0 4px;
+    border-color: #000 transparent transparent transparent;
+}
+
+
+.table th, .table td {
     white-space: nowrap;
-  }
-  
-  .rt-tbody {
-    overflow: visible !important;
-  }
-  .sticky {
-    position: sticky;
-    background-color: red;
-    left: 0;
-    top: 0;
-  }
+}
+
+.table th:last-child, .table td:last-child {
+    width: 100%;
+}
