@@ -1,6 +1,8 @@
 from sqlalchemy import func, text
 from CHESSApp_back import db
 
+import sys
+
 # GETTER FUNCTIONS
 def get_all_organisms():
     query = text("SELECT * FROM Organism")
@@ -325,31 +327,6 @@ def getLocus(lid:int):
     # parameters:
     # 1. locusID
     # returns a dictionary with the locus details
-    # results are structured as follows:
-    #   transcripts: {
-    #    tid: {
-    #      intron_chain,
-    #      transcript_start,
-    #      transcript_end,
-    #      sources: {
-    #       sourceID: {
-    #        transcript_id,
-    #        transcript_start,
-    #        transcript_end,
-    #        cds_start,
-    #        cds_end,
-    #        gids: []
-    #       }
-    #     }
-    #    }
-    #   }
-    #   genes: {
-    #    gid: {
-    #     gene_id,
-    #     gene_name,
-    #     sourceID
-    #    }
-    #   }
 
     # construct query
     query = f"""SELECT 
@@ -389,32 +366,61 @@ def getLocus(lid:int):
                                  "strand":row.strand,
                                  "start":row.locus_start,
                                  "end":row.locus_end}
-
+        # results are structured as follows:
+        #   transcripts: {
+        #    tid: {
+        #      intron_chain,
+        #      transcript_start,
+        #      transcript_end,
+        #      sources: {
+        #       sourceID: {
+        #        gid: {
+        #         transcript_id,
+        #         transcript_start,
+        #         transcript_end,
+        #         cds_start,
+        #         cds_end,
+        #       }
+        #      }
+        #     }
+        #    }
+        #   }
+        #   genes: {
+        #    gid: {
+        #     gene_id,
+        #     gene_name,
+        #     sourceID
+        #    }
+        #   }
         locus["data"]["transcripts"].setdefault(row.tid,{"intron_chain":[],
-        })
-
-        locus["data"].setdefault(row.sourceID,dict())
-        locus["data"][row.sourceID].setdefault(row.gid,{"transcripts":{},"gene_id":row.gene_id,"gene_name":row.gene_name})
-        locus["data"][row.sourceID][row.gid]["transcripts"].setdefault(row.tid,{"transcript_id":row.transcript_id,
-                                                                        "intron_chain":[],
-                                                                        "transcript_start":row.transcript_start,
-                                                                        "transcript_end":row.transcript_end,
-                                                                        "cds_start":row.cds_start,
-                                                                        "cds_end":row.cds_end})
+                                                         "transcript_start":sys.maxsize,
+                                                         "transcript_end":0,
+                                                         "sources":{}})
+        locus["data"]["transcripts"][row.tid]["sources"].setdefault(row.sourceID,dict())
+        locus["data"]["transcripts"][row.tid]["sources"][row.sourceID].setdefault(row.gid,{"transcript_id":row.transcript_id,
+                                                                                            "transcript_start":row.transcript_start,
+                                                                                            "transcript_end":row.transcript_end,
+                                                                                            "cds_start":row.cds_start,
+                                                                                            "cds_end":row.cds_end})
+        # update introns
         if row.intron_start is not None and row.intron_end is not None:
-            locus["data"][row.sourceID][row.gid]["transcripts"][row.tid]["intron_chain"].append([row.intron_start,row.intron_end])
+            locus["data"]["transcripts"][row.tid]["intron_chain"].append([row.intron_start,row.intron_end])
         else:
-            locus["data"][row.sourceID][row.gid]["transcripts"][row.tid]["intron_chain"] = []
-        locus["data"][row.sourceID][row.gid]["transcripts"][row.tid]["transcript_start"] = row.transcript_start
-        locus["data"][row.sourceID][row.gid]["transcripts"][row.tid]["transcript_end"] = row.transcript_end
-        locus["data"][row.sourceID][row.gid]["transcripts"][row.tid]["cds_start"] = row.cds_start
-        locus["data"][row.sourceID][row.gid]["transcripts"][row.tid]["cds_end"] = row.cds_end
+            locus["data"]["transcripts"][row.tid]["intron_chain"] = []
+        
+        # update transcript start and end
+        locus["data"]["transcripts"][row.tid]["transcript_start"] = min(locus["data"]["transcripts"][row.tid]["transcript_start"],row.transcript_start)
+        locus["data"]["transcripts"][row.tid]["transcript_end"] = max(locus["data"]["transcripts"][row.tid]["transcript_end"],row.transcript_end)
+        
+        # add source and gene-specific versions of the transcripts
+        locus["data"]["transcripts"][row.tid]["sources"][row.sourceID][row.gid] = {"transcript_id":row.transcript_id,
+                                                                                   "transcript_start":row.transcript_start,
+                                                                                   "transcript_end":row.transcript_end,
+                                                                                   "cds_start":row.cds_start,
+                                                                                   "cds_end":row.cds_end}
 
-        # first tid - then sources
-        # this way we deduplicate transcripts and make explansion easier
-
-        # tid: 
-
+        # add gene information
+        locus["data"]["genes"].setdefault(row.gid,{"gene_id":row.gene_id,"gene_name":row.gene_name,"sourceID":row.sourceID})
 
     return locus
 
