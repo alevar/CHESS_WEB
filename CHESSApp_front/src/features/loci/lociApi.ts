@@ -44,24 +44,18 @@ export const lociApi = createApi({
         };
       },
       transformResponse: (response: object) => {
-        // build exons from transcript coordinates and introns
-        for ( const [ sourceID, sourceData ] of Object.entries(response.data) ) {
-          for ( const [ gid, geneData ] of Object.entries(sourceData) ) {
-            for ( let [ tid, txData ] of Object.entries(geneData.transcripts) ) {
-              // sort introns by start position
-              txData.intron_chain.sort((a: number[], b: number[]) => a[0]-b[0]);
-              const num_exons = txData.intron_chain.length+1;
-              let exons: number[][] = Array.from({ length: num_exons }, () => [0, 0]);
-              exons[0][0] = txData.transcript_start; // set the first exon start to the transcript start
-              exons[num_exons-1][1] = txData.transcript_end; // set the last exon end to the transcript end
-              // fill the rest with introns
-              for ( let i = 0; i < num_exons-1; i++ ) {
-                exons[i][1] = Number(txData.intron_chain[i][0])-1;
-                exons[i+1][0] = Number(txData.intron_chain[i][1])+1;
-              }
-              geneData['transcripts'][tid]['exons'] = exons;
-            }
+        for ( const [ tid, txData ] of Object.entries(response.data.transcripts) ) {
+          txData.intron_chain.sort((a: number[], b: number[]) => a[0]-b[0]);
+          const num_exons = txData.intron_chain.length+1;
+          let exons: number[][] = Array.from({ length: num_exons }, () => [0, 0]);
+          exons[0][0] = txData.transcript_start; // set the first exon start to the transcript start
+          exons[num_exons-1][1] = txData.transcript_end; // set the last exon end to the transcript end
+          // fill the rest with introns
+          for ( let i = 0; i < num_exons-1; i++ ) {
+            exons[i][1] = Number(txData.intron_chain[i][0])-1;
+            exons[i+1][0] = Number(txData.intron_chain[i][1])+1;
           }
+          response.data.transcripts[tid]['exons'] = exons;
         }
         return response;
       },

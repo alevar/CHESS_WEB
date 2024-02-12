@@ -6,7 +6,7 @@ interface SashimiProps {
   locus: Locus;
   dimensions: { 
     width: number, 
-    height: number,
+    tx_height: number,
     arrowSize:number,
     arrowSpacing:number 
   };
@@ -16,6 +16,8 @@ interface SashimiProps {
 const SashimiPlot: React.FC<SashimiProps> = ({ locus, dimensions, onTxClick }) => {
   const svgRef = useRef<SVGSVGElement>(null);
 
+  const fig_height = dimensions.tx_height * locus.txs.length;
+
   useEffect(() => {
     if (!svgRef.current) return;
     const svg = d3.select(svgRef.current);
@@ -23,8 +25,6 @@ const SashimiPlot: React.FC<SashimiProps> = ({ locus, dimensions, onTxClick }) =
     let intron_svgs = [];
     let orf_svgs = [];
     svg.selectAll("*").remove();
-
-    const tx_height = dimensions.height / locus.txs.length;
 
     let t_i = 0;
     for (const tx of locus.txs) {
@@ -38,9 +38,9 @@ const SashimiPlot: React.FC<SashimiProps> = ({ locus, dimensions, onTxClick }) =
         const exonSvg = svg
           .append('rect')
           .attr('x', graph_exon_start)
-          .attr('y', t_i * tx_height + tx_height * ((1 - 0.5) / 2))
+          .attr('y', t_i * dimensions.tx_height + dimensions.tx_height * ((1 - 0.75) / 2))
           .attr('width', graph_width)
-          .attr('height', tx_height * 0.5)
+          .attr('height', dimensions.tx_height * 0.75)
           .style('fill', '#3652AD');
         exon_svgs.push(exonSvg);
 
@@ -66,9 +66,9 @@ const SashimiPlot: React.FC<SashimiProps> = ({ locus, dimensions, onTxClick }) =
             const intronSvg = svg
               .append('line')
               .attr('x1', prev_exon[1] + segment[0])
-              .attr('y1', (t_i * tx_height) + (tx_height / 2)) // Adjust y position as needed
+              .attr('y1', (t_i * dimensions.tx_height) + (dimensions.tx_height / 2)) // Adjust y position as needed
               .attr('x2', prev_exon[1] + segment[1])
-              .attr('y2', (t_i * tx_height) + (tx_height / 2)) // Adjust y position as needed
+              .attr('y2', (t_i * dimensions.tx_height) + (dimensions.tx_height / 2)) // Adjust y position as needed
               .style('stroke', '#280274') // Adjust line color for gene labels
               .style('stroke-width', 1);
 
@@ -109,9 +109,9 @@ const SashimiPlot: React.FC<SashimiProps> = ({ locus, dimensions, onTxClick }) =
         const cdsSvg = svg
           .append('rect')
           .attr('x', graph_cds_start)
-          .attr('y', t_i * tx_height + tx_height*((1-0.75)/2))
+          .attr('y', t_i * dimensions.tx_height + dimensions.tx_height*((1-0.75)/2))
           .attr('width', graph_width)
-          .attr('height', tx_height*0.75)
+          .attr('height', dimensions.tx_height*0.75)
           .style('fill', '#56b4e9');
 
         orf_svgs.push(cdsSvg);
@@ -125,9 +125,9 @@ const SashimiPlot: React.FC<SashimiProps> = ({ locus, dimensions, onTxClick }) =
       const triggerBox = svg
         .append('rect')
         .attr('x', 0)
-        .attr('y', (t_i - 1) * tx_height)
+        .attr('y', (t_i - 1) * dimensions.tx_height)
         .attr('width', dimensions.width)
-        .attr('height', tx_height)
+        .attr('height', dimensions.tx_height)
         .style('fill', 'transparent')
         .style('stroke', 'none')
         .style('stroke-width', 0)
@@ -150,7 +150,7 @@ const SashimiPlot: React.FC<SashimiProps> = ({ locus, dimensions, onTxClick }) =
   }, [locus, dimensions]);
 
   return (
-    <svg ref={svgRef} width={dimensions.width} height={dimensions.height}>
+    <svg ref={svgRef} width={dimensions.width} height={fig_height}>
       {/* SVG content goes here */}
     </svg>
   );

@@ -4,6 +4,7 @@ import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
 
 import Spinner from 'react-bootstrap/Spinner';
 import SashimiPlot from './SashimiPlot/SashimiPlot';
+import TxTable from './TxTable/TxTable';
 import PDB from './PDB/PDB';
 
 import { TX, Locus } from '../../../../../utils/utils';
@@ -56,42 +57,40 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
 
     const dimensions = {
         width: 1000,
-        height: 300,
+        tx_height: 50,
         arrowSize: 10,
         arrowSpacing: 50,
     };
 
     const locus = new Locus();
 
-    for (const [sourceID, sourceData] of Object.entries(locusData.data)) {
-        for (const [gid, geneData] of Object.entries(sourceData)) {
-            for (let [tid, txData] of Object.entries(geneData.transcripts)) {
-                const txObj = new TX();
-                const seqid_name = database.data.sequenceIDMap[settings.value.genome][locusData.position.seqid][settings.value.nomenclature];
-                txObj.tid = tid;
-                for (const exon of txData.exons) {
-                    txObj.add_exon(exon as [number, number]);
-                }
-                txObj.build_orf(txData.cds_start, txData.cds_end);
-                locus.add_tx(txObj);
-            }
+    for (const [tid, txData] of Object.entries(locusData.data.transcripts)) {
+        const txObj = new TX();
+        const seqid_name = database.data.sequenceIDMap[settings.value.genome][locusData.position.seqid][settings.value.nomenclature];
+        txObj.tid = tid;
+        for (const exon of txData.exons) {
+            txObj.add_exon(exon as [number, number]);
         }
+        // txObj.build_orf(txData.cds_start, txData.cds_end);
+        locus.add_tx(txObj);
     }
-
-    console.log(locusData)
-    console.log(locus)
     locus.set_scaling();
 
     const pdbData = "1MO8"; // eventually to be replaced with a query to the server for the appropriate PDB data
+
+
+    const mockData = Array.from({ length: 10 }, (_, rowIndex) => ({
+        id: rowIndex,
+        column0: `Row ${rowIndex + 1}, Col 1`,
+        column1: `Row ${rowIndex + 1}, Col 2`,
+        // Add other columns as needed
+      }));
 
     return (
         <Container fluid>
             <Row>
                 <Col md={10}>
-                    <SashimiPlot locus={locus} dimensions={dimensions} onTxClick={handleTXClick} />
-                </Col>
-                <Col md={2}>
-                    {/* Empty column */}
+                    <TxTable data={mockData} />
                 </Col>
             </Row>
 
