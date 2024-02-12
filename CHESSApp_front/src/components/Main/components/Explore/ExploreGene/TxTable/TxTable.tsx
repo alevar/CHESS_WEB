@@ -17,6 +17,7 @@ import {
     flexRender,
 } from '@tanstack/react-table'
 import { makeData, Person } from './makeData'
+import { get } from '3dmol'
 
 const D3Rectangle: React.FC = () => {
     const containerRef = React.useRef<SVGSVGElement | null>(null);
@@ -34,16 +35,19 @@ const D3Rectangle: React.FC = () => {
     return <svg ref={containerRef} width={50} height={20} />;
 };
 
-function TxTable() {
+interface TxTableProps {
+    locusID: number,
+}
+
+const TxTable: React.FC<TxTableProps> = ({ locusID }) => {
     const rerender = React.useReducer(() => ({}), {})[1]
 
     const columns = React.useMemo<ColumnDef<Person>[]>(
         () => [
             {
                 accessorKey: 'tid',
-                pin: 'left',
                 header: ({ table }) => (
-                    <div className="sticky">
+                    <div>
                         <IndeterminateCheckbox
                             {...{
                                 checked: table.getIsAllRowsSelected(),
@@ -52,17 +56,15 @@ function TxTable() {
                             }}
                         />{' '}
                         <button
-                            {...{
-                                onClick: table.getToggleAllRowsExpandedHandler(),
-                            }}
-                        >
-                            {table.getIsAllRowsExpanded() ? '🞃' : '🞂'}
-                        </button>{' '}
+                            className={table.getIsAllRowsExpanded() ? 'chevron down' : 'chevron right'}
+                            onClick={table.getToggleAllRowsExpandedHandler()}
+                        />
                         Transcript ID
                     </div>
+
                 ),
                 cell: ({ row, getValue }) => (
-                    <div className="sticky"
+                    <div
                         style={{
                             // Since rows are flattened by default,
                             // we can use the row.depth property
@@ -81,13 +83,9 @@ function TxTable() {
                             />{' '}
                             {row.getCanExpand() ? (
                                 <button
-                                    {...{
-                                        onClick: row.getToggleExpandedHandler(),
-                                        style: { cursor: 'pointer' },
-                                    }}
-                                >
-                                    {row.getIsExpanded() ? '🞃' : '🞂'}
-                                </button>
+                                    className={row.getIsExpanded() ? 'chevron down' : 'chevron right'}
+                                    onClick={row.getToggleExpandedHandler()}
+                                />
                             ) : (
                                 ''
                             )}{' '}
@@ -95,71 +93,13 @@ function TxTable() {
                         </>
                     </div>
                 ),
-                meta: {
-                    className: 'sticky',
-                }
             },
             {
-                accessorFn: row => row.lastName,
-                id: 'lastName',
-                cell: info => info.getValue(),
-                header: () => <span>Last Name</span>,
+                accessorKey: 'gene_id',
+                header: 'Gene ID',
             },
             {
-                accessorKey: 'visits',
-                header: () => <span>Visits</span>,
-            },
-            {
-                accessorKey: 'rand1',
-                header: 'Random 1',
-            },
-            {
-                accessorKey: 'rand2',
-                header: 'Random 2',
-            },
-            {
-                accessorKey: 'rand3',
-                header: 'Random 3',
-            },
-            {
-                accessorKey: 'rand4',
-                header: 'Random 4',
-            },
-            {
-                accessorKey: 'rand5',
-                header: 'Random 5',
-            },
-            {
-                accessorKey: 'rand6',
-                header: 'Random 6',
-            },
-            {
-                accessorKey: 'rand7',
-                header: 'Random 7',
-            },
-            {
-                accessorKey: 'rand8',
-                header: 'Random 8',
-            },
-            {
-                accessorKey: 'rand9',
-                header: 'Random 9',
-            },
-            {
-                accessorKey: 'rand10',
-                header: 'Random 10',
-            },
-            {
-                accessorKey: 'rand11',
-                header: 'Random 11',
-            },
-            {
-                accessorKey: 'status',
-                header: 'Status',
-            },
-            {
-                accessorKey: 'progress',
-                pin: 'right',
+                accessorKey: 'transcript',
                 header: 'Transcript',
                 cell: ({ row, getValue }) => (
                     <div>
@@ -171,20 +111,17 @@ function TxTable() {
         []
     )
 
-    const [data, setData] = React.useState(() => makeData(15,5))
+    const [data, setData] = React.useState(() => makeData(15, 5))
 
     const [expanded, setExpanded] = React.useState<ExpandedState>({})
-    const [columnPinning, setColumnPinning] = React.useState({})
 
     const table = useReactTable({
         data,
         columns,
         state: {
             expanded,
-            columnPinning,
         },
         onExpandedChange: setExpanded,
-        onColumnPinningChange: setColumnPinning,
         getSubRows: row => row.subRows,
         getCoreRowModel: getCoreRowModel(),
         getExpandedRowModel: getExpandedRowModel(),
@@ -192,7 +129,6 @@ function TxTable() {
     })
 
     console.log(data)
-    console.log(columns)
 
     return (
         <div className="p-2">
@@ -204,7 +140,7 @@ function TxTable() {
                             {headerGroup.headers.map(header => {
                                 return (
                                     <th
-                                    // <th style={["tid"].includes(header.id) ? { left:  header.getStart('left'), position: 'sticky', top: 0 } : {}}
+                                        // <th style={["tid"].includes(header.id) ? { left:  header.getStart('left'), position: 'sticky', top: 0 } : {}}
                                         key={header.id} colSpan={header.colSpan}>
                                         {header.isPlaceholder ? null : (
                                             <div>

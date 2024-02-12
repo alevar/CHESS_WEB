@@ -71,10 +71,24 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
         for (const exon of txData.exons) {
             txObj.add_exon(exon as [number, number]);
         }
+
+        // now build and add source-specific versions
+        for (const [source, sourceData] of Object.entries(txData.sources)){
+            console.log(sourceData)
+            const sub_tx = new TX();
+            sub_tx.tid = sourceData.transcript_id;
+            for (const exon of txData.exons) {
+                sub_tx.add_exon(exon as [number, number]);
+            }
+            sub_tx.set_start(sourceData.transcript_start);
+            sub_tx.set_end(sourceData.transcript_end);
+        }
         // txObj.build_orf(txData.cds_start, txData.cds_end);
         locus.add_tx(txObj);
     }
     locus.set_scaling();
+
+    console.log(locusData)
 
     const pdbData = "1MO8"; // eventually to be replaced with a query to the server for the appropriate PDB data
 

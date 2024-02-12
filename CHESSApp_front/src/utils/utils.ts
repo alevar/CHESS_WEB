@@ -71,6 +71,8 @@ export class TX {
   tid: string | null = null;
   attrs: Attributes = {};
 
+  txs: TX[] = []; // if a transcript has alternative versions - they are stored here
+
   clear(): void {
     this.seqid = null;
     this.strand = null;
@@ -79,6 +81,8 @@ export class TX {
 
     this.tid = null;
     this.attrs = {};
+
+    this.txs = [];
   }
 
   set_seqid(seqid: string): void {
@@ -166,6 +170,18 @@ export class TX {
 
   get_cend(): number {
     return this.orf[this.orf.length - 1][1];
+  }
+
+  add_tx(tx: TX): void {
+    this.txs.push(tx);
+  }
+
+  set_start(start: number): void {
+    this.exons[0] = [start, this.exons[0][1]];
+  }
+
+  set_end(end: number): void {
+    this.exons[this.exons.length - 1] = [this.exons[this.exons.length - 1][0], end];
   }
 }
 
