@@ -3,7 +3,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
 
 import Spinner from 'react-bootstrap/Spinner';
-import SashimiPlot from './SashimiPlot/SashimiPlot';
 import TxTable from './TxTable/TxTable';
 import PDB from './PDB/PDB';
 
@@ -55,14 +54,9 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
         console.log(tx);
     };
 
-    const dimensions = {
-        width: 1000,
-        tx_height: 50,
-        arrowSize: 10,
-        arrowSpacing: 50,
-    };
-
     const locus = new Locus();
+
+    console.log(locusData)
 
     for (const [tid, txData] of Object.entries(locusData.data.transcripts)) {
         const txObj = new TX();
@@ -71,40 +65,50 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
         for (const exon of txData.exons) {
             txObj.add_exon(exon as [number, number]);
         }
+        txObj.build_orf(txData.cds_start, txData.cds_end);
 
         // now build and add source-specific versions
-        for (const [source, sourceData] of Object.entries(txData.sources)){
-            console.log(sourceData)
-            const sub_tx = new TX();
-            sub_tx.tid = sourceData.transcript_id;
-            for (const exon of txData.exons) {
-                sub_tx.add_exon(exon as [number, number]);
+        for (const [sourceID, sourceData] of Object.entries(txData.sources)){
+            for (const [gid, geneData] of Object.entries(sourceData)){
+                const sub_tx = new TX();
+                sub_tx.set_parent(txObj.tid);
+                sub_tx.set_gene(gid,locusData.data.genes[gid].gene_id,locusData.data.genes[gid].gene_name);
+                sub_tx.tid = geneData.transcript_id;
+                for (const exon of txData.exons) {
+                    sub_tx.add_exon(exon as [number, number]);
+                }
+                sub_tx.set_start(geneData.transcript_start);
+                sub_tx.set_end(geneData.transcript_end);
+                sub_tx.build_orf(geneData.cds_start, geneData.cds_end);
+                txObj.add_tx(sub_tx);
             }
-            sub_tx.set_start(sourceData.transcript_start);
-            sub_tx.set_end(sourceData.transcript_end);
         }
-        // txObj.build_orf(txData.cds_start, txData.cds_end);
         locus.add_tx(txObj);
     }
     locus.set_scaling();
 
-    console.log(locusData)
+    // now for each locus create the sashimi graphic
+    for (const ptx of locus.txs) { // parent transcripts
+        ptx.build_svg();
+        for (const ctx of ptx.txs) { // child transcripts
+            ctx.build_svg();
+        }
+    }
 
     const pdbData = "1MO8"; // eventually to be replaced with a query to the server for the appropriate PDB data
 
-
-    const mockData = Array.from({ length: 10 }, (_, rowIndex) => ({
-        id: rowIndex,
-        column0: `Row ${rowIndex + 1}, Col 1`,
-        column1: `Row ${rowIndex + 1}, Col 2`,
-        // Add other columns as needed
-      }));
-
+    const gene_name_set = new Set(Object.values(locusData.data.genes).map(g => g.gene_name));
+    const gene_name_str = Array.from(gene_name_set).join(', ');
     return (
         <Container fluid>
             <Row>
+                <Col>
+                    <h1>{gene_name_str}</h1>
+                </Col>
+            </Row>
+            <Row>
                 <Col md={10}>
-                    <TxTable data={mockData} />
+                    <TxTable locus={locus} onTxClick={handleTXClick} />
                 </Col>
             </Row>
 
@@ -113,7 +117,6 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
                 <Col>
                     <div>
                         <h2>PDB</h2>
-                        <p>Lorem Ipsum Text</p>
                     </div>
                     <PDB pdbData={pdbData} />
                 </Col>

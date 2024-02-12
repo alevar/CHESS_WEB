@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom/client'
 import { Table as BTable } from 'react-bootstrap'
 import * as d3 from 'd3'
 
+import { TX, Locus } from '../../../../../../utils/utils';
+
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './TxTable.css'
 
@@ -16,33 +18,16 @@ import {
     ColumnDef,
     flexRender,
 } from '@tanstack/react-table'
-import { makeData, Person } from './makeData'
-import { get } from '3dmol'
-
-const D3Rectangle: React.FC = () => {
-    const containerRef = React.useRef<SVGSVGElement | null>(null);
-
-    React.useEffect(() => {
-        // Use D3 to draw a simple rectangle
-        const svg = d3.select(containerRef.current);
-        svg
-            .append('rect')
-            .attr('width', 50)
-            .attr('height', 20)
-            .attr('fill', 'blue');
-    }, []);
-
-    return <svg ref={containerRef} width={50} height={20} />;
-};
 
 interface TxTableProps {
-    locusID: number,
+    locus: Locus,
+    onTxClick: (tx: TX) => void;
 }
 
-const TxTable: React.FC<TxTableProps> = ({ locusID }) => {
+const TxTable: React.FC<TxTableProps> = ({ locus, onTxClick }) => {
     const rerender = React.useReducer(() => ({}), {})[1]
 
-    const columns = React.useMemo<ColumnDef<Person>[]>(
+    const columns = React.useMemo<ColumnDef<TX>[]>(
         () => [
             {
                 accessorKey: 'tid',
@@ -103,7 +88,12 @@ const TxTable: React.FC<TxTableProps> = ({ locusID }) => {
                 header: 'Transcript',
                 cell: ({ row, getValue }) => (
                     <div>
-                        <D3Rectangle />
+                        {/* <SashimiPlot locus={locus} dimensions={{
+                                                                    width: 1000,
+                                                                    height: 25,
+                                                                    arrowSize: 10,
+                                                                    arrowSpacing: 50,
+                                                                }} tx={row.original} /> */}
                     </div>
                 ),
             },
@@ -111,7 +101,9 @@ const TxTable: React.FC<TxTableProps> = ({ locusID }) => {
         []
     )
 
-    const [data, setData] = React.useState(() => makeData(15, 5))
+    const [data, setData] = React.useState(() => locus.txs)
+
+    console.log(data)
 
     const [expanded, setExpanded] = React.useState<ExpandedState>({})
 
@@ -122,13 +114,11 @@ const TxTable: React.FC<TxTableProps> = ({ locusID }) => {
             expanded,
         },
         onExpandedChange: setExpanded,
-        getSubRows: row => row.subRows,
+        getSubRows: row => row.txs,
         getCoreRowModel: getCoreRowModel(),
         getExpandedRowModel: getExpandedRowModel(),
         debugTable: true,
     })
-
-    console.log(data)
 
     return (
         <div className="p-2">
@@ -140,7 +130,6 @@ const TxTable: React.FC<TxTableProps> = ({ locusID }) => {
                             {headerGroup.headers.map(header => {
                                 return (
                                     <th
-                                        // <th style={["tid"].includes(header.id) ? { left:  header.getStart('left'), position: 'sticky', top: 0 } : {}}
                                         key={header.id} colSpan={header.colSpan}>
                                         {header.isPlaceholder ? null : (
                                             <div>
@@ -159,7 +148,8 @@ const TxTable: React.FC<TxTableProps> = ({ locusID }) => {
                 <tbody>
                     {table.getRowModel().rows.map(row => {
                         return (
-                            <tr key={row.id}>
+                            <tr key={row.id}
+                                onClick={() => onTxClick(row.original)}>
                                 {row.getVisibleCells().map(cell => {
                                     return (
                                         <td key={cell.id}>
