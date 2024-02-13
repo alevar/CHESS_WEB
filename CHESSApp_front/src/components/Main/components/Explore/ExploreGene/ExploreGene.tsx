@@ -1,9 +1,10 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
+import { Container, Row, Col, Card, Form, Button, Table } from "react-bootstrap";
 
 import Spinner from 'react-bootstrap/Spinner';
 import TxTable from './TxTable/TxTable';
+import generateSashimiSVG from './SashimiPlot/SashimiComponent';
 import PDB from './PDB/PDB';
 
 import { TX, Locus } from '../../../../../utils/utils';
@@ -68,11 +69,11 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
         txObj.build_orf(txData.cds_start, txData.cds_end);
 
         // now build and add source-specific versions
-        for (const [sourceID, sourceData] of Object.entries(txData.sources)){
-            for (const [gid, geneData] of Object.entries(sourceData)){
+        for (const [sourceID, sourceData] of Object.entries(txData.sources)) {
+            for (const [gid, geneData] of Object.entries(sourceData)) {
                 const sub_tx = new TX();
                 sub_tx.set_parent(txObj.tid);
-                sub_tx.set_gene(gid,locusData.data.genes[gid].gene_id,locusData.data.genes[gid].gene_name);
+                sub_tx.set_gene(gid, locusData.data.genes[gid].gene_id, locusData.data.genes[gid].gene_name);
                 sub_tx.tid = geneData.transcript_id;
                 for (const exon of txData.exons) {
                     sub_tx.add_exon(exon as [number, number]);
@@ -88,10 +89,16 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
     locus.set_scaling();
 
     // now for each locus create the sashimi graphic
+    const dimensions = {
+        width: 1000,
+        height: 25,
+        arrowSize: 10,
+        arrowSpacing: 50,
+    };
     for (const ptx of locus.txs) { // parent transcripts
-        ptx.build_svg();
+        ptx.set_svg(generateSashimiSVG({ locus, dimensions, tx: ptx }));
         for (const ctx of ptx.txs) { // child transcripts
-            ctx.build_svg();
+            ctx.set_svg(generateSashimiSVG({ locus, dimensions, tx: ctx }));
         }
     }
 
@@ -101,24 +108,33 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
     const gene_name_str = Array.from(gene_name_set).join(', ');
     return (
         <Container fluid>
-            <Row>
+            <Row style={{ border: '1px solid #d6d6d6', borderRadius: '5px' }}>
                 <Col>
                     <h1>{gene_name_str}</h1>
                 </Col>
             </Row>
-            <Row>
+            <Row style={{ border: '1px solid #d6d6d6', borderRadius: '5px' }}>
                 <Col md={10}>
                     <TxTable locus={locus} onTxClick={handleTXClick} />
                 </Col>
             </Row>
 
-            {/* Single Column Space with PDB and Text */}
             <Row>
-                <Col>
+                <Col id="txInfoTable" md={6} style={{ border: '1px solid #d6d6d6', borderRadius: '5px' }}>
+                    <h2>Transcript Info</h2>
+                    <Table striped bordered hover>
+                        <thead>
+                        </thead>
+                        <tbody>
+                            
+                        </tbody>
+                    </Table>
+                </Col>
+                <Col md={6} style={{ border: '1px solid #d6d6d6', borderRadius: '5px' }}>
                     <div>
                         <h2>PDB</h2>
                     </div>
-                    <PDB pdbData={pdbData} />
+                    <PDB pdbData={gene_name_str} />
                 </Col>
             </Row>
         </Container >

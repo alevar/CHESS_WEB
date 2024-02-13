@@ -80,6 +80,8 @@ export class TX {
   gene_id: string | null = null;
   gene_name: string | null = null;
 
+  svg: any = null;
+
   clear(): void {
     this.seqid = null;
     this.strand = null;
@@ -96,6 +98,8 @@ export class TX {
     this.gene_dbID = null;
     this.gene_id = null;
     this.gene_name = null;
+
+    this.svg = null;
   }
 
   set_gene(dbID: string, gene_id: string, gene_name: string): void {
@@ -207,8 +211,9 @@ export class TX {
     this.exons[this.exons.length - 1] = [this.exons[this.exons.length - 1][0], end];
   }
 
-  build_svg(): void {
-  }    
+  set_svg(svg: any){
+    this.svg = svg;
+  }
 }
 
 export class Locus {
