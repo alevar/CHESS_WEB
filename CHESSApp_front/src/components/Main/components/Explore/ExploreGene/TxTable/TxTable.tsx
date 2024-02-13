@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { Table as BTable } from 'react-bootstrap'
 import * as d3 from 'd3'
 
+import SashimiPlot from '../SashimiPlot/SashimiPlot'
 import { TX, Locus } from '../../../../../../utils/utils';
 
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -88,12 +89,12 @@ const TxTable: React.FC<TxTableProps> = ({ locus, onTxClick }) => {
                 header: 'Transcript',
                 cell: ({ row, getValue }) => (
                     <div>
-                        {/* <SashimiPlot locus={locus} dimensions={{
-                                                                    width: 1000,
-                                                                    height: 25,
-                                                                    arrowSize: 10,
-                                                                    arrowSpacing: 50,
-                                                                }} tx={row.original} /> */}
+                        <SashimiPlot locus={locus} dimensions={{
+                                                        width: 1000,
+                                                        height: 25,
+                                                        arrowSize: 10,
+                                                        arrowSpacing: 50,
+                                                    }} tx={row.original} />
                     </div>
                 ),
             },

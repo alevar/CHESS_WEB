@@ -68,23 +68,23 @@ const SashimiPlot: React.FC<SashimiProps> = ({ locus, dimensions, tx }) => {
             .style('stroke', '#280274') // Adjust line color for gene labels
             .style('stroke-width', 1);
 
-          if ((segment[1] - segment[0]) == dimensions.arrowSpacing) {
-            const arrow = svg
-              .append('marker')
-              .attr('id', 'arrow')
-              .attr('markerWidth', dimensions.arrowSize)
-              .attr('markerHeight', dimensions.arrowSize)
-              .attr('refX', dimensions.arrowSize / 2)
-              .attr('refY', dimensions.arrowSize / 2)
-              .attr('orient', 'auto');
+          // if ((segment[1] - segment[0]) == dimensions.arrowSpacing) {
+          //   const arrow = svg
+          //     .append('marker')
+          //     .attr('id', 'arrow')
+          //     .attr('markerWidth', dimensions.arrowSize)
+          //     .attr('markerHeight', dimensions.arrowSize)
+          //     .attr('refX', dimensions.arrowSize / 2)
+          //     .attr('refY', dimensions.arrowSize / 2)
+          //     .attr('orient', 'auto');
 
-            arrow
-              .append('path')
-              .attr('d', `M0,0 L${dimensions.arrowSize}, ${dimensions.arrowSize / 2} L0,${dimensions.arrowSize} Z`)
-              .style('fill', '#280274');
+          //   arrow
+          //     .append('path')
+          //     .attr('d', `M0,0 L${dimensions.arrowSize}, ${dimensions.arrowSize / 2} L0,${dimensions.arrowSize} Z`)
+          //     .style('fill', '#280274');
 
-            intronSvg.attr('marker-end', 'url(#arrow)');
-          }
+          //   intronSvg.attr('marker-end', 'url(#arrow)');
+          // }
 
           intron_svgs.push(intronSvg);
         }

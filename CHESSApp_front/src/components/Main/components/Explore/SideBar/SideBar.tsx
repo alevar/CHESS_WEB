@@ -43,12 +43,6 @@ const SideBar: React.FC = () => {
         </span>
       );
 
-    const inputProps = {
-        placeholder: 'Search',
-        value,
-        onChange,
-    };
-
     return (
         <div className="offcanvas-md offcanvas-end bg-body-tertiary" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
             <div className="offcanvas-header">
@@ -56,17 +50,6 @@ const SideBar: React.FC = () => {
                 <button type="button" className="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close"></button>
             </div>
             <div className="offcanvas-body d-md-flex flex-column p-0 pt-lg-3 overflow-y-auto">
-                <form className="form-inline my-2 my-lg-0">
-                    <Autosuggest
-                        suggestions={suggestions}
-                        onSuggestionsFetchRequested={onSuggestionsFetchRequested}
-                        onSuggestionsClearRequested={onSuggestionsClearRequested}
-                        getSuggestionValue={(suggestion) => suggestion}
-                        renderSuggestion={(suggestion) => renderSuggestion(suggestion)}
-                        inputProps={inputProps}
-                    />
-                    <button className="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-                </form>
                 <ul className="nav flex-column">
                     <li className="nav-item">
                         <a className="nav-link d-flex align-items-center gap-2 active" aria-current="page" href="#">
