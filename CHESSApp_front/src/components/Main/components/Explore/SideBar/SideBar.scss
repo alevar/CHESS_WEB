@@ -1,0 +1,16 @@
+/*
+ * Sidebar
+ */
+
+@import "bootstrap-5-vertical-tabs/scss/custom-variables";
+@import "bootstrap-5-vertical-tabs/scss/responsive-vertical-tabs";
+
+@media (min-width: 768px) {
+  .sidebar {
+    .offcanvas-lg {
+      position: -webkit-sticky;
+      position: sticky;
+      top: 48px;
+    }
+  }
+}

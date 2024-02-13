@@ -1,47 +1,8 @@
-import React, { useState } from "react";
-import { Nav } from "react-bootstrap";
-import Autosuggest from 'react-autosuggest';
-import "./SideBar.css";
-import { render } from "@testing-library/react";
+import React from "react";
+import { Nav } from 'react-bootstrap';
+import "./SideBar.scss";
 
 const SideBar: React.FC = () => {
-    const [value, setValue] = useState('');
-    const [suggestions, setSuggestions] = useState([]);
-
-    // Your data for suggestions
-    const allSuggestions = [
-        "Dashboard",
-        "Orders",
-        "Products",
-        "Customers",
-        "Reports",
-        "Integrations"
-    ];
-
-    const getSuggestions = (inputValue) => {
-        const inputValueLowerCase = inputValue.toLowerCase();
-        return allSuggestions.filter((suggestion) =>
-            suggestion.toLowerCase().includes(inputValueLowerCase)
-        );
-    };
-
-    const onSuggestionsFetchRequested = ({ value }) => {
-        setSuggestions(getSuggestions(value));
-    };
-
-    const onSuggestionsClearRequested = () => {
-        setSuggestions([]);
-    };
-
-    const onChange = (event, { newValue }) => {
-        setValue(newValue);
-    };
-
-    const renderSuggestion = suggestion => (
-        <span>
-          {suggestion}
-        </span>
-      );
 
     return (
         <div className="offcanvas-md offcanvas-end bg-body-tertiary" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
@@ -49,42 +10,41 @@ const SideBar: React.FC = () => {
                 <h5 className="offcanvas-title" id="sidebarMenuLabel">Company name</h5>
                 <button type="button" className="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close"></button>
             </div>
-            <div className="offcanvas-body d-md-flex flex-column p-0 pt-lg-3 overflow-y-auto">
-                <ul className="nav flex-column">
-                    <li className="nav-item">
-                        <a className="nav-link d-flex align-items-center gap-2 active" aria-current="page" href="#">
-                            Dashboard
-                        </a>
+            <div className="offcanvas-body d-md-flex p-0 pt-lg-3 overflow-y-auto">
+                <ul className="nav nav-tabs left-tabs sideways-tabs" role="tablist">
+                    <li className="nav-item" role="presentation">
+                        <div id="lorem-sideways-left-tab" className="nav-link tab-clickable active" role="tab" data-bs-toggle="tab" data-bs-target="#lorem-sideways-left" aria-controls="lorem-sideways-left" aria-selected="true">
+                            Sources
+                        </div>
                     </li>
-                    <li className="nav-item">
-                        <a className="nav-link d-flex align-items-center gap-2" href="#">
-                            Orders
-                        </a>
+                    <li className="nav-item" role="presentation">
+                        <div id="sapien-sideways-left-tab" className="nav-link tab-clickable" role="tab" data-bs-toggle="tab" data-bs-target="#sapien-sideways-left" aria-controls="sapien-sideways-left" aria-selected="false">
+                            Intersections
+                        </div>
                     </li>
-                    <li className="nav-item">
-                        <a className="nav-link d-flex align-items-center gap-2" href="#">
-                            Products
-                        </a>
-                    </li>
-                    <li className="nav-item">
-                        <a className="nav-link d-flex align-items-center gap-2" href="#">
-                            Customers
-                        </a>
-                    </li>
-                    <li className="nav-item">
-                        <a className="nav-link d-flex align-items-center gap-2" href="#">
-                            Reports
-                        </a>
-                    </li>
-                    <li className="nav-item">
-                        <a className="nav-link d-flex align-items-center gap-2" href="#">
-                            Integrations
-                        </a>
+                    <li className="nav-item" role="presentation">
+                        <div id="llanfairpwllgwyngyll-sideways-right-tab" className="nav-link tab-clickable" role="tab" data-bs-toggle="tab" data-bs-target="#llanfairpwllgwyngyll-sideways-left" aria-controls="llanfairpwllgwyngyll-sideways-right" aria-selected="false">
+                            Datasets
+                        </div>
                     </li>
                 </ul>
+                {/* <Nav className="sideways-tabs left-tabs">
+                    <Nav.Item>
+                        <Nav.Link href="#" active>Active</Nav.Link>
+                    </Nav.Item>
+                    <Nav.Item>
+                        <Nav.Link href="#">Link</Nav.Link>
+                    </Nav.Item>
+                    <Nav.Item>
+                        <Nav.Link href="#">Link</Nav.Link>
+                    </Nav.Item>
+                    <Nav.Item>
+                        <Nav.Link href="#" disabled>Disabled</Nav.Link>
+                    </Nav.Item>
+                </Nav> */}
             </div>
         </div>
     );
 };
 
-export default SideBar
+export default SideBar;
