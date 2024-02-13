@@ -265,7 +265,7 @@ export class Locus {
     this.max_graphcoord = 0;
 
     this.settings = {
-      intron_scale: 50,
+      intron_scale: 20,
       exon_scale: 1,
       reverse: false,
     };

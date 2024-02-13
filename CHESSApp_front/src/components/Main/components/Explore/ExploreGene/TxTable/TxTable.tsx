@@ -45,7 +45,7 @@ const TxTable: React.FC<TxTableProps> = ({ locus, onTxClick }) => {
                             className={table.getIsAllRowsExpanded() ? 'chevron down' : 'chevron right'}
                             onClick={table.getToggleAllRowsExpandedHandler()}
                         />
-                        Transcript ID
+                        #
                     </div>
 
                 ),

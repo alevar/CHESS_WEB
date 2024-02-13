@@ -4,7 +4,6 @@ import { Container, Row, Col, Card, Form, Button, Table } from "react-bootstrap"
 
 import Spinner from 'react-bootstrap/Spinner';
 import TxTable from './TxTable/TxTable';
-import generateSashimiSVG from './SashimiPlot/SashimiComponent';
 import PDB from './PDB/PDB';
 
 import { TX, Locus } from '../../../../../utils/utils';
@@ -88,20 +87,6 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
     }
     locus.set_scaling();
 
-    // now for each locus create the sashimi graphic
-    const dimensions = {
-        width: 1000,
-        height: 25,
-        arrowSize: 10,
-        arrowSpacing: 50,
-    };
-    for (const ptx of locus.txs) { // parent transcripts
-        ptx.set_svg(generateSashimiSVG({ locus, dimensions, tx: ptx }));
-        for (const ctx of ptx.txs) { // child transcripts
-            ctx.set_svg(generateSashimiSVG({ locus, dimensions, tx: ctx }));
-        }
-    }
-
     const pdbData = "1MO8"; // eventually to be replaced with a query to the server for the appropriate PDB data
 
     const gene_name_set = new Set(Object.values(locusData.data.genes).map(g => g.gene_name));
@@ -132,7 +117,7 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
                 </Col>
                 <Col md={6} style={{ border: '1px solid #d6d6d6', borderRadius: '5px' }}>
                     <div>
-                        <h2>PDB</h2>
+                        <h2>AlphaFold 2</h2>
                     </div>
                     <PDB pdbData={gene_name_str} />
                 </Col>
