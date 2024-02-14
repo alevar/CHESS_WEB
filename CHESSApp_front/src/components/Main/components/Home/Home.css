@@ -15,40 +15,65 @@
   margin-top: 20px;
 }
 
-.row {
-  display: flex;
-  justify-content: space-around;
-}
-
 .card {
   flex: 0 0 calc(33.33% - 20px); /* Equal width for each card */
-  height: 150px; /* Fixed height for all cards */
+  height: 300px; /* Fixed height for all cards */
   margin: 10px;
   border: 1px solid #ddd;
   cursor: pointer;
   transition: background-color 0.3s;
 }
 
-.card:hover {
-  background-color: #f0f0f0; /* Hover effect */
-}
-
-.card-body {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+.card-image {
+  width: 100%;
   height: 100%;
-  padding: 20px;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
-.card-link {
-  text-decoration: none;
-  color: #007BFF;
+.custom-card {
+  position: relative;
+}
+
+.card-header {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+  padding: 20px; /* Increase the padding to make the header taller */
+  position: relative;
+  z-index: 1;
+  font-size: 1.5rem;
   font-weight: bold;
-  transition: color 0.2s;
 }
 
-.card-link:hover {
-  color: #0056b3;
+.card-body-tall {
+  position: relative;
+  overflow: hidden;
+  padding-top: 20px; /* Adjust the padding-top to push the body content down */
+}
+
+.panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  word-wrap: break-word;
+  font-size: 1.2rem;
+}
+
+.custom-card:hover .panel {
+  display: flex;
+}
+
+.card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
