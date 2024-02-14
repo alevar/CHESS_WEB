@@ -319,9 +319,19 @@ def findLoci(genome:int,term:str):
     columns = ["locusID","seqid","strand","start","end"]+[sources[x]["name"]+" Gene ID" for x in sourceIDs]+[sources[x]["name"]+" Gene Name" for x in sourceIDs]
     # parse the results into a dictionary
     for row in res:
-        loci.append([row.locusID,row.seqid,row.strand,row.start,row.end]+[row.__getattr__(f"{x}.gene_id") for x in sourceIDs]+[row.__getattr__(f"{x}.gene_name") for x in sourceIDs])
+        loci.append({
+            "locusID":row.locusID,
+            "seqid":row.seqid,
+            "strand":row.strand,
+            "start":row.start,
+            "end":row.end,
+            "sources":{
+            },
+        })
+        for sourceID in sourceIDs:
+            loci[-1]["sources"][sourceID] = {"gene_id":row.__getattr__(f"{sourceID}.gene_id"),"gene_name":row.__getattr__(f"{sourceID}.gene_name")}
 
-    return {"columns":columns,"loci":loci}
+    return loci
 
 def getLocus(lid:int):
     # parameters:

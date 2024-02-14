@@ -1,6 +1,6 @@
-import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { Container, Row, Col, Card, Form, Button, Table } from "react-bootstrap";
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { Container, Row, Col, Table } from "react-bootstrap";
 
 import Spinner from 'react-bootstrap/Spinner';
 import TxTable from './TxTable/TxTable';
@@ -26,6 +26,7 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
     const database = useSelector((state: RootState) => state.database);
 
     const { data: locusData, error: locusError, isLoading: locusLoading } = useGetLocusQuery(locusID);
+    const [tableData, setTableData] = useState<[]>([]);
 
     if (locusLoading) {
         return (
@@ -41,22 +42,12 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
         return <div>Error: {lociError}</div>;
     }
 
-    // all deduplicated transcripts at locus
-    // when transcript selected - shows
-    //    - sashimi of transcripts for eachsource(unique ORFs, UTRs, etc)
-
-    // when explore component loads - display a table with genes listed as a table along with some stats
-    // items of the list can be filtered via the same settings panel as custom
-    // genes can be enetered for additional information by clicking on them
-
     // SashimiPlot TX clicker
     const handleTXClick = (tx: TX) => {
         console.log(tx);
     };
 
     const locus = new Locus();
-
-    console.log(locusData)
 
     for (const [tid, txData] of Object.entries(locusData.data.transcripts)) {
         const txObj = new TX();
