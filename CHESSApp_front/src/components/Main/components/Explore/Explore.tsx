@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
@@ -35,9 +35,59 @@ const Explore: React.FC = () => {
 
   const { locus_id } = useParams();
   const settings = useSelector((state: RootState) => state.settings);
+  const database = useSelector((state: RootState) => state.database);
 
   const [query, setQuery] = React.useState<any>({"genome":settings.value.genome,"term":"TUBB8B"});
   const { data: lociData, error: lociError, isLoading: lociLoading } = useFindLociQuery(query);
+
+  // create a copy of the data to be used by the component. The lociData will stay untouched to reflect the 
+  // latest update, while the copy will be modified to be in sync with the settings
+  const [tableData, setTableData] = useState<{}>({"columns": ["locusID", "Position"], "loci": []});
+
+  // Update columns whenever lociData or settings change
+  useEffect(() => {
+    // Modify this logic based on how you want to create const columns
+    // For example, assuming lociData is an array of objects, and you want to use keys as columns
+    if (lociData) {
+      const tmpData = {"columns": [
+        "locusID",
+        "Position"
+      ], "loci": []};
+      
+      for (const sourceID of settings.value.sources_include){
+        tmpData.columns.push(database.data["sources"][sourceID].name + " Gene ID");
+        tmpData.columns.push(database.data["sources"][sourceID].name + " Gene Name");
+      }
+
+      for (const row of lociData) {
+        // check if for any of the sources, the geneID is not null
+        let include = false;
+        for (const sourceID of settings.value.sources_include) {
+          if ( !(row["sources"][sourceID]["gene_id"] === null) ) {
+            include = true;
+            break;
+          }
+        }
+        if (!include) {
+          continue;
+        }
+
+        const strand = row["strand"] === 1 ? "+" : "-";
+        const tmpRow = [
+          row["locusID"],
+          row["seqid"] + strand + ":" + row["start"] + "-" + row["end"],
+        ];
+        for (const sourceID of settings.value.sources_include){
+          tmpRow.push(row["sources"][sourceID]["gene_id"]);
+          tmpRow.push(row["sources"][sourceID]["gene_name"]);
+        }
+        
+        tmpData.loci.push(tmpRow);
+      }
+
+      setTableData(tmpData);
+    }
+  }, [lociData, settings.value.sources_include, settings.value.source_intersections]);
 
   if (lociLoading) {
     return (
@@ -74,7 +124,7 @@ const Explore: React.FC = () => {
           ) : (
             <div>
               <GeneSearch onSearch={handleSearch} />
-              <GeneTable data={lociData} onRowClick={handleRowClick} />
+              <GeneTable data={tableData} onRowClick={handleRowClick} />
             </div>
           )}
         </Col>

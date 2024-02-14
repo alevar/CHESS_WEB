@@ -5,13 +5,14 @@ import './GeneTable.css';
 
 interface GeneTableProps {
   data: {
-    columns: string[];
-    loci: any[][];
+    "columns": string[];
+    "loci": any[][];
   };
   onRowClick?: (row: any[]) => void;
 }
 
 const GeneTable: React.FC<GeneTableProps> = ({ data, onRowClick }) => {
+  console.log(data)
   const { columns, loci } = data;
   const [sortedColumn, setSortedColumn] = useState<string | null>(null);
 
