@@ -122,6 +122,22 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
                     <PDB pdbData={gene_name_str} />
                 </Col>
             </Row>
+            <Row style={{ border: '1px solid #d6d6d6', borderRadius: '5px' }}>
+                <Col>
+                    <h2>Transcript Sequence</h2>
+                    <div>
+                        
+                    </div>
+                </Col>
+            </Row>
+            <Row style={{ border: '1px solid #d6d6d6', borderRadius: '5px' }}>
+                <Col>
+                    <h2>Protein Sequence</h2>
+                    <div>
+                        
+                    </div>
+                </Col>
+            </Row>
         </Container >
     );
 }

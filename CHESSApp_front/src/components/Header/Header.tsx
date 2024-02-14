@@ -6,7 +6,7 @@ import { useLocation } from 'react-router-dom';
 
 function Header() {
   const location = useLocation();
-  const base_path = location.pathname.split('/').slice(0, -1).join('/');
+  const base_path = location.pathname.split('/').slice(0, 5).join('/');
 
   return (
     <Navbar bg="light" expand="lg">
