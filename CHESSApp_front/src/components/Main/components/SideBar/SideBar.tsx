@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Nav, Col, Tab, Accordion, Form } from 'react-bootstrap';
 import { useSelector, useDispatch } from 'react-redux';
 
-import { DatabaseState } from '../../../../../features/database/databaseSlice';
+import { DatabaseState } from '../../features/database/databaseSlice';
 import {
     SettingsState,
     add_source,

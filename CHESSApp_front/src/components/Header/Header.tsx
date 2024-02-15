@@ -5,6 +5,7 @@ import Navbar from 'react-bootstrap/Navbar';
 import { useLocation } from 'react-router-dom';
 
 import './Header.css';
+import chess_logo from '../../public/chess.logo.png';
 import ccb_logo from '../../public/ccb.logo.svg';
 
 function Header() {
@@ -12,9 +13,12 @@ function Header() {
   const base_path = location.pathname.split('/').slice(0, 5).join('/');
 
   return (
-    <Navbar bg="light" expand="lg">
+    <Navbar bg="light" expand="lg" className="border-bottom">
       <Container className="d-flex justify-content-center">
-        <Navbar.Brand href="/">CHESS</Navbar.Brand>
+      <Navbar.Brand href="/" className="d-flex align-items-center">
+          <img src={chess_logo} style={{ height: '50px', marginRight: '15px' }} className="d-inline-block align-top" alt="" />
+          <span className="d-none d-lg-inline">CHESS</span>
+        </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">

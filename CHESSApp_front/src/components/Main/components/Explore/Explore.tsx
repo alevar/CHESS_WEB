@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
 import Spinner from 'react-bootstrap/Spinner';
 
-import SideBar from './SideBar/SideBar';
+import SideBar from '../SideBar/SideBar';
 import GeneSearch from './ExploreGene/GeneSearch/GeneSearch';
 import GeneTable from './ExploreGene/GeneTable/GeneTable';
 import ExploreGene from './ExploreGene/ExploreGene';
