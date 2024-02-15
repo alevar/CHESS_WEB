@@ -9,15 +9,17 @@ interface UpsetPlotDataProps {
     };
     selectedIntersections: number[];
     onIntersectionClick: (ixData: { set: any, intersection: any, index: number }) => void;
-    width: number;
-    height: number;
+    parentWidth: number;
+    parentHeight: number;
+    margin?: { top: number; right: number; bottom: number; left: number };
 }
 
 const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
     selectedIntersections,
     onIntersectionClick,
-    width,
-    height, }) => {
+    parentWidth,
+    parentHeight,
+    margin = { top: 50, right: 50, bottom: 50, left: 50 }, }) => {
     const svgRef = useRef<SVGSVGElement | null>(null);
     const [hoveredIntersection, setHoveredIntersection] = useState<string | null>(null);
     const handleIntersectionHover = (ixData: { set: any, intersection: any, index: number } | null) => {
@@ -27,40 +29,37 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
     useEffect(() => {
         if (!svgRef.current) return;
 
-        // sections
-        const label_y = 0;
-        const label_x = 0;
-        const label_height = height * 0.1;
-        const label_width = width;
+        // Set up grid dimensions with margins
+        const width = parentWidth - margin.left - margin.right;
+        const height = parentHeight - margin.top - margin.bottom;
 
-        const dot_y = label_height;
-        const dot_x = 0;
-        const dot_height = height - label_height;
-        const dot_width = width * 0.5;
-
-        const spacer = 0.025;
-        const spacer_height = height * spacer;
-        const spacer_width = width * spacer;
-
-        const bar_y = label_height;
-        const bar_x = dot_width + spacer_width;
-        const bar_height = height - label_height;
-        const bar_width = width - dot_width - spacer_width;
+        // separate into subsections
+        const label_width = width * 0.1;
+        const label_height = height;
+        // section keeping dot plot
+        const dot_width = width * 0.9;
+        const dot_height = height * 0.55;
+        // section separating dot plot and barplot
+        const empty_width = width * 0.9;
+        const empty_height = height * 0.1;
+        // section keeping barplot
+        const bar_width = width * 0.9;
+        const bar_height = height * 0.35;
 
         // individual cells
-        const cell_width = dot_width / Object.keys(data.sets).length;
-        const cell_height = dot_height / data.intersections.length;
+        const cell_width = dot_width / data.intersections.length;
+        const cell_height = dot_height / Object.keys(data.sets).length;
 
         // bars
         const maxValue = d3.max(data.intersections, (d) => d.value);
         const normalizedValues = data.intersections.map((d) => {
-            return (d.value / maxValue) * bar_width;
+            return (d.value / maxValue) * bar_height;
         });
 
         const svg = d3
-            .select(svgRef.current)
-            .attr('width', width)
-            .attr('height', height);
+                .select(svgRef.current)
+                .attr('width', parentWidth)
+                .attr('height', parentHeight);
 
         var tooltip_div = d3.select("body").append("div")
             .attr("class", "tooltip")
@@ -68,13 +67,39 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
 
         d3.select(svgRef.current).selectAll("*").remove();
 
+        // Create additional lines for extending columns at the top
+        svg
+            .selectAll('line.columnExtension')
+            .data(Object.keys(data.sets))
+            .enter()
+            .append('line')
+            .attr('class', 'columnExtension')
+            .attr('x1', margin.left)
+            .attr('x2', (d, i) => margin.left + label_width) // Adjust the length of the extension as needed
+            .attr('y1', (d, i) => i * cell_height + margin.top + cell_height)
+            .attr('y2', (d, i) => i * cell_height + margin.top + cell_height)
+            .style('stroke', 'black')
+            .style('stroke-width', '1px');
+
+        // add text labels for each row
+        svg
+            .selectAll('text.columnLabel')
+            .data(Object.values(data.sets))
+            .enter()
+            .append('text')
+            .attr('class', 'columnLabel')
+            .attr('x', margin.left) // Adjust the x position as needed
+            .attr('y', (d, i) => i * cell_height + margin.top + cell_height / 2)
+            .attr('dy', '0.35em') // Adjust vertical alignment if needed
+            .text((d) => d); // Use the data point as the label
+
         // Draw a bounding rectangle
         svg
             .append('rect')
-            .attr('x', dot_x)
-            .attr('y', dot_y)
-            .attr('width', dot_width)
-            .attr('height', dot_height)
+            .attr('x', margin.left + label_width)
+            .attr('y', margin.top)
+            .attr('width', width - margin.left - margin.right - label_width)
+            .attr('height', dot_height - margin.top - margin.bottom)
             .style('stroke', 'black')
             .style('stroke-width', '1px')
             .style('fill', 'none');
@@ -91,8 +116,8 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
             .enter()
             .append('rect')
             .attr('class', 'gridCell')
-            .attr('y', (d: any) => dot_y + (data.intersections.indexOf(d.intersection) * cell_height))
-            .attr('x', (d: any) => dot_x + (Object.keys(data.sets).indexOf(d.set) * cell_width))
+            .attr('y', (d: any) => Object.keys(data.sets).indexOf(d.set) * cell_height + margin.left)
+            .attr('x', (d: any) => data.intersections.indexOf(d.intersection) * cell_width + margin.top + label_width)
             .attr('width', cell_width)
             .attr('height', cell_height)
             .style('fill', (d: any) => {
@@ -114,8 +139,8 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
             .enter()
             .append('circle')
             .attr('class', 'gridCell')
-            .attr('cy', (d: any) => dot_y + (data.intersections.indexOf(d.intersection) * cell_height) + cell_height / 2)
-            .attr('cx', (d: any) => dot_x + (Object.keys(data.sets).indexOf(d.set) * cell_width) + cell_width / 2)
+            .attr('cy', (d: any) => Object.keys(data.sets).indexOf(d.set) * cell_height + margin.left + cell_height / 2)
+            .attr('cx', (d: any) => data.intersections.indexOf(d.intersection) * cell_width + margin.top + label_width + cell_width / 2)
             .attr('r', Math.min(cell_height, cell_width) / 3)
             .style('fill', (d: any) => {
                 const isSelected = selectedIntersections.includes(d.intersection.set);
@@ -138,32 +163,29 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
             .enter()
             .append('rect')
             .attr('class', 'valueBar')
-            .attr('y', (d: any) => bar_y + (data.intersections.indexOf(d.intersection) * cell_height) + cell_height / 8)
-            .attr('x', (d: any) => bar_x)
-            .attr('width', (d: any) => normalizedValues[d.index])
-            .attr('height', cell_height / 1.25) // Use normalized values
+            .attr('y', (d: any) => Object.keys(data.sets).length * cell_height + margin.left + empty_height)
+            .attr('x', (d: any) => data.intersections.indexOf(d.intersection) * cell_width + margin.top + label_width + cell_width / 8)
+            .attr('width', cell_width / 1.25)
+            .attr('height', (d: any) => normalizedValues[d.index]) // Use normalized values
             .style('fill', (d: any) => {
                 const isSelected = selectedIntersections.includes(d.intersection.set);
                 const isHovered = hoveredIntersection === d.intersection.set;
                 return isSelected ? '#FF6F00' : (isHovered ? '#FF9C46' : '#030202');
             });
 
-        // Add x-axis
-        const xScale = d3
-            .scaleLinear()
-            .domain([0, maxValue])
-            .range([bar_x, bar_x + bar_width]);
+        // Add vertical axis to the right of the bar section
+        const axisScale = d3.scaleLinear()
+            .domain([maxValue, 0])
+            .range([height, height - bar_height]);
 
-        const xAxis = d3
-            .axisTop(xScale)
+        const axis = d3.axisLeft(axisScale)
             .ticks(3)
             .tickFormat(d3.format(".2s"));
 
-        svg
-            .append('g')
-            .attr('class', 'x-axis')
-            .attr('transform', `translate(0, ${bar_y})`)
-            .call(xAxis);
+        svg.append('g')
+            .attr('class', 'axis')
+            .attr('transform', `translate(${margin.left + label_width}, ${margin.top})`)
+            .call(axis);
 
         // plot a single rectangle for each intersection for handling mouse events
         // rectangle is completely transparent
@@ -178,10 +200,10 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
             .enter()
             .append('rect')
             .attr('class', 'eventRect')
-            .attr('y', (d: any) => dot_y + (data.intersections.indexOf(d.intersection) * cell_height))
-            .attr('x', dot_x)
-            .attr('width', width)
-            .attr('height', cell_height)
+            .attr('y', margin.top)
+            .attr('x', (d: any) => data.intersections.indexOf(d.intersection) * cell_width + margin.top + label_width)
+            .attr('width', cell_width)
+            .attr('height', height)
             .style('fill', 'transparent')
             .on('click', (event: Event, ixData: any) => onIntersectionClick(ixData))
             .on('mouseover', (event: Event, ixData: any) => {
@@ -223,8 +245,7 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
             .append('div')
             .attr('id', 'tooltip')
             .attr('style', 'position: absolute; opacity: 0;');
-
-    }, [data, selectedIntersections, hoveredIntersection, width, height]);
+    }, [data, selectedIntersections, hoveredIntersection, parentWidth, parentHeight]);
 
     return (
         <div>

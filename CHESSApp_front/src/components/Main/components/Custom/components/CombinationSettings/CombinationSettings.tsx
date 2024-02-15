@@ -76,8 +76,9 @@ const CombinationSettings: React.FC<CombinationSettingsProps> = ({ selectedInter
                     data={upsetData} 
                     selectedIntersections={selectedIntersections}
                     onIntersectionClick={onIntersectionClick}
-                    parentWidth={currentParentWidth} 
-                    parentHeight={currentParentHeight} />
+                    width={400} 
+                    height={200}
+                    margin={{top:0,bottom:0,right:0,left:0}} />
             ) : (
                 <div>
                     Error loading summary slice
