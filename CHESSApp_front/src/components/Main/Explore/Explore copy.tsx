@@ -5,7 +5,7 @@ import SideBar from './SideBar/SideBar';
 import GeneTable from './ExploreGene/GeneTable/GeneTable';
 import PDB from './ExploreGene/PDB/PDB';
 
-import { TX, Locus } from '../../../../utils/utils';
+import { TX, Locus } from '../../../utils/utils';
 
 const Explore: React.FC = () => {
 

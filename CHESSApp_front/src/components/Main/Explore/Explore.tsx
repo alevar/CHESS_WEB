@@ -4,16 +4,16 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
 import Spinner from 'react-bootstrap/Spinner';
 
-import SideBar from '../SideBar/SideBar';
+import SideBar from './SideBar/SideBar';
 import GeneSearch from './ExploreGene/GeneSearch/GeneSearch';
 import GeneTable from './ExploreGene/GeneTable/GeneTable';
 import ExploreGene from './ExploreGene/ExploreGene';
 
-import { DatabaseState } from '../../../../features/database/databaseSlice';
-import { SettingsState } from '../../../../features/settings/settingsSlice';
+import { DatabaseState } from '../../../features/database/databaseSlice';
+import { SettingsState } from '../../../features/settings/settingsSlice';
 
 import { useGetLociSummaryQuery,
-         useFindLociQuery } from '../../../../features/loci/lociApi';
+         useFindLociQuery } from '../../../features/loci/lociApi';
 
 // when a user lands on explore - present all genes
 // filtering will only work within the currently displayed panel

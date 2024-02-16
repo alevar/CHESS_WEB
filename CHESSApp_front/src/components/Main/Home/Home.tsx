@@ -2,9 +2,9 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Row, Col, Card } from 'react-bootstrap';
 import './Home.css';
 
-import build_penguin from '../../../../public/build.penguin.2.jpeg';
-import download_penguin from '../../../../public/download.penguin.1.jpeg';
-import search_penguin from '../../../../public/search.penguin.1.jpeg';
+import build_penguin from "../../../public/build.penguin.2.jpeg";
+import download_penguin from '../../../public/download.penguin.1.jpeg';
+import search_penguin from '../../../public/search.penguin.1.jpeg';
 
 const Home = () => {
   const navigate = useNavigate();

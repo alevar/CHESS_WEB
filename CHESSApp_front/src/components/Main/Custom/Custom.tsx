@@ -1,22 +1,22 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import DownloadButton from '../../../DownloadButton/DownloadButton';
+import DownloadButton from '../../DownloadButton/DownloadButton';
 
 import SourceSettings from './components/SourceSettings/SourceSettings';
 import DataSettings from './components/DataSettings/DataSettings';
 import SummaryView from './components/SummaryView/SummaryView';
 import CombinationSettings from './components/CombinationSettings/CombinationSettings';
 
-import { DatabaseState } from '../../../../features/database/databaseSlice';
+import { DatabaseState } from '../../../features/database/databaseSlice';
 import {
     SettingsState,
     add_attribute,
     remove_attribute,
     add_source_intersection,
     remove_source_intersection
-} from '../../../../features/settings/settingsSlice';
-import { useGetTxSummarySliceQuery } from '../../../../features/summary/summaryApi';
+} from '../../../features/settings/settingsSlice';
+import { useGetTxSummarySliceQuery } from '../../../features/summary/summaryApi';
 
 import './Custom.css';
 

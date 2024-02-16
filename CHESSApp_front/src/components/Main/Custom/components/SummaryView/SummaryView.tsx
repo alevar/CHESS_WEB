@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Spinner } from 'react-bootstrap';
 
-import HintIcon from '../../../../../HintIcon/HintIcon';
+import HintIcon from '../../../../HintIcon/HintIcon';
 import SankeyPlot from './components/SankeyPlot/SankeyPlot';
 
-import { DatabaseState } from '../../../../../../features/database/databaseSlice';
-import { SettingsState } from '../../../../../../features/settings/settingsSlice';
-import { SummaryState } from '../../../../../../features/summary/summarySlice';
+import { DatabaseState } from '../../../../../features/database/databaseSlice';
+import { SettingsState } from '../../../../../features/settings/settingsSlice';
+import { SummaryState } from '../../../../../features/summary/summarySlice';
 import * as d3 from 'd3';
 
 interface SummaryViewProps {

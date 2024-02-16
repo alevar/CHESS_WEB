@@ -6,11 +6,11 @@ import Spinner from 'react-bootstrap/Spinner';
 import TxTable from './TxTable/TxTable';
 import PDB from './PDB/PDB';
 
-import { TX, Locus } from '../../../../../utils/utils';
+import { TX, Locus } from '../../../../utils/utils';
 
-import { DatabaseState } from '../../../../../features/database/databaseSlice';
-import { SettingsState } from '../../../../../features/settings/settingsSlice';
-import { useGetLocusQuery } from '../../../../../features/loci/lociApi';
+import { DatabaseState } from '../../../../features/database/databaseSlice';
+import { SettingsState } from '../../../../features/settings/settingsSlice';
+import { useGetLocusQuery } from '../../../../features/loci/lociApi';
 
 interface ExploreProps {
     locusID: number,

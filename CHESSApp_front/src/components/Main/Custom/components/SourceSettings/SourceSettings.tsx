@@ -4,14 +4,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button, Accordion, Form } from 'react-bootstrap';
 import { useSelector, useDispatch } from 'react-redux';
 
-import HintIcon from '../../../../../HintIcon/HintIcon';
+import HintIcon from '../../../../HintIcon/HintIcon';
 
-import { DatabaseState } from '../../../../../../features/database/databaseSlice';
+import { DatabaseState } from '../../../../../features/database/databaseSlice';
 import {
   SettingsState,
   add_source,
   remove_source,
-} from '../../../../../../features/settings/settingsSlice';
+} from '../../../../../features/settings/settingsSlice';
 
 interface RootState {
   database: DatabaseState;

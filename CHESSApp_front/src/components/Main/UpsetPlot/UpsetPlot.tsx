@@ -7,13 +7,37 @@ interface UpsetPlotDataProps {
         sets: { [key: string]: string };
         intersections: { set: string; value: number }[];
     };
+    components: {
+        dot: {
+            draw: boolean;
+            height: number;
+            width: number;
+        };
+        bar: {
+            draw: boolean;
+            height: number;
+            width: number;
+        };
+        tooltip: {
+            draw: boolean;
+            height: number;
+            width: number;
+        };
+        names: {
+            draw: boolean;
+            height: number;
+            width: number;
+        };
+    }
     selectedIntersections: number[];
     onIntersectionClick: (ixData: { set: any, intersection: any, index: number }) => void;
-    width: number;
     height: number;
+    width: number;
 }
 
-const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
+const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ 
+    data,
+    components,
     selectedIntersections,
     onIntersectionClick,
     width,
@@ -30,8 +54,12 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
         // sections
         const label_y = 0;
         const label_x = 0;
-        const label_height = height * 0.1;
-        const label_width = width;
+        let label_height = 0;
+        let label_width = 0;
+        if (components.names.draw) {
+            label_height = height * components.names.height;
+            label_width = width * components.names.width;
+        }
 
         const dot_y = label_height;
         const dot_x = 0;
