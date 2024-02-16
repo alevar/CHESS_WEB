@@ -4,7 +4,7 @@ import { Table as BTable } from 'react-bootstrap'
 import * as d3 from 'd3'
 
 import SashimiPlot from '../SashimiPlot/SashimiPlot'
-import { TX, Locus } from '../../../../../../utils/utils';
+import { TX, Locus } from '../../../../../utils/utils';
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './TxTable.css'

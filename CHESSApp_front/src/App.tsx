@@ -5,9 +5,9 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Spinner from 'react-bootstrap/Spinner';
 
 import Main from "./components/Main/Main";
-import Custom from "./components/Main/components/Custom/Custom";
-import Explore from "./components/Main/components/Explore/Explore";
-import Home from "./components/Main/components/Home/Home";
+import Custom from "./components/Main/Custom/Custom";
+import Explore from "./components/Main/Explore/Explore";
+import Home from "./components/Main/Home/Home";
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
 import About from "./components/About/About";

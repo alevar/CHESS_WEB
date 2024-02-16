@@ -1,5 +1,5 @@
 import { NestedObject, Interval, Coord, Attributes } from './types';
-import SashimiPlot from '../components/Main/components/Explore/ExploreGene/SashimiPlot/SashimiPlot';
+import SashimiPlot from '../components/Main/Explore/ExploreGene/SashimiPlot/SashimiPlot';
 
 export const sum_of_leaves = (obj: NestedObject): number => {
   let total = 0;

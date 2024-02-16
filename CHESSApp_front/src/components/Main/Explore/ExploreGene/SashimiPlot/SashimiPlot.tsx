@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
-import { TX, Locus } from '../../../../../../utils/utils';
+import { TX, Locus } from '../../../../../utils/utils';
 
 interface SashimiProps {
   locus: Locus;

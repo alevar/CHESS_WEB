@@ -3,15 +3,14 @@ import { useSelector, useDispatch } from 'react-redux';
 import UpsetPlot from './components/UpsetPlot/UpsetPlot';
 import Spinner from 'react-bootstrap/Spinner';
 
-import { DatabaseState } from '../../../../../../features/database/databaseSlice';
-import { SettingsState } from '../../../../../../features/settings/settingsSlice';
-import { SummaryState } from '../../../../../../features/summary/summarySlice';
-import { useGetTxSummarySliceQuery } from '../../../../../../features/summary/summaryApi';
+import { DatabaseState } from '../../../../../features/database/databaseSlice';
+import { SettingsState } from '../../../../../features/settings/settingsSlice';
+import { SummaryState } from '../../../../../features/summary/summarySlice';
 
-import '../../../../../../utils/utils';
+import '../../../../../utils/utils';
 
 import "../../Custom.css"
-import { sum_of_leaves } from '../../../../../../utils/utils';
+import { sum_of_leaves } from '../../../../../utils/utils';
 
 interface CombinationSettingsProps {
     selectedIntersections: number[];
