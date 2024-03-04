@@ -58,16 +58,16 @@ const loci = createSlice({
       })
 
       // locus details matchers
-      .addMatcher(lociApi.endpoints.findLoci.matchFulfilled, (state, action) => {
-        state.search.status = 'succeeded';
-        state.search.data = action.payload;
+      .addMatcher(lociApi.endpoints.getLocus.matchFulfilled, (state, action) => {
+        state.locus.status = 'succeeded';
+        state.locus.data = action.payload;
       })
-      .addMatcher(lociApi.endpoints.findLoci.matchPending, (state) => {
-        state.search.status = 'loading';
+      .addMatcher(lociApi.endpoints.getLocus.matchPending, (state) => {
+        state.locus.status = 'loading';
       })
-      .addMatcher(lociApi.endpoints.findLoci.matchRejected, (state) => {
-        state.search.status = 'failed';
-        state.search.error = "Error";
+      .addMatcher(lociApi.endpoints.getLocus.matchRejected, (state) => {
+        state.locus.status = 'failed';
+        state.locus.error = "Error";
       });
   },
 });
