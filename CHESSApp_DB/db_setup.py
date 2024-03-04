@@ -584,6 +584,15 @@ def addDatasets(api_connection,config, args):
     logFP.close()
 
 ##############################
+###########  HGNC  ###########
+##############################
+def hgnc(api_connection,args):
+    # this module is used to add HGNC gene IDs to the database
+    # it will label each gene for a given assembly with the hgnc id informaton
+    # hgnc data can then be used for quick lookup via the REST API
+    return
+
+##############################
 ##########  COMPILE  #########
 ##############################
 def compile(api_connection,args):
@@ -801,6 +810,21 @@ def main(args):
                               type=str,
                               help='Path to the configuration file for connecting to the mysql database. Configuration is provided in JSON format. See example in CHESSApp_DB/data/mysql.json')
     parser_compile.set_defaults(func=establish_connection,main_fn=compile)
+
+    ##############################
+    ###########  HGNC  ###########
+    ##############################
+    parser_hgnc=subparsers.add_parser('hgnc',
+                                        help='hgnc help')
+    parser_hgnc.add_argument('--db_configuration',
+                                required=True,
+                                type=str,
+                                help='Path to the configuration file for connecting to the mysql database. Configuration is provided in JSON format. See example in CHESSApp_DB/data/mysql.json')
+    parser_hgnc.add_argument('--assembly',
+                                required=True,
+                                type=str,
+                                help='Assembly name to add HGNC gene IDs to. The module will iterate over all sources for the given assembly and attempt to add hgnc identifiers to it')
+    parser_hgnc.set_defaults(func=establish_connection,main_fn=hgnc)
 
     args=parser.parse_args()
     args.func(args,args.main_fn)

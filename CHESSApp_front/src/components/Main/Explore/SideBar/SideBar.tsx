@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Nav, Col, Tab, Accordion, Form } from 'react-bootstrap';
+import { Nav, Col, Tab, Accordion, Form, Button, Table } from 'react-bootstrap';
 import { useSelector, useDispatch } from 'react-redux';
 
 import UpsetPlot from "../../UpsetPlot/UpsetPlot";
@@ -15,6 +15,7 @@ import {
     add_source_intersection,
     remove_source_intersection,
 } from '../../../../features/settings/settingsSlice';
+import { LocusState } from '../../../../features/locus/locusSlice';
 import { useGetTxSummarySliceQuery } from '../../../../features/summary/summaryApi';
 
 import "./SideBar.scss";
@@ -22,6 +23,7 @@ import "./SideBar.scss";
 interface RootState {
     database: DatabaseState;
     settings: SettingsState;
+    locus: LocusState;
 }
 
 const SideBar: React.FC = () => {
@@ -29,6 +31,7 @@ const SideBar: React.FC = () => {
     const globalData = useSelector((state: RootState) => state.database.data);
     const settings = useSelector((state: RootState) => state.settings);
     const summary = useSelector((state: RootState) => state.summary);
+    const loci = useSelector((state: RootState) => state.loci);
     const dispatch = useDispatch();
 
     // listen to any changes in the settings and update the summary accordingly
@@ -99,6 +102,12 @@ const SideBar: React.FC = () => {
         });
     };
 
+    // Advanced source settings
+    const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
+    const handleAdvancedButtonClick = () => {
+        setShowAdvancedSettings(!showAdvancedSettings);
+    };
+
     return (
         <div className="offcanvas-md offcanvas-end bg-body-tertiary" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
             <div className="offcanvas-header">
@@ -126,55 +135,61 @@ const SideBar: React.FC = () => {
                                 <h3>Sources</h3>
                                 <section>
                                     <div className="row">
-                                        <div className="container">
-                                            {globalData?.ass2src[settings.value.genome].map((sourceID, index) => {
-                                                const isSourceIncluded = settings.value.sources_include.includes(Number(sourceID)) === true;
+                                        {globalData?.ass2src[settings.value.genome].map((sourceID, index) => {
+                                            const isSourceIncluded = settings.value.sources_include.includes(Number(sourceID)) === true;
 
-                                                return (
-                                                    <div>
-                                                        <Form.Switch
-                                                            type="checkbox"
-                                                            id={sourceID.toString()}
-                                                            label={globalData?.sources[sourceID].name}
-                                                            checked={isSourceIncluded}
-                                                            onChange={(event) => onCheckboxChange(sourceID, event)}
-                                                        />
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
+                                            return (
+                                                <Form.Switch
+                                                    type="checkbox"
+                                                    id={sourceID.toString()}
+                                                    label={globalData?.sources[sourceID].name}
+                                                    checked={isSourceIncluded}
+                                                    onChange={(event) => onCheckboxChange(sourceID, event)}
+                                                />
+                                            );
+                                        })}
                                     </div>
-                                    {summary.status === "loading" ? (
-                                        <Spinner animation="border" role="status">
-                                            <span className="visually-hidden">Loading...</span>
-                                        </Spinner>
-                                    ) : summary.status === "succeeded" ? (
-                                        <UpsetPlot
-                                            data={upsetData}
-                                            components={{dot:{
+                                    <Button onClick={handleAdvancedButtonClick} className="mt-3">
+                                        {showAdvancedSettings ? 'Hide Advanced' : 'Show Advanced'}
+                                    </Button>
+
+                                    {showAdvancedSettings && (
+                                        <div>
+                                            {summary.status === "loading" ? (
+                                                <Spinner animation="border" role="status">
+                                                    <span className="visually-hidden">Loading...</span>
+                                                </Spinner>
+                                            ) : summary.status === "succeeded" ? (
+                                                <UpsetPlot
+                                                    data={upsetData}
+                                                    components={{
+                                                        dot: {
                                                             draw: true,
                                                             height: 0.9,
                                                             width: 1,
-                                                        },bar:{
+                                                        }, bar: {
                                                             draw: false,
                                                             height: 0,
                                                             width: 0,
-                                                        },tooltip:{
+                                                        }, tooltip: {
                                                             draw: false,
                                                             height: 0,
                                                             width: 0,
-                                                        },names:{
+                                                        }, names: {
                                                             draw: true,
                                                             height: 0.1,
                                                             width: 1,
-                                                        }}}
-                                            selectedIntersections={selectedIntersections}
-                                            onIntersectionClick={handleIntersectionClick}
-                                            width={200}
-                                            height={400}/>
-                                    ) : (
-                                        <div>
-                                            Error loading summary slice
+                                                        }
+                                                    }}
+                                                    selectedIntersections={selectedIntersections}
+                                                    onIntersectionClick={handleIntersectionClick}
+                                                    width={200}
+                                                    height={400} />
+                                            ) : (
+                                                <div>
+                                                    Error loading summary slice
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </section>
@@ -182,7 +197,34 @@ const SideBar: React.FC = () => {
                             <Tab.Pane eventKey="#genes">
                                 <h3>Genes</h3>
                                 <section>
-                                    
+                                    {
+                                        loci.locus.status === "loading" ? (
+                                            <Spinner animation="border" role="status">
+                                                <span className="visually-hidden">Loading...</span>
+                                            </Spinner>
+                                        ) : loci.locus.status === "succeeded" ? (
+                                                        <Table striped bordered hover>
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Gene Name</th>
+                                                                    <th>Source</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {Object.entries(loci.locus.data.data.genes).map(([gid, geneData], index) => (
+                                                                    <tr key={gid} onClick={() => console.log(`Clicked on ${gid}`)}>
+                                                                        <td>{geneData.gene_name}</td>
+                                                                        <td>{globalData.sources[geneData.sourceID]["name"]}</td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </Table>
+                                        ) : (
+                                            <div>
+                                                Error loading locus data
+                                            </div>
+                                        )
+                                    }
                                 </section>
                             </Tab.Pane>
                             <Tab.Pane eventKey="#other">

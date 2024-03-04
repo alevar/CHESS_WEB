@@ -39,7 +39,7 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
     }
 
     if (locusError) {
-        return <div>Error: {lociError}</div>;
+        return <div>Error: {locusError}</div>;
     }
 
     // SashimiPlot TX clicker
@@ -49,6 +49,7 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
 
     const locus = new Locus();
 
+    console.log("transcripts",locusData.data.transcripts);
     for (const [tid, txData] of Object.entries(locusData.data.transcripts)) {
         const txObj = new TX();
         const seqid_name = database.data.sequenceIDMap[settings.value.genome][locusData.position.seqid][settings.value.nomenclature];
@@ -56,7 +57,6 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
         for (const exon of txData.exons) {
             txObj.add_exon(exon as [number, number]);
         }
-        txObj.build_orf(txData.cds_start, txData.cds_end);
 
         // now build and add source-specific versions
         for (const [sourceID, sourceData] of Object.entries(txData.sources)) {
@@ -74,6 +74,8 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
                 txObj.add_tx(sub_tx);
             }
         }
+        txObj.orf = txObj.txs[0].orf;
+        console.log("txObj",txObj);
         locus.add_tx(txObj);
     }
     locus.set_scaling();
