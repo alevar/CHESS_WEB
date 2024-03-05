@@ -13,7 +13,7 @@ const PDB: React.FC<PDBProps> = ({ pdbData }) => {
         if (!pdbRef.current) return;
 
         const viewer = mol.createViewer(pdbRef.current, {});
-        mol.download("pdb:1MO8", viewer, { multimodel: true, frames: true }, function () {
+        mol.download("pdb:2EEL", viewer, { multimodel: true, frames: true }, function () {
             viewer.setStyle({}, { cartoon: { color: 'spectrum' } });
             viewer.render();
         });
