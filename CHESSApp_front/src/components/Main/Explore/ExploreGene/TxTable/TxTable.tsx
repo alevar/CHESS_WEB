@@ -124,7 +124,7 @@ const TxTable: React.FC<TxTableProps> = ({ locus, onTxClick }) => {
     return (
         <div className="p-2">
             <div className="h-2" />
-            <BTable striped bordered hover responsive size="sm">
+            <BTable bordered hover responsive>
                 <thead>
                     {table.getHeaderGroups().map(headerGroup => (
                         <tr key={headerGroup.id}>

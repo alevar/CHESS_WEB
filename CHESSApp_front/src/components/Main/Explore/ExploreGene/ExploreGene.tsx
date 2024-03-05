@@ -49,7 +49,7 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
 
     const locus = new Locus();
 
-    console.log("transcripts",locusData.data.transcripts);
+    console.log("transcripts", locusData.data.transcripts);
     for (const [tid, txData] of Object.entries(locusData.data.transcripts)) {
         const txObj = new TX();
         const seqid_name = database.data.sequenceIDMap[settings.value.genome][locusData.position.seqid][settings.value.nomenclature];
@@ -75,7 +75,7 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
             }
         }
         txObj.orf = txObj.txs[0].orf;
-        console.log("txObj",txObj);
+        console.log("txObj", txObj);
         locus.add_tx(txObj);
     }
     locus.set_scaling();
@@ -84,6 +84,20 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
 
     const gene_name_set = new Set(Object.values(locusData.data.genes).map(g => g.gene_name));
     const gene_name_str = Array.from(gene_name_set).join(', ');
+
+    const colorizeBetweenPositions = (sequence: string, startPosition: number, endPosition: number) => {
+        // Remove whitespaces from the sequence
+        const sequenceWithoutSpaces = sequence.replace(/\s/g, '');
+
+        // Highlight the text between positions
+        const highlightedSequence =
+            sequenceWithoutSpaces.slice(0, startPosition) +
+            `<span style="background-color: #56b4e9">${sequenceWithoutSpaces.slice(startPosition, endPosition)}</span>` +
+            sequenceWithoutSpaces.slice(endPosition);
+
+        return <div dangerouslySetInnerHTML={{ __html: highlightedSequence }} />;
+    };
+
     return (
         <Container fluid>
             <Row style={{ border: '1px solid #d6d6d6', borderRadius: '5px' }}>
@@ -99,12 +113,18 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
 
             <Row>
                 <Col id="txInfoTable" md={6} style={{ border: '1px solid #d6d6d6', borderRadius: '5px' }}>
-                    <h2>Transcript Info</h2>
+                    <h2>Gene Info</h2>
                     <Table striped bordered hover>
                         <thead>
                         </thead>
                         <tbody>
-                            
+                            <p>
+                                <strong>Gene Name:</strong> {gene_name_str}
+                            </p>
+                            <p>
+                                <strong>Gene ID:</strong> {locusData.data.gene_id}
+                            </p>
+                            This gene encodes the homolog of the mouse protein Cidea that has been shown to activate apoptosis. This activation of apoptosis is inhibited by the DNA fragmentation factor DFF45 but not by caspase inhibitors. Mice that lack functional Cidea have higher metabolic rates, higher lipolysis in brown adipose tissue and higher core body temperatures when subjected to cold. These mice are also resistant to diet-induced obesity and diabetes. This suggests that in mice this gene product plays a role in thermogenesis and lipolysis. Alternatively spliced transcripts have been identified.
                         </tbody>
                     </Table>
                 </Col>
@@ -118,16 +138,44 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
             <Row style={{ border: '1px solid #d6d6d6', borderRadius: '5px' }}>
                 <Col>
                     <h2>Transcript Sequence</h2>
-                    <div>
-                        
+                    <div style={{ wordWrap: 'break-word' }}>
+                        {colorizeBetweenPositions(`
+                        AGGCCCGCTAGGGGATCCGCGCCATGGAGGCCGCCCGGGACTATGCAGGAGCCCTCATCAGGCGAGTGCC
+                        CCGCGTCCCCCTGATTGCCGTGCGCTTCCAATCGCCTTGCGTTCGGTGGCCTCATATTCCCCTGTGCGCC
+                        TCTAGTACCGTACCCCGCTCCCTTCAGCCCCCTGCTCCCCGCATTCTCTTGCGCTCCGCGACCCCGCGCA
+                        CACACCCATCCGCCCCACTGGTGCCCAAGCCGTCCAGCCGCGCCCGCGGGCAGAGCCCAATCCCGTCCCG
+                        CGCCTCCTCACCCTCTTGCAGCTGGGCACAGGTACCAGGTGTGGCTCTTGCGAGGTGCGCGGGCGTCTGC
+                        AAACCAGGTGACAGCTGGCGAGTGGCTGCATGCATCTCTGGCCGCTGCTGCAGTCGCGGGCGCAGAAGAG
+                        GGTCCGGTCCCAGGAACCCCGAGCAAAGCTTCCGCGATGCGAGGGGACCGGGCTTCTGGGGGTCCTGGAA
+                        ATCACAACGGGAGCTGGGCGCGGGAGGGGCCCAGGCTTGGCCCCTCCTGGAAGCGCGGGCTCTGGTCTCC
+                        GAGGGGAGGCCCCAACCGTCCGGCGGAGCCCTCCAGGCCCCTGACATTTATGGGATCACAGACTAAGCGA
+                        GTCCTGTTCACCCCGCTCATGCATCCAGCTCGCCCTTTCCGGGTCTCCAACCATGACAGGAGCAGCCGGC
+                        GTGGGGTGATGGCAAGCAGCCTGCAGGAGCTCATCAGCAAGGGAGGATGCAGGGATGGAGCCGACTTTGG
+                        AAGTCTGGGTTTGGTTGTAAAGGCCAGGATCTAGAACAGTGTCCTAGACCACCAAATAAGGAAGAATCCC
+                        AGCCTCTCAGAGAAGCATAACTCAGACTCAGGCACCCATGGAAACAAGAAACAAGCATCCAACATGCAGT
+                        CTCTGAAGCAAGAGAGACACTCAGCTACGCACACGAGGCTGTGGCTCTTACAGCAGCAAACATGCAAGAG
+                        CTTTCTTTTTATTCATCTAAATAAATAGACTCTGGATGCCCTCGTCATCGCTACCGGACTGGTCACTCTG
+                        GTGCTGGAGGAAGATGGCACCGTGGTGGACACAGAAGAGTTCTTTCAGACCTTGGGAGACAACACGCATT
+                        TCATGATCTTGGAAAAAGGACAGAAGTGGATGCCGGGCAGCCAGCACGTCCCCACTTGCTCGCCGCCGAA
+                        GAGGTCGGGAATAGCGAGAGTCACCTTCGACTTGTACAGGCTGAACCCCAAGGACTTCATCGGCTGCCTT
+                        AACGTGAAGGCCACCATGTATGAGATGTACTCCGTGTCCTACGACATCCGGTGCACGGGACTCAAGGGCC
+                        TGCTGAGGAGTCTGCTGCGGTTCCTGTCCTACTCCGCCCAGGTGACGGGACAGTTTCTCATCTATCTGGG
+                        CACATACATGCTCCGGGTGCTGGATGACAAGGAAGAGCGGCCATCCCTCCGGTCACAAGCCAAGGGCAGG
+                        TTCACGTGTGGATAGGGATGCAGGCTGTCGCCGGCTCTTGAGCCAAACACTGTGTTTCGTTTGGCTCAAT
+                        GACGAATGTTGAAGATGCTTTTATGTTCTGAGCCACATGCACTTGGAGGCCGCTGGTCACGCTGCTCAGG
+                        AGTGGTGCCCAGAAAAGGAAAGGGCTTGGTGGTACATGAAGTGGGGGCAGTGGGCAGGGTGCCCTGGGGG
+                        GGAGGCATAGAGGGCCCTGGGGGTCATGGGAAGCGAGCACGCAGCAGGCGTGCCCAGGAGCGTGTGCATG
+                        TGTCAGAGCCATTTGGTCCATCATCTCCTGCAATAAACCCATCGCAAGAATGACCTTCAA
+    `, 1122, 1511)}
                     </div>
                 </Col>
             </Row>
             <Row style={{ border: '1px solid #d6d6d6', borderRadius: '5px' }}>
                 <Col>
                     <h2>Protein Sequence</h2>
-                    <div>
-                        
+                    <div style={{ wordWrap: 'break-word' }}>
+                        MILEKGQKWMPGSQHVPTCSPPKRSGIARVTFDLYRLNPKDFIGCLNVKATMYEMYSVSYDIRCTGLKGL
+                        LRSLLRFLSYSAQVTGQFLIYLGTYMLRVLDDKEERPSLRSQAKGRFTCG
                     </div>
                 </Col>
             </Row>
