@@ -106,14 +106,8 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
                 </Col>
             </Row>
             <Row style={{ border: '1px solid #d6d6d6', borderRadius: '5px' }}>
-                <Col md={10}>
-                    <TxTable locus={locus} onTxClick={handleTXClick} />
-                </Col>
-            </Row>
-
-            <Row>
-                <Col id="txInfoTable" md={6} style={{ border: '1px solid #d6d6d6', borderRadius: '5px' }}>
-                    <h2>Gene Info</h2>
+                <Col>
+                    <h2></h2>
                     <Table striped bordered hover>
                         <thead>
                         </thead>
@@ -122,11 +116,24 @@ const Explore: React.FC<ExploreProps> = ({ locusID }) => {
                                 <strong>Gene Name:</strong> {gene_name_str}
                             </p>
                             <p>
-                                <strong>Gene ID:</strong> {locusData.data.gene_id}
+                                <strong>Gene ID:</strong> HGNC: 1976 NCBI Gene: 1149 Ensembl: ENSG00000176194 OMIM®: 604440 UniProtKB/Swiss-Prot: O60543 
                             </p>
-                            This gene encodes the homolog of the mouse protein Cidea that has been shown to activate apoptosis. This activation of apoptosis is inhibited by the DNA fragmentation factor DFF45 but not by caspase inhibitors. Mice that lack functional Cidea have higher metabolic rates, higher lipolysis in brown adipose tissue and higher core body temperatures when subjected to cold. These mice are also resistant to diet-induced obesity and diabetes. This suggests that in mice this gene product plays a role in thermogenesis and lipolysis. Alternatively spliced transcripts have been identified.
+                            <p>
+                                <strong>Description:</strong>This gene encodes the homolog of the mouse protein Cidea that has been shown to activate apoptosis. This activation of apoptosis is inhibited by the DNA fragmentation factor DFF45 but not by caspase inhibitors. Mice that lack functional Cidea have higher metabolic rates, higher lipolysis in brown adipose tissue and higher core body temperatures when subjected to cold. These mice are also resistant to diet-induced obesity and diabetes. This suggests that in mice this gene product plays a role in thermogenesis and lipolysis. Alternatively spliced transcripts have been identified.
+                            </p>
                         </tbody>
                     </Table>
+                </Col>
+            </Row>
+            <Row style={{ border: '1px solid #d6d6d6', borderRadius: '5px' }}>
+                <Col md={10}>
+                    <TxTable locus={locus} onTxClick={handleTXClick} />
+                </Col>
+            </Row>
+
+            <Row>
+                <Col md={6} style={{ border: '1px solid #d6d6d6', borderRadius: '5px' }}>
+
                 </Col>
                 <Col md={6} style={{ border: '1px solid #d6d6d6', borderRadius: '5px' }}>
                     <div>
