@@ -5,21 +5,17 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import './DownloadButton.css';
 
 import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '../../app/store';
 import { DatabaseState } from '../../features/database/databaseSlice';
-import { SettingsState, set_format, set_nomenclature, set_nascent } from '../../features/settings/settingsSlice';
+import { SettingsState, setFormat, setNomenclature, setNascent } from '../../features/settings/settingsSlice';
 
-interface RootState {
-  database: DatabaseState;
-  settings: SettingsState;
-}
-
-const DownloadButton = () => {
+const DownloadButton: React.FC = () => {
   const globalData = useSelector((state: RootState) => state.database.data);
   const settings = useSelector((state: RootState) => state.settings);
 
   const dispatch = useDispatch();
   const [show, setShow] = useState(false);
-  const [expandedElement, setExpandedElement] = useState(null);
+  const [expandedElement, setExpandedElement] = useState<null | string>(null);
 
   const handleClose = () => {
     setShow(false);
@@ -29,12 +25,12 @@ const DownloadButton = () => {
   const handleDownload = () => {
     setShow(false);
     setExpandedElement(null);
-    console.log("download");
+    console.log("Download initiated");
   };
 
   const handleShow = () => setShow(true);
 
-  const handleCardClick = (element) => {
+  const handleCardClick = (element: string) => {
     if (expandedElement === element) {
       setExpandedElement(null);
     } else {
@@ -55,7 +51,10 @@ const DownloadButton = () => {
         <Modal.Body style={{ maxHeight: '60vh', overflowY: 'auto' }}>
           <Form.Group controlId="formatSelect">
             <Form.Label>Format</Form.Label>
-            <Form.Select defaultValue="GTF" onChange={(e) => dispatch(set_format(e.target.value))}>
+            <Form.Select
+              defaultValue="GTF"
+              onChange={(e) => dispatch(setFormat(e.target.value))}
+            >
               <option>GTF</option>
               <option>GFF</option>
             </Form.Select>
@@ -63,22 +62,28 @@ const DownloadButton = () => {
 
           <Form.Group controlId="nomenclatureSelect">
             <Form.Label>Nomenclature</Form.Label>
-            <Form.Select defaultValue={globalData["nomenclature"]["GRCh38"][0]} onChange={(e) => dispatch(set_nomenclature(e.target.value))}>
-              {globalData["nomenclature"]["GRCh38"].map((option, index) => (
-                <option key={index}>{option}</option>
+            <Form.Select
+              defaultValue={globalData.nomenclature?.GRCh38[0]}
+              onChange={(e) => dispatch(setNomenclature(e.target.value))}
+            >
+              {globalData.nomenclature?.GRCh38.map((option: string, index: number) => (
+                <option key={index} value={option}>
+                  {option}
+                </option>
               ))}
             </Form.Select>
           </Form.Group>
+
           <Form.Group controlId="nascentRNASelect">
-            <Form.Check 
-              type="checkbox" 
-              label="Include nascent RNA in the output" 
-              onChange={(e) => dispatch(set_nascent(e.target.checked))}
+            <Form.Check
+              type="checkbox"
+              label="Include nascent RNA in the output"
+              onChange={(e) => dispatch(setNascent(e.target.checked))}
             />
           </Form.Group>
         </Modal.Body>
         <Modal.Footer>
-          <Row>
+          <Row style={{ width: '100%' }}>
             <Col className="text-end">
               <Button variant="primary" onClick={handleDownload}>
                 Download

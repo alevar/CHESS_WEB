@@ -11,12 +11,6 @@
   }
 }
 
-// .offcanvas-body {
-//   display: flex;
-//   flex-direction: column;
-//   height: 100%;
-// }
-
 .sideways-tabs {
   display: flex;
   flex-direction: column;
@@ -39,6 +33,11 @@
 .sidebar-content {
   padding: 1rem;
   overflow-y: auto;
+}
+
+.advanced-settings {
+  padding: 1rem;
+  border-top: 1px solid #dee2e6;
 }
 
 .table-hover tbody tr:hover {

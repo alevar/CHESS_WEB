@@ -9,8 +9,8 @@ import HintIcon from '../../../../HintIcon/HintIcon';
 import { DatabaseState } from '../../../../../features/database/databaseSlice';
 import {
   SettingsState,
-  add_source,
-  remove_source,
+  addSource,
+  removeSource,
 } from '../../../../../features/settings/settingsSlice';
 
 interface RootState {
@@ -36,9 +36,9 @@ function SourceSettings({ buttonStates,
   const onCheckboxChange = (sid, event) => {
     // if checked, add to the list, otherwise remove
     if (event.target.checked) {
-      dispatch(add_source(sid));
+      dispatch(addSource(sid));
     } else {
-      dispatch(remove_source(sid));
+      dispatch(removeSource(sid));
     }
 
     // Prevent accordion from expanding when the switch is toggled

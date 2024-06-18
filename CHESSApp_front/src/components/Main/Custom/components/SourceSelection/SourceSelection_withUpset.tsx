@@ -10,7 +10,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Button } from 'react-bootstrap';
 
 import { DatabaseState } from '../../../../features/database/databaseSlice';
-import { SettingsState, set_include_sources, set_exclude_sources } from '../../../../features/settings/settingsSlice';
+import { SettingsState, setIncludeSources, setExcludeSources } from '../../../../features/settings/settingsSlice';
 import { UpSetJS, extractCombinations, asCombinations } from '@upsetjs/react';
 
 import { useGetTxSummarySliceQuery } from '../../../../features/database/databaseApi';
@@ -163,7 +163,7 @@ function SelectSources(props: Props) {
       .map(([key]) => key);
   
     // Dispatch the selected sources to the store
-    dispatch(set_include_sources(include));
+    dispatch(setIncludeSources(include));
   
     // Call the original onNextSlide callback
     props.onNextSlide();

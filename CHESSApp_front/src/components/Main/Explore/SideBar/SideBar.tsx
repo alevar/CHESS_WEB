@@ -1,45 +1,32 @@
 import React, { useState, useEffect } from "react";
-import { Nav, Col, Tab, Accordion, Form, Button, Table } from 'react-bootstrap';
+import { Nav, Col, Tab, Accordion, Form, Button, Table, Spinner } from 'react-bootstrap';
 import { useSelector, useDispatch } from 'react-redux';
 
 import UpsetPlot from "../../UpsetPlot/UpsetPlot";
-import Spinner from 'react-bootstrap/Spinner';
 import { sum_of_leaves } from '../../../../utils/utils';
 
-import { DatabaseState } from "../../../../features/database/databaseSlice";
 import {
-    SettingsState,
-    add_source,
-    remove_source,
-    set_nascent,
-    add_source_intersection,
-    remove_source_intersection,
+    addSource,
+    removeSource,
+    setNascent,
+    addSourceIntersection,
+    removeSourceIntersection,
 } from '../../../../features/settings/settingsSlice';
-import { LocusState } from '../../../../features/locus/locusSlice';
+import { RootState } from '../../../../app/store';
 import { useGetTxSummarySliceQuery } from '../../../../features/summary/summaryApi';
 
 import "./SideBar.scss";
 
-interface RootState {
-    database: DatabaseState;
-    settings: SettingsState;
-    locus: LocusState;
-}
-
 const SideBar: React.FC = () => {
-
     const globalData = useSelector((state: RootState) => state.database.data);
     const settings = useSelector((state: RootState) => state.settings);
     const summary = useSelector((state: RootState) => state.summary);
     const loci = useSelector((state: RootState) => state.loci);
     const dispatch = useDispatch();
 
-    // listen to any changes in the settings and update the summary accordingly
-    // coordinate data synchronization with the server whenever settings change
-    // whenever settings change - fetch new data
     const { data, error, isLoading, refetch } = useGetTxSummarySliceQuery(settings.value);
+
     useEffect(() => {
-        // Fetch new data whenever settings change
         const fetchData = async () => {
             try {
                 await refetch();
@@ -51,27 +38,22 @@ const SideBar: React.FC = () => {
     }, [settings.value, refetch]);
 
     const onCheckboxChange = (sid, event) => {
-        // if checked, add to the list, otherwise remove
         if (event.target.checked) {
-            dispatch(add_source(sid));
+            dispatch(addSource(sid));
         } else {
-            dispatch(remove_source(sid));
+            dispatch(removeSource(sid));
         }
     };
 
-    // Nascent switch
     const [nascentSwitchState, setNascentSwitchState] = useState<boolean>(false);
     const handleNascentSwitchChange = (event) => {
         const isChecked = event.target.checked;
         setNascentSwitchState(isChecked);
-        dispatch(set_nascent(isChecked));
+        dispatch(setNascent(isChecked));
     };
 
-    // UpsetPlot selection listeners
     const [upsetData, setUpsetData] = useState({});
     useEffect(() => {
-        // Logic to handle settings update
-        // Trigger re-render of the UpsetPlot component with updated settings
         const sets = {};
         for (const sourceID of settings.value.sources_include) {
             sets[sourceID] = globalData.sources[sourceID].name;
@@ -86,23 +68,17 @@ const SideBar: React.FC = () => {
 
     const [selectedIntersections, setSelectedIntersections] = useState<number[]>([]);
     const handleIntersectionClick = (ixData: { set: any, intersection: any, index: number }) => {
-        // toggle selections and dispatch actions to update settings
         setSelectedIntersections((prevSelectedIntersections) => {
             if (prevSelectedIntersections.includes(ixData.intersection.set)) {
-                // update settings
-                dispatch(remove_source_intersection(ixData.intersection.set));
-                // Remove the index if already selected
+                dispatch(removeSourceIntersection(ixData.intersection.set));
                 return prevSelectedIntersections.filter((set) => set !== ixData.intersection.set);
             } else {
-                // update settings
-                dispatch(add_source_intersection(ixData.intersection.set));
-                // Add the index if not selected
+                dispatch(addSourceIntersection(ixData.intersection.set));
                 return [...prevSelectedIntersections, ixData.intersection.set];
             }
         });
     };
 
-    // Advanced source settings
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
     const handleAdvancedButtonClick = () => {
         setShowAdvancedSettings(!showAdvancedSettings);
@@ -155,40 +131,26 @@ const SideBar: React.FC = () => {
 
                                     {showAdvancedSettings && (
                                         <div>
-                                            {summary.status === "loading" ? (
+                                            {isLoading ? (
                                                 <Spinner animation="border" role="status">
                                                     <span className="visually-hidden">Loading...</span>
                                                 </Spinner>
-                                            ) : summary.status === "succeeded" ? (
+                                            ) : error ? (
+                                                <div>Error loading summary slice</div>
+                                            ) : (
                                                 <UpsetPlot
                                                     data={upsetData}
                                                     components={{
-                                                        dot: {
-                                                            draw: true,
-                                                            height: 0.9,
-                                                            width: 1,
-                                                        }, bar: {
-                                                            draw: false,
-                                                            height: 0,
-                                                            width: 0,
-                                                        }, tooltip: {
-                                                            draw: false,
-                                                            height: 0,
-                                                            width: 0,
-                                                        }, names: {
-                                                            draw: true,
-                                                            height: 0.1,
-                                                            width: 1,
-                                                        }
+                                                        dot: { draw: true, height: 0.9, width: 1 },
+                                                        bar: { draw: false, height: 0, width: 0 },
+                                                        tooltip: { draw: false, height: 0, width: 0 },
+                                                        names: { draw: true, height: 0.1, width: 1 }
                                                     }}
                                                     selectedIntersections={selectedIntersections}
                                                     onIntersectionClick={handleIntersectionClick}
                                                     width={200}
-                                                    height={400} />
-                                            ) : (
-                                                <div>
-                                                    Error loading summary slice
-                                                </div>
+                                                    height={400}
+                                                />
                                             )}
                                         </div>
                                     )}
@@ -197,34 +159,30 @@ const SideBar: React.FC = () => {
                             <Tab.Pane eventKey="#genes">
                                 <h3>Genes</h3>
                                 <section>
-                                    {
-                                        loci.locus.status === "loading" ? (
-                                            <Spinner animation="border" role="status">
-                                                <span className="visually-hidden">Loading...</span>
-                                            </Spinner>
-                                        ) : loci.locus.status === "succeeded" ? (
-                                                        <Table striped bordered hover>
-                                                            <thead>
-                                                                <tr>
-                                                                    <th>Gene Name</th>
-                                                                    <th>Source</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                {Object.entries(loci.locus.data.data.genes).map(([gid, geneData], index) => (
-                                                                    <tr key={gid} onClick={() => console.log(`Clicked on ${gid}`)}>
-                                                                        <td>{geneData.gene_name}</td>
-                                                                        <td>{globalData.sources[geneData.sourceID]["name"]}</td>
-                                                                    </tr>
-                                                                ))}
-                                                            </tbody>
-                                                        </Table>
-                                        ) : (
-                                            <div>
-                                                Error loading locus data
-                                            </div>
-                                        )
-                                    }
+                                    {loci.locus.status === "loading" ? (
+                                        <Spinner animation="border" role="status">
+                                            <span className="visually-hidden">Loading...</span>
+                                        </Spinner>
+                                    ) : loci.locus.status === "succeeded" ? (
+                                        <Table striped bordered hover>
+                                            <thead>
+                                                <tr>
+                                                    <th>Gene Name</th>
+                                                    <th>Source</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {Object.entries(loci.locus.data.data.genes).map(([gid, geneData], index) => (
+                                                    <tr key={gid} onClick={() => console.log(`Clicked on ${gid}`)}>
+                                                        <td>{geneData.gene_name}</td>
+                                                        <td>{globalData.sources[geneData.sourceID]["name"]}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </Table>
+                                    ) : (
+                                        <div>Error loading locus data</div>
+                                    )}
                                 </section>
                             </Tab.Pane>
                             <Tab.Pane eventKey="#other">
