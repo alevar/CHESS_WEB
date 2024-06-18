@@ -1,0 +1,43 @@
+/* Header.css */
+
+.navbar {
+    background-color: #343a40; /* Dark background color */
+    color: white;
+  }
+  
+  .navbar-brand img {
+    height: 50px;
+    margin-right: 15px;
+  }
+  
+  .navbar-brand span {
+    display: none;
+  }
+  
+  @media (min-width: 992px) {
+    .navbar-brand span {
+      display: inline;
+    }
+  }
+  
+  .border-bottom {
+    border-bottom: 1px solid #dee2e6 !important;
+  }
+  
+  button.btn-primary {
+    margin-right: 15px;
+  }
+  
+  .nav-link img {
+    height: 50px;
+    margin-right: 15px;
+  }
+  
+  .navbar-nav .nav-link {
+    color: rgb(75, 75, 75);
+  }
+  
+  .navbar-nav .nav-link.active {
+    font-weight: bold;
+  }
+  

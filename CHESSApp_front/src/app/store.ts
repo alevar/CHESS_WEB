@@ -17,7 +17,13 @@ export const store = configureStore({
     [summaryApi.reducerPath]: summaryApi.reducer,
     [lociApi.reducerPath]: lociApi.reducer,
   },
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(databaseApi.middleware).concat(summaryApi.middleware).concat(lociApi.middleware),
+  middleware: (getDefaultMiddleware) => 
+    getDefaultMiddleware().concat(
+      databaseApi.middleware, 
+      summaryApi.middleware, 
+      lociApi.middleware
+    ),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
