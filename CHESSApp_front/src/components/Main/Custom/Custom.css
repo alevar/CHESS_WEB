@@ -1,12 +1,12 @@
 .custom-wrapper {
   display: flex;
   flex-direction: row;
-  height: 100vh;
-  overflow: hidden;
+  /* height: 100vh;
+  overflow: hidden; */
 }
 
 .custom-sidebar {
-  width: 20%;
+  width: 30%;
   padding: 1rem;
   border-right: 1px solid #ccc;
   display: flex;

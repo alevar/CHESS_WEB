@@ -113,7 +113,7 @@ const Header: React.FC = () => {
       <Navbar bg="light" expand="lg" className="border-bottom">
         <Container className="d-flex justify-content-center">
           <Navbar.Brand href="/" className="d-flex align-items-center">
-            <img src={chess_logo} style={{ height: '50px', marginRight: '15px' }} className="d-inline-block align-top" alt="Chess Logo" />
+            <img src={chess_logo} style={{ height: '40px', marginRight: '15px' }} className="d-inline-block align-top" alt="Chess Logo" />
             <span className="d-none d-lg-inline">CHESS</span>
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
@@ -131,7 +131,7 @@ const Header: React.FC = () => {
               {globalData.assemblies[settings.value.genome]?.assembly || 'Change Genome'}
             </Button>
             <Nav.Link href="https://ccb.jhu.edu" className="d-flex align-items-center">
-              <img src={ccb_logo} alt="CCB Logo" style={{ height: '50px', marginRight: '15px' }} />
+              <img src={ccb_logo} alt="CCB Logo" style={{ height: '40px', marginRight: '15px' }} />
             </Nav.Link>
           </Nav>
         </Container>
