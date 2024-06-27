@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import DownloadButton from '../../DownloadButton/DownloadButton';
 import SourceSettings from './components/SourceSettings/SourceSettings';
-import DataSettings from './components/DataSettings/DataSettings';
+import DataSettings from './components/DataSettings/DataSettings'; // Import DataSettings
 import SummaryView from './components/SummaryView/SummaryView';
 import CombinationSettings from './components/CombinationSettings/CombinationSettings';
 import { DatabaseState } from '../../../features/database/databaseSlice';
@@ -116,15 +116,17 @@ const Custom: React.FC = () => {
                 <DownloadButton />
             </div>
             <div className="custom-main" ref={summaryViewRef}>
-                <div className="custom-section">
+                {/* <div className="custom-section">
                     <div className="custom-section-header">
                         <h2>Combinations</h2>
                     </div>
                     <CombinationSettings
                         selectedIntersections={selectedIntersections}
                         onIntersectionClick={handleIntersectionClick}
+                        parentWidth={summaryViewSize.width}
+                        parentHeight={summaryViewSize.height}
                     />
-                </div>
+                </div> */}
                 <div className="custom-section">
                     <div className="custom-section-header">
                         <h2>Summary</h2>

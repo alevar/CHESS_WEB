@@ -19,15 +19,17 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
     width,
     height, }) => {
     const svgRef = useRef<SVGSVGElement | null>(null);
+    const tooltipRef = useRef<HTMLDivElement | null>(null);
     const [hoveredIntersection, setHoveredIntersection] = useState<string | null>(null);
+
     const handleIntersectionHover = (ixData: { set: any, intersection: any, index: number } | null) => {
         setHoveredIntersection(ixData?.intersection.set);
     };
 
     useEffect(() => {
-        if (!svgRef.current) return;
+        if (!svgRef.current || !tooltipRef.current) return;
 
-        // sections
+        // Sections
         const label_y = 0;
         const label_x = 0;
         const label_height = height * 0.1;
@@ -47,26 +49,21 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
         const bar_height = height - label_height;
         const bar_width = width - dot_width - spacer_width;
 
-        // individual cells
+        // Individual cells
         const cell_width = dot_width / Object.keys(data.sets).length;
         const cell_height = dot_height / data.intersections.length;
 
-        // bars
+        // Bars
         const maxValue = d3.max(data.intersections, (d) => d.value);
-        const normalizedValues = data.intersections.map((d) => {
-            return (d.value / maxValue) * bar_width;
-        });
+        const normalizedValues = data.intersections.map((d) => (d.value / maxValue) * bar_width);
 
         const svg = d3
             .select(svgRef.current)
             .attr('width', width)
             .attr('height', height);
 
-        var tooltip_div = d3.select("body").append("div")
-            .attr("class", "tooltip")
-            .style("opacity", 0);
-
-        d3.select(svgRef.current).selectAll("*").remove();
+        // Clear previous content
+        svg.selectAll("*").remove();
 
         // Draw a bounding rectangle
         svg
@@ -79,7 +76,7 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
             .style('stroke-width', '1px')
             .style('fill', 'none');
 
-        // Create rectangles for each intersection(behind circles)
+        // Create rectangles for each intersection (behind circles)
         svg
             .selectAll('rect.gridCell')
             .data(data.intersections)
@@ -100,7 +97,7 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
                 const isHovered = hoveredIntersection === d.intersection.set;
                 return isSelected ? '#FF9806' : (isHovered ? '#FFBD62' : 'white');
             })
-            .style('stroke', "black")
+            .style('stroke', "black");
 
         // Create circles for each intersection
         svg
@@ -126,7 +123,7 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
             })
             .style('stroke', "black");
 
-        // plot bar chart for the sizes of intersections
+        // Plot bar chart for the sizes of intersections
         svg
             .selectAll('rect.valueBar')
             .data(data.intersections)
@@ -165,8 +162,8 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
             .attr('transform', `translate(0, ${bar_y})`)
             .call(xAxis);
 
-        // plot a single rectangle for each intersection for handling mouse events
-        // rectangle is completely transparent
+        // Plot a single rectangle for each intersection for handling mouse events
+        // Rectangle is completely transparent
         svg
             .selectAll('rect.eventRect')
             .data(data.intersections)
@@ -191,45 +188,40 @@ const UpsetPlot: React.FC<UpsetPlotDataProps> = ({ data,
                 const setNames = ixData.intersection.set
                     .split(',')
                     .map((number: string) => data.sets[number])
-                    .join(' ∩ ');                    
+                    .join(' ∩ ');
 
-                d3.select("#tooltip").html(`<div class="tooltip-box">
-                                                <div class="tooltip-title">
-                                                    <strong>${setNames}</strong>
-                                                </div>
-                                                <hr class="tooltip-separator">
-                                                <div class="tooltip-text">
-                                                    <p>Count: ${ixData.intersection.value}</p>
-                                                </div>
-                                            </div>`)
+                d3.select(tooltipRef.current)
+                    .html(`<div class="tooltip-box">
+                                <div class="tooltip-title">
+                                    <strong>${setNames}</strong>
+                                </div>
+                                <hr class="tooltip-separator">
+                                <div class="tooltip-text">
+                                    <p>Count: ${ixData.intersection.value}</p>
+                                </div>
+                            </div>`)
                     .style("opacity", .9)
-                    .style("left", (event.clientX + 10) + 'px')    
+                    .style("left", (event.clientX + 10) + 'px')
                     .style("top", (event.clientY + 10) + 'px');
-
             })
             .on('mouseleave', () => {
                 handleIntersectionHover(null);
-                d3.select("#tooltip")
+                d3.select(tooltipRef.current)
                     .html(``)
                     .style("opacity", 0);
             })
             .on('mousemove', (event: Event) => {
-                var tooltip = d3.select('#tooltip')
+                d3.select(tooltipRef.current)
                     .style('left', (event.clientX + 10) + 'px')
-                    .style('top', (event.clientY + 10) + 'px')
+                    .style('top', (event.clientY + 10) + 'px');
             });
-
-        d3.select('body')
-            .append('div')
-            .attr('id', 'tooltip')
-            .attr('style', 'position: absolute; opacity: 0;');
 
     }, [data, selectedIntersections, hoveredIntersection, width, height]);
 
     return (
         <div>
             <svg ref={svgRef}></svg>
-            <div className="tooltip_div"></div>
+            <div ref={tooltipRef} id="tooltip" style={{ position: 'absolute', opacity: 0 }}></div>
         </div>
     );
 };

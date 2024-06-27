@@ -13,7 +13,7 @@ function Footer() {
                     <Row className="align-items-center">
                         <Col md={1}>
                             <Nav.Link href="https://engineering.jhu.edu/" className="d-flex align-items-center">
-                                <img src={jhu_logo} alt="Logo" style={{ height: '50px', marginRight: '15px' }} />
+                                <img src={jhu_logo} alt="Logo" style={{ height: '40px', marginRight: '15px' }} />
                             </Nav.Link>
                         </Col>
                         <Col md={2}>
@@ -31,12 +31,12 @@ function Footer() {
                         </Col>
                         <Col md={1}>
                             <Nav.Link href="https://www.hopkinsmedicine.org/som/" className="d-flex align-items-center">
-                                <img src={som_logo} alt="Logo" style={{ height: '50px', marginRight: '15px' }} />
+                                <img src={som_logo} alt="Logo" style={{ height: '40px', marginRight: '15px' }} />
                             </Nav.Link>
                         </Col>
                         <Col md={1} className="text-end">
                             <Nav.Link href="https://publichealth.jhu.edu/" className="d-flex align-items-center">
-                                <img src={sph_logo} alt="Logo" style={{ height: '50px', marginRight: '15px' }} />
+                                <img src={sph_logo} alt="Logo" style={{ height: '40px', marginRight: '15px' }} />
                             </Nav.Link>
                         </Col>
                     </Row>
