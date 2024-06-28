@@ -352,24 +352,24 @@ def addSources(api_connection,config,args):
             print("Skipping attribute verification")
 
     for source,data in config.items():
-        sourceName = data["name"].replace("'","\\'")
-        assemblyName = data["assemblyName"].replace("'","\\'")
+        source_name = data["name"].replace("'","\\'")
+        assembly_name = data["assembly_name"].replace("'","\\'")
         filename = data["norm_file"]
 
         # get mapping information from the database for the inputs
-        assemblyID = api_connection.get_assemblyID(assemblyName)
+        assembly_id = api_connection.get_assemblyID(assembly_name)
         # load sequence identifiers from the current file first (just a set of all values in column 1)
         input_seqid_set = set()
         with open(filename,"r") as inFP:
             for line in inFP:
                 if line[0]!="#" and len(line.split("\t"))==9:
                     input_seqid_set.add(line.split("\t")[0])
-        sequenceIDMap = api_connection.get_seqidMap(assemblyID,input_seqid_set)
+        sequenceIDMap = api_connection.get_seqidMap(assembly_id,input_seqid_set)
 
         # extract current GTF for the database
-        db_gtf_fname = os.path.abspath(args.temp)+"/db.before_"+sourceName+".gtf"
-        print("Extracting gtf from the current database before adding "+sourceName)
-        api_connection.to_gtf(assemblyID,sequenceIDMap,db_gtf_fname)
+        db_gtf_fname = os.path.abspath(args.temp)+"/db.before_"+source_name+".gtf"
+        print("Extracting gtf from the current database before adding "+source_name)
+        api_connection.to_gtf(assembly_id,sequenceIDMap,db_gtf_fname)
 
         # gffread/gffcompare/etc
         source_format = data["source_format"]
@@ -396,7 +396,7 @@ def addSources(api_connection,config,args):
             working_tid = tracking.get(transcript.tid,None) # tid PK of the transcript being worked on as it appears in the Transcripts table
 
             if working_tid is None:
-                working_tid = api_connection.insert_transcript(transcript,assemblyID)
+                working_tid = api_connection.insert_transcript(transcript,assembly_id)
 
             # add transcript source pairing to the TxDBXREF table
             api_connection.insert_dbxref(transcript,working_tid,working_gid,working_sourceID)
@@ -468,19 +468,19 @@ def establish_connection(args,main_fn):
 def addNomeclatures(api_connection,config, args):
     for nomecnclature,data in config.items():
         # get assembly ID for the assembly name
-        aid = api_connection.get_assemblyID(data["assemblyName"])
+        aid = api_connection.get_assemblyID(data["assembly_name"])
 
         # check if data["to"] already exists in the sequenceIDMap
         # if it does - then we can skip it
-        query = "SELECT count(*) FROM SequenceIDMap WHERE assemblyID = %s AND nomenclature = %s"
+        query = "SELECT count(*) FROM sequence_id_map WHERE assembly_id = %s AND nomenclature = %s"
         res = api_connection.execute_query(query,(aid,data["to"]))
         if res[0][0]>0:
-            print("Skipping nomenclature: "+data["to"]+" for assembly: "+data["assemblyName"]+" as it already exists in the database")
+            print("Skipping nomenclature: "+data["to"]+" for assembly: "+data["assembly_name"]+" as it already exists in the database")
             continue
 
-        # assert that all sequenceIDs for the assembly exist in the provided map
+        # assert that all sequence_ids for the assembly exist in the provided map
         sids = api_connection.get_seqidMap(aid,None,data["from"])
-        assert len(sids)>0,"No sequenceIDs found for assembly: "+data["assemblyName"]
+        assert len(sids)>0,"No sequence_id found for assembly: "+data["assembly_name"]
 
         # load the map
         map = dict()
@@ -525,16 +525,16 @@ def addDatasets(api_connection,config, args):
     if not os.path.exists(args.temp):
         os.makedirs(args.temp)
         
-    api_connection.check_table("Sources")
-    api_connection.check_table("Gene")
-    api_connection.check_table("TxDBXREF")
-    api_connection.check_table("Attribute")
-    api_connection.check_table("Transcript")
+    api_connection.check_table("sources")
+    api_connection.check_table("gene")
+    api_connection.check_table("tx_dbxref")
+    api_connection.check_table("attribute")
+    api_connection.check_table("transcript")
 
     logFP = open(args.log, 'w') if args.log else None
 
     for dataset,data in config.items():
-        assemblyName = data["assemblyName"].replace("'","\\'")
+        assembly_name = data["assembly_name"].replace("'","\\'")
         datasetName = data["name"].replace("'","\\'")
         quant_data_file = data["data_file"]
 
@@ -548,7 +548,7 @@ def addDatasets(api_connection,config, args):
         # extract current GTF for the database
         db_gtf_fname = os.path.abspath(args.temp)+"/db.before_"+datasetName+".gtf"
         print("Extracting gtf from the current database before adding "+datasetName)
-        api_connection.to_gtf(assemblyName,db_gtf_fname)
+        api_connection.to_gtf(assembly_name,db_gtf_fname)
 
         # gffread/gffcompare/etc
         source_format = "gff" if is_gff(gtf_fname) else "gtf"
@@ -601,14 +601,14 @@ def compile(api_connection,args):
     # and summary of the various data included in the database
 
     # this module will remove any previous versions of the auxillary tables and recompile them from scratch
-    api_connection.check_table("Sources")
-    api_connection.check_table("Gene")
-    api_connection.check_table("TxDBXREF")
-    api_connection.check_table("TXAttribute")
-    api_connection.check_table("Transcript")
-    api_connection.check_table("SequenceID")
-    api_connection.check_table("SequenceIDMap")
-    api_connection.check_table("Organism")
+    api_connection.check_table("sources")
+    api_connection.check_table("gene")
+    api_connection.check_table("tx_dbxref")
+    api_connection.check_table("tx_attribute")
+    api_connection.check_table("transcript")
+    api_connection.check_table("sequence_id")
+    api_connection.check_table("sequence_id_map")
+    api_connection.check_table("organism")
 
     # deal with loci
     # api_connection.build_locusTable()
@@ -628,17 +628,17 @@ def compile(api_connection,args):
     transcript_type_summary = api_connection.build_TranscriptTypeSummaryTable()
     gene_type_summary = api_connection.build_GeneTypeSummaryTable()
 
-    # get sources table (map of sourceID to sourceName)
+    # get sources table (map of sourceID to source_name)
     all_sources = api_connection.get_sources()
     source_id2name = {k:v["name"] for k,v in all_sources.items()}
     source_name2id = {v["name"]:k for k,v in all_sources.items()}
 
     # now build upset data for each assembly
     upset_data = list() # holds results as rows which can then be inserted as a table into the database
-    for organism,odata in summary["speciesName"].items():
-        for assembly,adata in odata["assemblyName"].items():
+    for organism,odata in summary["species_name"].items():
+        for assembly,adata in odata["assembly_name"].items():
             # get sources for this assembly
-            assembly_sources = list(adata["sourceName"].keys())
+            assembly_sources = list(adata["source_name"].keys())
             
             source_combinations = chain.from_iterable(combinations(assembly_sources, r) for r in range(len(assembly_sources)+1))
 

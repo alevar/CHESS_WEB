@@ -316,9 +316,9 @@ Options:
             confirmation = input("Press 'y' to accept changes, any other key to cancel: ")
             if confirmation.lower() == 'y':
                 # update key
-                query = f'INSERT INTO AttributeKey (key_name, variable, description) VALUES ("{new_name}","{variable}","{description}")'
+                query = f'INSERT INTO attribute_key (key_name, variable, description) VALUES ("{new_name}","{variable}","{description}")'
                 self.commands.append(query)
-                query = f'INSERT INTO AttributeKeyMap (std_key, og_key) VALUES ("{new_name}","{new_name}")'
+                query = f'INSERT INTO attribute_key_map (std_key, og_key) VALUES ("{new_name}","{new_name}")'
 
                 # update dictionaries
                 self.key_og2std[new_name] = new_name
@@ -353,11 +353,11 @@ Options:
             confirmation = input("Press 'y' to accept changes, any other key to cancel:")
             if confirmation.lower() == 'y':
                 # update key
-                query = f'UPDATE AttributeKey SET key_name = "{new_name}" WHERE key_name = "{self.selected_key}"'
+                query = f'UPDATE attribute_key SET key_name = "{new_name}" WHERE key_name = "{self.selected_key}"'
                 self.commands.append(query)
                 # add old key to synonyms of new key
                 if not self.selected_key in self.key_og2std:
-                    query = f'INSERT INTO AttributeKeyMap (std_key, og_key) VALUES ("{new_name}","{self.selected_key}")'
+                    query = f'INSERT INTO attribute_key_map (std_key, og_key) VALUES ("{new_name}","{self.selected_key}")'
                     self.commands.append(query)
 
                 # update dictionaries
@@ -394,7 +394,7 @@ Options:
         confirmation = input("Press 'y' to accept changes, any other key to cancel:")
         if confirmation.lower() == 'y':
             # update key
-            query = f'DELETE FROM AttributeKey WHERE key_name = "{self.selected_key}"'
+            query = f'DELETE FROM attribute_key WHERE key_name = "{self.selected_key}"'
             self.commands.append(query)
             # update dictionaries
             # get list of synonyms for selected_key
@@ -457,7 +457,7 @@ Options:
             confirmation = input("Press 'y' to accept changes, any other key to cancel: ")
             if confirmation.lower() == 'y':
                 # update key
-                query = f'INSERT INTO AttributeKeyMap (std_key, og_key) VALUES ("{self.selected_key}","{new_synonym}")'
+                query = f'INSERT INTO attribute_key_map (std_key, og_key) VALUES ("{self.selected_key}","{new_synonym}")'
                 self.commands.append(query)
 
                 # update dictionaries
@@ -480,7 +480,7 @@ Options:
         confirmation = input("Press 'y' to accept changes, any other key to cancel: ")
         if confirmation.lower() == 'y':
             # update key
-            query = f'DELETE FROM AttributeKeyMap WHERE std_key = "{self.selected_key}" AND og_key = "{self.selected_key}"'
+            query = f'DELETE FROM attribute_key_map WHERE std_key = "{self.selected_key}" AND og_key = "{self.selected_key}"'
             self.commands.append(query)
 
             # update dictionaries
@@ -493,7 +493,7 @@ Options:
             # check if the synonym was the last one for the key and add a new synonym same as key if it was to maintain consistency
             if len(self.key_std2og[self.selected_key]) == 0:
                 print(f"Synonym '{self.selected_key}' was the last synonym for entry '{self.selected_key}'. Adding new synonym '{self.selected_key}' to maintain consistency.")
-                query = f'INSERT INTO AttributeKeyMap (std_key, og_key) VALUES ("{self.selected_key}","{self.selected_key}")'
+                query = f'INSERT INTO attribute_key_map (std_key, og_key) VALUES ("{self.selected_key}","{self.selected_key}")'
                 self.commands.append(query)
                 self.key_og2std[self.selected_key] = self.selected_key
                 self.key_std2og[self.selected_key].add(self.selected_key)
@@ -549,7 +549,7 @@ Options:
             confirmation = input("Press 'y' to accept changes, any other key to cancel: ")
             if confirmation.lower() == 'y':
                 # update key
-                query = f'INSERT INTO AttributeValue (key_name, value_name) VALUES ("{self.selected_key}","{new_name}")'
+                query = f'INSERT INTO attribute_value (key_name, value_name) VALUES ("{self.selected_key}","{new_name}")'
                 self.commands.append(query)
 
                 # update dictionaries
@@ -579,11 +579,11 @@ Options:
             confirmation = input("Press 'y' to accept changes, any other key to cancel:")
             if confirmation.lower() == 'y':
                 # update key
-                query = f'UPDATE AttributeValue SET value_name = "{new_name}" WHERE key_name = "{self.selected_key}" AND value_name = "{self.selected_value}"'
+                query = f'UPDATE attribute_value SET value_name = "{new_name}" WHERE key_name = "{self.selected_key}" AND value_name = "{self.selected_value}"'
                 self.commands.append(query)
                 # add old key to synonyms of new key
                 if not self.selected_value in self.val_og2std[self.selected_key]:
-                    query = f'INSERT INTO AttributeValueMap (key_name, std_value, og_value) VALUES ("{self.selected_key}","{new_name}","{self.selected_value}")'
+                    query = f'INSERT INTO attribute_value_map (key_name, std_value, og_value) VALUES ("{self.selected_key}","{new_name}","{self.selected_value}")'
                     self.commands.append(query)
 
                 # update dictionaries
@@ -614,7 +614,7 @@ Options:
         confirmation = input("Press 'y' to accept changes, any other key to cancel:")
         if confirmation.lower() == 'y':
             # update key
-            query = f'DELETE FROM AttributeValue WHERE key_name = "{self.selected_key}" AND value_name = "{self.selected_value}"'
+            query = f'DELETE FROM attribute_value WHERE key_name = "{self.selected_key}" AND value_name = "{self.selected_value}"'
             self.commands.append(query)
             # update dictionaries
             # get list of synonyms for selected_key
@@ -673,7 +673,7 @@ Options:
             confirmation = input("Press 'y' to accept changes, any other key to cancel: ")
             if confirmation.lower() == 'y':
                 # update key
-                query = f'INSERT INTO AttributeValueMap (key_name, std_value, og_value) VALUES ("{self.selected_key}","{self.selected_value}","{new_synonym}")'
+                query = f'INSERT INTO attribute_value_map (key_name, std_value, og_value) VALUES ("{self.selected_key}","{self.selected_value}","{new_synonym}")'
                 self.commands.append(query)
 
                 # update dictionaries
@@ -696,7 +696,7 @@ Options:
         confirmation = input("Press 'y' to accept changes, any other key to cancel: ")
         if confirmation.lower() == 'y':
             # update key
-            query = f'DELETE FROM AttributeValueMap WHERE key_name = "{self.selected_key}" AND std_value = "{self.selected_value}" AND og_value = "{self.selected_value}"'
+            query = f'DELETE FROM attribute_value_map WHERE key_name = "{self.selected_key}" AND std_value = "{self.selected_value}" AND og_value = "{self.selected_value}"'
             self.commands.append(query)
 
             # update dictionaries
@@ -709,7 +709,7 @@ Options:
             # check if the synonym was the last one for the key and add a new synonym same as key if it was to maintain consistency
             if len(self.val_std2og[self.selected_key][self.selected_value]) == 0:
                 print(f"Synonym '{self.selected_value}' was the last synonym for entry '{self.selected_value}'. Adding new synonym '{self.selected_value}' to maintain consistency.")
-                query = f'INSERT INTO AttributeValueMap (key_name, std_value, og_value) VALUES ("{self.selected_key}","{self.selected_value}","{self.selected_value}")'
+                query = f'INSERT INTO attribute_value_map (key_name, std_value, og_value) VALUES ("{self.selected_key}","{self.selected_value}","{self.selected_value}")'
                 self.commands.append(query)
                 self.val_og2std[self.selected_key][self.selected_value] = self.selected_value
                 self.val_std2og[self.selected_key][self.selected_value].add(self.selected_value)
@@ -761,9 +761,9 @@ Options:
                 return self.key_og2std[key]
             else:
                 # insert new key
-                query = f'INSERT INTO AttributeKey (key_name, variable, description) VALUES ("{key}","{variable}","{description}")'
+                query = f'INSERT INTO attribute_key (key_name, variable, description) VALUES ("{key}","{variable}","{description}")'
                 self.commands.append(query)
-                query = f'INSERT INTO AttributeKeyMap (std_key, og_key) VALUES ("{key}","{key}")'
+                query = f'INSERT INTO attribute_key_map (std_key, og_key) VALUES ("{key}","{key}")'
                 self.commands.append(query)
 
                 # update dictionaries
@@ -792,7 +792,7 @@ Options:
                 return key
             else:
                 # insert new synonym
-                query = f'INSERT INTO AttributeKeyMap (std_key, og_key) VALUES ("{key}","{synonym}")'
+                query = f'INSERT INTO attribute_key_map (std_key, og_key) VALUES ("{key}","{synonym}")'
                 self.commands.append(query)
 
                 # update dictionaries
@@ -821,9 +821,9 @@ Options:
                 return self.val_og2std[key][value]
             else:
                 # insert new value
-                query = f'INSERT INTO AttributeKeyValue (key_name, value) VALUES ("{key}","{value}")'
+                query = f'INSERT INTO attribute_key_value (key_name, value) VALUES ("{key}","{value}")'
                 self.commands.append(query)
-                query = f'INSERT INTO AttributeValueMap (key_name, std_value, og_value) VALUES ("{key}","{value}","{value}")'
+                query = f'INSERT INTO attribute_value_map (key_name, std_value, og_value) VALUES ("{key}","{value}","{value}")'
                 self.commands.append(query)
 
                 # update dictionaries
@@ -850,7 +850,7 @@ Options:
                 return self.val_og2std[key][synonym]
             else:
                 # insert new synonym
-                query = f'INSERT INTO AttributeValueMap (key_name, std_value, og_value) VALUES ("{key}","{value}","{synonym}")'
+                query = f'INSERT INTO attribute_value_map (key_name, std_value, og_value) VALUES ("{key}","{value}","{synonym}")'
                 self.commands.append(query)
 
                 # update dictionaries
@@ -859,7 +859,7 @@ Options:
                 self.db_info[key]["values"][value].add(synonym)
                 return value
             
-    # add transcript attributes (TXAttribute)
+    # add transcript attributes (tx_attribute)
     def insert_txattribute(self,tid:int,sid:int,transcript_id:str,key:str,value:str):
         assert key in self.key_std2og or key in self.key_og2std, f"Unknown key {key} provided"
 
@@ -883,7 +883,7 @@ Options:
             value_text = value
         
         # insert into database
-        query = f'INSERT INTO TXAttribute (tid, sourceID, transcript_id, name, value, value_text, key_text) VALUES ({tid},{sid},"{transcript_id}","{std_key}","{ins_value}","{value_text}","{key}")'
+        query = f'INSERT INTO tx_attribute (tid, source_id, transcript_id, name, value, value_text, key_text) VALUES ({tid},{sid},"{transcript_id}","{std_key}","{ins_value}","{value_text}","{key}")'
         return self.dbcon.execute_query(query)
     
     def get_fixed_table(self):
