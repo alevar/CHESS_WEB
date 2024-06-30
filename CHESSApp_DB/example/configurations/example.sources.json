@@ -1,8 +1,8 @@
 {
     "MANE": {
         "name": "MANE",
-        "assemblyName": "GRCh38",
-        "assemblyFasta": "./data/HomoSapiens/GRCh38/grch38.18.fa",
+        "assembly_name": "GRCh38",
+        "assembly_fasta": "./data/HomoSapiens/GRCh38/grch38.18.fa",
         "file": "./example/data/HomoSapiens/GRCh38/MANE.v10.18.gtf",
         "information": "The MANE project - The Matched Annotation from the NCBI and EMBL-EBI (MANE) is a collaborative project that aims to converge on human gene and transcript annotation and to define a genome wide set of representative transcripts and corresponding proteins for human protein-coding genes. Each MANE transcript represents an exact match in exonic regions between a Refseq transcript and its counterpart in the Ensembl/GENCODE annotation such that the two identifiers can be used synonymously. Further, a MANE transcript matches GRCh38 reference genome assembly perfectly, and is chosen based on biologically relevant criteria such as transcript expression levels and conservation of coding regions. Currently, the deliverables of the project include:\nMANE Select: The MANE Select set consists of one transcript at each protein-coding locus across the genome that is representative of biology at that locus. This set is useful as a universal standard for clinical reporting, as a default for display on browsers and key genomic resources, and as a starting point for comparative or evolutionary genomics. MANE Select transcripts are identified using computational methods complemented by manual review and discussion.\nMANE Plus Clinical: The MANE Plus Clinical set includes additional transcripts for genes where MANE Select alone is not sufficient to report all \"Pathogenic (P)\" or \"Likely Pathogenic (LP)\" clinical variants available in public resources.",
         "transcript_type_key":"transcript_type",
@@ -13,8 +13,8 @@
     },
     "RefSeq": {
         "name": "RefSeq",
-        "assemblyName": "GRCh38",
-        "assemblyFasta": "./data/HomoSapiens/GRCh38/grch38.18.fa",
+        "assembly_name": "GRCh38",
+        "assembly_fasta": "./data/HomoSapiens/GRCh38/grch38.18.fa",
         "file": "./example/data/HomoSapiens/GRCh38/refseq.18.gtf",
         "information": "The Reference Sequence (RefSeq) collection provides a comprehensive, integrated, non-redundant, well-annotated set of sequences, including genomic DNA, transcripts, and proteins. RefSeq sequences form a foundation for medical, functional, and diversity studies. They provide a stable reference for genome annotation, gene identification and characterization, mutation and polymorphism analysis (especially RefSeqGene records), expression studies, and comparative analyses. [ more... ]",
         "transcript_type_key":"gbkey",
@@ -25,8 +25,8 @@
     },
     "GENCODE": {
         "name": "GENCODE",
-        "assemblyName": "GRCh38",
-        "assemblyFasta": "./data/HomoSapiens/GRCh38/grch38.18.fa",
+        "assembly_name": "GRCh38",
+        "assembly_fasta": "./data/HomoSapiens/GRCh38/grch38.18.fa",
         "file": "./example/data/HomoSapiens/GRCh38/gencode.v41.18.gtf",
         "information": "The goal of the GENCODE project is to identify and classify all gene features in the human and mouse genomes with high accuracy based on biological evidence, and to release these annotations for the benefit of biomedical research and genome interpretation. ",
         "transcript_type_key":"transcript_type",
@@ -37,8 +37,8 @@
     },
     "CHESS.3.0": {
         "name": "CHESS.3.0",
-        "assemblyName": "GRCh38",
-        "assemblyFasta": "./data/HomoSapiens/GRCh38/grch38.18.fa",
+        "assembly_name": "GRCh38",
+        "assembly_fasta": "./data/HomoSapiens/GRCh38/grch38.18.fa",
         "file": "./example/data/HomoSapiens/GRCh38/chess3.0.grch38.18.gtf",
         "information": "CHESS is a comprehensive set of human genes based on nearly 10,000 RNA sequencing experiments produced by the GTEx project. ",
         "transcript_type_key":"gene_type",
@@ -49,8 +49,8 @@
     },
     "CHESS.3.0.1": {
         "name": "CHESS.3.0.1",
-        "assemblyName": "CHM13",
-        "assemblyFasta": "./data/HomoSapiens/CHM13/chm13.18.fa",
+        "assembly_name": "CHM13",
+        "assembly_fasta": "./data/HomoSapiens/CHM13/chm13.18.fa",
         "file": "./example/data/HomoSapiens/CHM13/chess3.0.1.CHM13.18.gtf",
         "information": "The re-release of the chess annotation based on updated protocol",
         "transcript_type_key":"gene_type",
@@ -61,8 +61,8 @@
     },
     "CSESS": {
         "name": "CSESS",
-        "assemblyName": "SIV239",
-        "assemblyFasta": "./data/SIV/M33262.1.fasta",
+        "assembly_name": "SIV239",
+        "assembly_fasta": "./data/SIV/M33262.1.fasta",
         "file": "./example/data/SIV/csess.1.0.0.gtf",
         "information": "Evidence-based annotation of the transcriptome and proteome of SIV-infected cells",
         "transcript_type_key":"",

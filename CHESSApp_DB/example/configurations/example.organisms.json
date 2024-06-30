@@ -1,12 +1,12 @@
 {
     "HomoSapiens": {
-        "scienceName":"HomoSapiens",
-        "commonName": "Human",
+        "science_name":"HomoSapiens",
+        "common_name": "Human",
         "information": "We are all humans.\nTime is short."
     },
     "SIV": {
-        "scienceName":"SIV",
-        "commonName": "Simian Immunodeficency Virus",
+        "science_name":"SIV",
+        "common_name": "Simian Immunodeficency Virus",
         "information": "Monkeys can also get AIDS."
     }
 }

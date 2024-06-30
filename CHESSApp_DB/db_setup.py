@@ -69,10 +69,10 @@ def addAssemblies(api_connection,config,args):
         row = api_connection.insert_assembly(data)
 
         # get assembly ID for the assembly name
-        aid = api_connection.get_assemblyID(data["name"])
+        aid = api_connection.get_assembly_id(data["name"])
 
         # now also write contig information from the index file into SequenceIDs table
-        for contig,length in parse_fai(data["fastaIndex"]).items():
+        for contig,length in parse_fai(data["fasta_index"]).items():
             api_connection.insert_contig(aid,contig,data["nomenclature"],length)
 
     api_connection.commit(True)
@@ -357,19 +357,19 @@ def addSources(api_connection,config,args):
         filename = data["norm_file"]
 
         # get mapping information from the database for the inputs
-        assembly_id = api_connection.get_assemblyID(assembly_name)
+        assembly_id = api_connection.get_assembly_id(assembly_name)
         # load sequence identifiers from the current file first (just a set of all values in column 1)
         input_seqid_set = set()
         with open(filename,"r") as inFP:
             for line in inFP:
                 if line[0]!="#" and len(line.split("\t"))==9:
                     input_seqid_set.add(line.split("\t")[0])
-        sequenceIDMap = api_connection.get_seqidMap(assembly_id,input_seqid_set)
+        sequence_id_map = api_connection.get_seqid_map(assembly_id,input_seqid_set)
 
         # extract current GTF for the database
         db_gtf_fname = os.path.abspath(args.temp)+"/db.before_"+source_name+".gtf"
         print("Extracting gtf from the current database before adding "+source_name)
-        api_connection.to_gtf(assembly_id,sequenceIDMap,db_gtf_fname)
+        api_connection.to_gtf(assembly_id,sequence_id_map,db_gtf_fname)
 
         # gffread/gffcompare/etc
         source_format = data["source_format"]
@@ -379,7 +379,7 @@ def addSources(api_connection,config,args):
         run_gffcompare(filename,db_gtf_fname,gffcmp_gtf_fname,args.gffcompare,args.log)
 
         # insert source data into Sources table
-        working_sourceID = api_connection.insert_source(data,source_format)
+        working_source_id = api_connection.insert_source(data,source_format)
 
         tracking = load_tracking(gffcmp_gtf_fname+".tracking")
 
@@ -387,10 +387,10 @@ def addSources(api_connection,config,args):
         # construct gene_id to Gene.gid map, add every new gene as an entry into Gene Table
         gene_map = dict()
         for transcript_lines in read_gffread_gtf(filename):
-            transcript = TX(transcript_lines,sequenceIDMap)
+            transcript = TX(transcript_lines,sequence_id_map)
             working_gid = gene_map.get(transcript.gene_id,None)
             if working_gid is None:
-                working_gid = api_connection.insert_gene(transcript,working_sourceID)
+                working_gid = api_connection.insert_gene(transcript,working_source_id)
                 gene_map[transcript.gene_id] = working_gid
             
             working_tid = tracking.get(transcript.tid,None) # tid PK of the transcript being worked on as it appears in the Transcripts table
@@ -399,7 +399,7 @@ def addSources(api_connection,config,args):
                 working_tid = api_connection.insert_transcript(transcript,assembly_id)
 
             # add transcript source pairing to the TxDBXREF table
-            api_connection.insert_dbxref(transcript,working_tid,working_gid,working_sourceID)
+            api_connection.insert_dbxref(transcript,working_tid,working_gid,working_source_id)
 
             # deal with the attributes
             for attribute_key,attribute_value in transcript.attributes.items():
@@ -413,7 +413,7 @@ def addSources(api_connection,config,args):
                               enabled forcing the software to skip any unknown entries.")
                         exit(1)
 
-                ams.insert_txattribute(working_tid,working_sourceID,transcript.tid,attribute_key,attribute_value)
+                ams.insert_txattribute(working_tid,working_source_id,transcript.tid,attribute_key,attribute_value)
 
     api_connection.commit(True)
     logFP.close()
@@ -468,9 +468,9 @@ def establish_connection(args,main_fn):
 def addNomeclatures(api_connection,config, args):
     for nomecnclature,data in config.items():
         # get assembly ID for the assembly name
-        aid = api_connection.get_assemblyID(data["assembly_name"])
+        aid = api_connection.get_assembly_id(data["assembly_name"])
 
-        # check if data["to"] already exists in the sequenceIDMap
+        # check if data["to"] already exists in the sequence_id_map
         # if it does - then we can skip it
         query = "SELECT count(*) FROM sequence_id_map WHERE assembly_id = %s AND nomenclature = %s"
         res = api_connection.execute_query(query,(aid,data["to"]))
@@ -479,7 +479,7 @@ def addNomeclatures(api_connection,config, args):
             continue
 
         # assert that all sequence_ids for the assembly exist in the provided map
-        sids = api_connection.get_seqidMap(aid,None,data["from"])
+        sids = api_connection.get_seqid_map(aid,None,data["from"])
         assert len(sids)>0,"No sequence_id found for assembly: "+data["assembly_name"]
 
         # load the map
@@ -612,21 +612,21 @@ def compile(api_connection,args):
 
     # deal with loci
     # api_connection.build_locusTable()
-    api_connection.build_locusSummaryTable()
+    api_connection.build_locus_summary_table()
     
     # build summary table
-    api_connection.build_dbTxSummaryTable()
+    api_connection.build_db_tx_summary_table()
 
     # build gene summary table
-    api_connection.build_dbGeneSummaryTable()
+    api_connection.build_db_gene_summary_table()
 
     # extract transcript counts across sources and assemblies into a separate table
-    api_connection.build_AllCountSummaryTable()
-    summary = api_connection.get_AllCountSummaryTable()
+    api_connection.build_all_count_summary_table()
+    summary = api_connection.get_all_count_summary_table()
 
-    attribute_summary = api_connection.build_attributeSummaryTable()
-    transcript_type_summary = api_connection.build_TranscriptTypeSummaryTable()
-    gene_type_summary = api_connection.build_GeneTypeSummaryTable()
+    attribute_summary = api_connection.build_attribute_summary_table()
+    transcript_type_summary = api_connection.build_transcript_type_summary_table()
+    gene_type_summary = api_connection.build_gene_type_summary_table()
 
     # get sources table (map of sourceID to source_name)
     all_sources = api_connection.get_sources()
@@ -648,7 +648,7 @@ def compile(api_connection,args):
                 source_combo_counts = api_connection.get_source_combination_count(combo)
                 upset_data.append([organism,assembly,",".join(assembly_sources),",".join(list(combo)),source_combo_counts[0][0]])
 
-    api_connection.build_upsetDataTable(upset_data)
+    api_connection.build_upset_data_table(upset_data)
 
     api_connection.commit(True)
     return
