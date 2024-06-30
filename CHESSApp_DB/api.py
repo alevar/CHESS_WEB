@@ -102,7 +102,7 @@ class CHESS_DB_API:
     def insert_assembly(self, data:dict):
         assembly_name = data["name"].replace("'","\\'")
         science_name = data["organism_science_name"]
-        organism_id = self.get_organismID(science_name)
+        organism_id = self.get_organism_id(science_name)
         link = data["link"]
         information = data["information"].replace("'","\\'")
 
@@ -126,7 +126,7 @@ class CHESS_DB_API:
     ##########  SOURCE  ##########
     ##############################
     def insert_source(self, data:dict, source_format:str):
-        sources_name = data["name"].replace("'","\\'")
+        source_name = data["name"].replace("'","\\'")
         assembly_name = data["assembly_name"].replace("'","\\'")
         link = data["link"]
         information = data["information"].replace("'","\\'")
@@ -137,7 +137,7 @@ class CHESS_DB_API:
                     FROM assembly a
                     WHERE a.assembly_name = %s
                 """
-        return self.execute_query(query,(sources_name, link, information, source_format, citation, assembly_name))
+        return self.execute_query(query,(source_name, link, information, source_format, citation, assembly_name))
     
     def insert_intron(self, assembly_id:int,sequence_id:int,strand:str,start:int,end:int):
         query = f"INSERT IGNORE INTO intron (assembly_id, sequence_id, strand, start, end) VALUES ({assembly_id},{sequence_id},'{strand}','{start}','{end}')"
@@ -162,15 +162,15 @@ class CHESS_DB_API:
         
         return tx_res
     
-    def insert_gene(self, transcript:TX, sequence_id:int):
-        query = f"INSERT INTO gene (gene_id, sequence_id, name, type_key, type_value) VALUES (%s, %s, %s, %s, %s)"
-        values = (transcript.gene_id, sequence_id, transcript.gene_name_value, transcript.gene_type_key, transcript.gene_type_value)
+    def insert_gene(self, transcript:TX, source_id:int):
+        query = f"INSERT INTO gene (gene_id, source_id, name, type_key, type_value) VALUES (%s, %s, %s, %s, %s)"
+        values = (transcript.gene_id, source_id, transcript.gene_name_value, transcript.gene_type_key, transcript.gene_type_value)
 
         return self.execute_query(query, values)
     
-    def insert_dbxref(self, transcript:TX, tid:int, gid:int, sequence_id:int):
-        query = f"INSERT INTO tx_dbxref (tid, sequence_id, transcript_id, start, end, type_key, type_value, gid"
-        values = (tid, sequence_id, transcript.tid, transcript.start, transcript.end, transcript.transcript_type_key, transcript.transcript_type_value, gid)
+    def insert_dbxref(self, transcript:TX, tid:int, gid:int, source_id:int):
+        query = f"INSERT INTO tx_dbxref (tid, source_id, transcript_id, start, end, type_key, type_value, gid"
+        values = (tid, source_id, transcript.tid, transcript.start, transcript.end, transcript.transcript_type_key, transcript.transcript_type_value, gid)
         if transcript.cds_start is not None and transcript.cds_end is not None:
             query += ", cds_start"
             values += (transcript.cds_start,)
@@ -202,14 +202,14 @@ class CHESS_DB_API:
     #########   DATASET   ########
     ##############################
     def insert_dataset(self, data:dict):
-        datasetName = data["name"].replace("'","\\'")
+        dataset_name = data["name"].replace("'","\\'")
         sample_count = int(data["sample_count"])
         information = data["information"].replace("'","\\'")
 
-        query = f"INSERT INTO dataset (name,sample_count,information) VALUES ('{datasetName}','{sample_count}','{information}')"
+        query = f"INSERT INTO dataset (name,sample_count,information) VALUES ('{dataset_name}','{sample_count}','{information}')"
         return self.execute_query(query)
     
-    def insert_transcriptEvidence(self, tid:int, dataset_id:int, evidence:dict):
+    def insert_transcript_evidence(self, tid:int, dataset_id:int, evidence:dict):
         query = f"INSERT INTO transcript_dataset (tid, dataset_id, sample_count, expression_mean, expression_std) VALUES (%s, %s, %s, %s, %s)"
 
         values = (tid, dataset_id, evidence["sample_count"], evidence["expression_mean"], evidence["expression_std"])
@@ -247,7 +247,7 @@ class CHESS_DB_API:
             tx.introns.append((int(row[13]),int(row[14])))
 
     def tid2lid_map(self,assembly_id:int):
-        # // retrieve a map of tids from transcript table to lid from Locus table
+        # // retrieve a map of tids from transcript table to lid from locus table
         query = f"SELECT t.tid, l.lid FROM tx_dbxref t JOIN gene g on t.gid = g.gid JOIN locus l on g.lid = l.lid WHERE \
                                                                                             l.assembly_id = {assembly_id}"
         
@@ -387,7 +387,7 @@ class CHESS_DB_API:
         query = "SELECT DISTINCT assembly_id, sequence_id, strand FROM transcript"
         return self.execute_query(query)
     
-    def build_locusTable(self):
+    def build_locus_table(self):
         # do for each assembly, sequence and strand:
         genome_sequences = self.get_genome_sequences()
         for assembly_id,sequence_id,strand in genome_sequences:
@@ -414,14 +414,14 @@ class CHESS_DB_API:
                 # get coordinates for the locus: minimum start and maximum end and sequence ID and strand
                 locus_coords = self.genes2locus(gene_set)
 
-                # add locus to the Locus table
+                # add locus to the locus table
                 lid = self.insert_locus(locus_coords[2],locus_coords[3],locus_coords[4],locus_coords[0],locus_coords[1])
         
                 # update genes with the lid
                 for gid in gene_set:
                     self.set_gene_lid(gid,lid)
 
-    def build_locus_summaryTable(self):
+    def build_locus_summary_table(self):
         # generate summary tables
         # for each locus
         #    for each source report lists of
@@ -438,7 +438,7 @@ class CHESS_DB_API:
             self.drop_table(table_name)
 
             # get source IDs
-            query = "SELECT sequence_id FROM sources where assembly_id = "+str(assembly_id)
+            query = "SELECT source_id FROM sources where assembly_id = "+str(assembly_id)
             source_ids = [x[0] for x in self.execute_query(query)]
 
             # create indices
@@ -466,11 +466,11 @@ class CHESS_DB_API:
             
             # populate table
             # Generate and execute the INSERT INTO query
-            gene_id_inserts = "\n".join([f"GROUP_CONCAT(DISTINCT CASE WHEN gene.sequence_id = {source_id} THEN gene.gene_id ELSE NULL END) AS `{source_id}.gene_id`," for source_id in source_ids])
+            gene_id_inserts = "\n".join([f"GROUP_CONCAT(DISTINCT CASE WHEN gene.source_id = {source_id} THEN gene.gene_id ELSE NULL END) AS `{source_id}.gene_id`," for source_id in source_ids])
             if len(gene_id_inserts) > 0:
                 gene_id_inserts = gene_id_inserts[:-1] # remove the last comma
             
-            gene_name_inserts = "\n".join([f"GROUP_CONCAT(DISTINCT CASE WHEN gene.sequence_id = {source_id} THEN gene.name ELSE NULL END) AS `{source_id}.gene_name`," for source_id in source_ids])
+            gene_name_inserts = "\n".join([f"GROUP_CONCAT(DISTINCT CASE WHEN gene.source_id = {source_id} THEN gene.name ELSE NULL END) AS `{source_id}.gene_name`," for source_id in source_ids])
             if len(gene_name_inserts) > 0:
                 gene_name_inserts = gene_name_inserts[:-1] # remove the last comma
             
@@ -503,7 +503,7 @@ class CHESS_DB_API:
             # Execute the INSERT INTO query
             res = self.execute_query(insert_into_query)
             
-    def build_dbTxSummaryTable(self):
+    def build_db_tx_summary_table(self):
         # a single table of all transcripts in the database with all relevant information included. No need too store any positions, etc
         # this table is a lot faster to query since no joins are necessary and all information is as condensed as possible
         # 1. tid (pk) - no need to store any additional transcript identifiers - those are only needed for extracting gtf, etc
@@ -518,12 +518,12 @@ class CHESS_DB_API:
         assemblies = [x[0] for x in self.execute_query(query)]
 
         for assembly_id in assemblies:
-            table_name = f"dbtxsummary_{assembly_id}"
+            table_name = f"db_tx_summary_{assembly_id}"
             # drop existing table
             self.drop_table(table_name)
 
             # get source IDs
-            query = "SELECT sequence_id FROM sources where assembly_id = "+str(assembly_id)
+            query = "SELECT source_id FROM sources where assembly_id = "+str(assembly_id)
             source_ids = [x[0] for x in self.execute_query(query)]
             
             # This is list of attribute names used in this summary table. Actual definition of how they are fetched are below
@@ -552,26 +552,26 @@ class CHESS_DB_API:
             res = self.execute_query(query)
 
             # populate table
-            source_cases = "\n".join([f"MAX(CASE WHEN s.sequence_id = {source_id} THEN 1 ELSE 0 END) AS \"{source_id}\"," for source_id in source_ids])
+            source_cases = "\n".join([f"MAX(CASE WHEN s.source_id = {source_id} THEN 1 ELSE 0 END) AS \"{source_id}\"," for source_id in source_ids])
             if len(source_cases) > 0:
                 source_cases = source_cases[:-1] # remove the last comma
 
             # gene_type cases
-            geneType_cases = "\n".join([f"MAX(CASE WHEN akv.key_name = 'gene_type' and s.sequence_id = {source_id} THEN akv.kvid ELSE NULL END) AS \"{source_id}.gene_type\"," for source_id in source_ids])
+            geneType_cases = "\n".join([f"MAX(CASE WHEN akv.key_name = 'gene_type' and s.source_id = {source_id} THEN akv.kvid ELSE NULL END) AS \"{source_id}.gene_type\"," for source_id in source_ids])
             if len(geneType_cases) > 0:
                 geneType_cases = geneType_cases[:-1] # remove the last comma
             # transcript_type cases
-            transcriptType_cases = "\n".join([f"MAX(CASE WHEN akv.key_name = dbx.type_key and s.sequence_id = {source_id} THEN akv.kvid ELSE NULL END) AS \"{source_id}.transcript_type\"," for source_id in source_ids])
+            transcriptType_cases = "\n".join([f"MAX(CASE WHEN akv.key_name = dbx.type_key and s.source_id = {source_id} THEN akv.kvid ELSE NULL END) AS \"{source_id}.transcript_type\"," for source_id in source_ids])
             if len(transcriptType_cases) > 0:
                 transcriptType_cases = transcriptType_cases[:-1] # remove the last comma
 
             # attach source-specific transcript ID  to the table
-            transcriptID_cases = "\n".join([f"MAX(CASE WHEN s.sequence_id = {source_id} THEN dbx.transcript_id ELSE NULL END) AS \"{source_id}.transcript_id\"," for source_id in source_ids])
+            transcriptID_cases = "\n".join([f"MAX(CASE WHEN s.source_id = {source_id} THEN dbx.transcript_id ELSE NULL END) AS \"{source_id}.transcript_id\"," for source_id in source_ids])
             if len(transcriptID_cases) > 0:
                 transcriptID_cases = transcriptID_cases[:-1] # remove the last comma
 
             # has_cds cases
-            has_cds_cases = "\n".join([f"MAX(CASE WHEN dbx.cds_start IS NOT NULL and s.sequence_id = {source_id} THEN 1 ELSE 0 END) AS \"{source_id}.has_cds\"," for source_id in source_ids])
+            has_cds_cases = "\n".join([f"MAX(CASE WHEN dbx.cds_start IS NOT NULL and s.source_id = {source_id} THEN 1 ELSE 0 END) AS \"{source_id}.has_cds\"," for source_id in source_ids])
             if len(has_cds_cases) > 0:
                 has_cds_cases = has_cds_cases[:-1] # remove the last comma
 
@@ -586,8 +586,8 @@ class CHESS_DB_API:
                             {has_cds_cases}
                         FROM
                             tx_dbxref dbx
-                        JOIN sources s USING (sequence_id)
-                        JOIN tx_attribute txa USING (tid, sequence_id, transcript_id)
+                        JOIN sources s USING (source_id)
+                        JOIN tx_attribute txa USING (tid, source_id, transcript_id)
                         JOIN attribute_value_map avm ON txa.name = avm.key_name AND txa.value = avm.og_value
                         JOIN attribute_key ak USING (key_name)
                         JOIN attribute_key_value akv ON txa.name = akv.key_name AND avm.std_value = akv.value
@@ -600,7 +600,7 @@ class CHESS_DB_API:
         
         return True
     
-    def build_dbGeneSummaryTable(self):
+    def build_db_gene_summary_table(self):
         # build a table summarizing gene information for quick lookup
         # geneID
         # location
@@ -619,7 +619,7 @@ class CHESS_DB_API:
             self.drop_table(table_name)
 
             # get source IDs
-            query = "SELECT sequence_id FROM sources where assembly_id = "+str(assembly_id)
+            query = "SELECT source_id FROM sources where assembly_id = "+str(assembly_id)
             source_ids = [x[0] for x in self.execute_query(query)]
 
             index_strings = f"""INDEX ({", ".join([f"`{source_id}` ASC" for source_id in source_ids])})"""
@@ -644,7 +644,7 @@ class CHESS_DB_API:
             res = self.execute_query(query)
         return
     
-    def build_AllCountSummaryTable(self):
+    def build_all_count_summary_table(self):
         self.drop_table("all_count_summary")
         query = """CREATE TABLE all_count_summary 
                         SELECT
@@ -677,9 +677,9 @@ class CHESS_DB_API:
         return self.execute_query(query)
 
     def get_source_combination_count(self,sources:list):
-        query = """SELECT COUNT(tid_count) 
+        query = """SELECT COUNT(tidCount) 
                     FROM (
-                        SELECT COUNT(DISTINCT tid) AS tid_count
+                        SELECT COUNT(DISTINCT tid) AS tidCount
                         FROM tx_dbxref AS t1
                         LEFT JOIN sources s1 on t1.source_id = s1.source_id
                         WHERE s1.name IN (%s)
@@ -699,7 +699,7 @@ class CHESS_DB_API:
         query = query % values
         return self.execute_query(query)
     
-    def build_upsetDataTable(self,upset_data):
+    def build_upset_data_table(self,upset_data):
         self.drop_table("upset_data")
 
         query = """CREATE TABLE upset_data (organism TEXT, assembly TEXT, sources_all TEXT, sources_sub TEXT, transcript_count INT)"""
@@ -709,7 +709,7 @@ class CHESS_DB_API:
             query = "INSERT INTO upset_data (organism, assembly, sources_all, sources_sub, transcript_count) VALUES (%s,%s,%s,%s,%s)"
             self.execute_query(query,row)
 
-    def build_attributeSummaryTable(self):
+    def build_attribute_summary_table(self):
         self.drop_table("attribute_summary")
         query = """CREATE TABLE attribute_summary AS
                     SELECT 
@@ -728,7 +728,7 @@ class CHESS_DB_API:
                     GROUP BY s.source_id, kv.key_name, kv.value, k.description;"""
         self.execute_query(query)
 
-    def build_TranscriptTypeSummaryTable(self):
+    def build_transcript_type_summary_table(self):
         # links transcript_type from the tx_dbxref table to the sources and attributes and
         # aggregates information about the number of genes with each type
         # tx_dbxref table stores std_key and og_value. The summary also links it to the kvid entries for quick lookup
@@ -749,8 +749,8 @@ class CHESS_DB_API:
                     GROUP BY s.source_id, kv.key_name, kv.value, k.description;"""
         self.execute_query(query)
 
-    def build_gene_type_summaryTable(self):
-        # TODO: redo using Gene table
+    def build_gene_type_summary_table(self):
+        # TODO: redo using gene table
 
         # links standardized gene_type key from the attributes table to the sources and 
         # aggregates information about the number of genes with each type
@@ -767,7 +767,7 @@ class CHESS_DB_API:
                     FROM attribute_key_value kv 
                     JOIN attribute_key k ON kv.key_name = k.key_name 
                     JOIN attribute_value_map avm ON kv.key_name = avm.key_name AND kv.value = avm.std_value
-                    JOIN TXAttribute ta ON avm.key_name = ta.name AND avm.og_value = ta.value
+                    JOIN tx_attribute ta ON avm.key_name = ta.name AND avm.og_value = ta.value
                     JOIN sources s ON ta.source_id = s.source_id
                     WHERE k.key_name = 'gene_type'
                     GROUP BY s.source_id, kv.key_name, kv.value, k.description;"""
@@ -785,13 +785,13 @@ class CHESS_DB_API:
     # get assembly_id from name
     def get_assembly_id(self,name:str) -> int:
         assembly_name = name.replace("'","\\'")
-        query = "SELECT assembly_id FROM Assembly WHERE assembly_name = '"+assembly_name+"'"
+        query = "SELECT assembly_id FROM assembly WHERE assembly_name = '"+assembly_name+"'"
         res = self.execute_query(query)
         assert len(res) == 1,"Invalid assembly name: "+name
         return res[0][0]
 
     # get summary table
-    def get_AllCountSummaryTable(self) -> dict:
+    def get_all_count_summary_table(self) -> dict:
         query = "SELECT * FROM all_count_summary"
         res = self.execute_query(query)
 
@@ -799,9 +799,9 @@ class CHESS_DB_API:
         summary = {"species_name":dict()}
         for row in res:
             summary["species_name"].setdefault(row[0],{"assembly_name":dict()})
-            summary["species_name"][row[0]]["assembly_name"].setdefault(row[1],{"sources_name":dict()})
-            assert row[2] not in summary["species_name"][row[0]]["assembly_name"][row[1]]["sources_name"],"Duplicate source name found in all_count_summary table: "+row[2]
-            summary["species_name"][row[0]]["assembly_name"][row[1]]["sources_name"][row[2]] = {
+            summary["species_name"][row[0]]["assembly_name"].setdefault(row[1],{"source_name":dict()})
+            assert row[2] not in summary["species_name"][row[0]]["assembly_name"][row[1]]["source_name"],"Duplicate source name found in all_count_summary table: "+row[2]
+            summary["species_name"][row[0]]["assembly_name"][row[1]]["source_name"][row[2]] = {
                 "last_updated":row[3],
                 "total_transcripts":row[4],
                 "total_genes":row[5]
@@ -826,7 +826,7 @@ class CHESS_DB_API:
             }
         return sources
     
-    def get_upsetData(self):
+    def get_upset_data(self):
         query = "SELECT * FROM upset_data"
         res = self.execute_query(query)
 
@@ -841,23 +841,23 @@ class CHESS_DB_API:
         
         return upsetData
 
-    def get_Datasets(self):
+    def get_datasets(self):
         query = "SELECT * FROM dataset"
         res = self.execute_query(query)
 
         res = [x[1:] for x in res] # this is simple data - just output the list instead of the dict
         return res
     
-    def get_sequeceData(self):
+    def get_sequece_data(self):
         return
     
-    def get_organismID(self,name:str) -> int:
+    def get_organism_id(self,name:str) -> int:
         query = "SELECT organism_id FROM organism WHERE scientific_name = '"+name+"'"
         res = self.execute_query(query)
         assert len(res) == 1,"Invalid organism name: "+name
         return res[0][0]
     
-    def get_seqidMap(self,assembly_id:int,seqid_set:set=None,nomenclature:str=None) -> dict:
+    def get_seqid_map(self,assembly_id:int,seqid_set:set=None,nomenclature:str=None) -> dict:
         # return map across all nomenclatures if both are None
         map = dict()
         if nomenclature is None and seqid_set is None:
