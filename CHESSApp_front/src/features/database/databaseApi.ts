@@ -2,11 +2,11 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 // Define interfaces for response data
 interface Assembly {
-  organismID: number;
+  organism_id: number;
 }
 
 interface Source {
-  assemblyID: number;
+  assembly_id: number;
 }
 
 interface Attribute {
@@ -31,70 +31,70 @@ interface GlobalDataResponse {
 }
 
 const createAssemblyMap = (assemblies: Record<string, Assembly>) => {
-  let assemblyMap: { [key: number]: number[] } = {};
+  let assembly_map: { [key: number]: number[] } = {};
   for (let [key, value] of Object.entries(assemblies)) {
-    const organismID = Number(value.organismID);
-    if (!assemblyMap.hasOwnProperty(organismID)) {
-      assemblyMap[organismID] = [];
+    const organism_id = Number(value.organism_id);
+    if (!assembly_map.hasOwnProperty(organism_id)) {
+      assembly_map[organism_id] = [];
     }
-    assemblyMap[organismID].push(Number(key));
+    assembly_map[organism_id].push(Number(key));
   }
-  return assemblyMap;
+  return assembly_map;
 };
 
 const createSourceMap = (sources: Record<string, Source>) => {
-  let sourceMap: { [key: number]: number[] } = {};
+  let source_map: { [key: number]: number[] } = {};
   for (let [key, value] of Object.entries(sources)) {
-    const sourceID = Number(key);
-    const assemblyID = Number(value.assemblyID);
-    if (!sourceMap.hasOwnProperty(assemblyID)) {
-      sourceMap[assemblyID] = [];
+    const source_id = Number(key);
+    const assembly_id = Number(value.assembly_id);
+    if (!source_map.hasOwnProperty(assembly_id)) {
+      source_map[assembly_id] = [];
     }
-    sourceMap[assemblyID].push(sourceID);
+    source_map[assembly_id].push(source_id);
   }
-  return sourceMap;
+  return source_map;
 };
 
 const createAttrMap = (attributes: Record<string, Attribute>) => {
   let src2attr: { [key: number]: { [key: string]: number[] } } = {};
   for (let [key, value] of Object.entries(attributes)) {
     const kvid = Number(key);
-    for (let sourceID of value.sources.map(Number)) {
-      if (!src2attr.hasOwnProperty(sourceID)) {
-        src2attr[sourceID] = {};
+    for (let source_id of value.sources.map(Number)) {
+      if (!src2attr.hasOwnProperty(source_id)) {
+        src2attr[source_id] = {};
       }
-      if (!src2attr[sourceID].hasOwnProperty(value.key)) {
-        src2attr[sourceID][value.key] = [];
+      if (!src2attr[source_id].hasOwnProperty(value.key)) {
+        src2attr[source_id][value.key] = [];
       }
-      src2attr[sourceID][value.key].push(kvid);
+      src2attr[source_id][value.key].push(kvid);
     }
   }
   return src2attr;
 };
 
-const createGeneTypeMap = (geneTypes: Record<string, GeneType>) => {
+const createGeneTypeMap = (gene_types: Record<string, GeneType>) => {
   let src2gt: { [key: number]: number[] } = {};
-  for (let [key, value] of Object.entries(geneTypes)) {
+  for (let [key, value] of Object.entries(gene_types)) {
     const kvid = Number(key);
-    for (let sourceID of value.sources.map(Number)) {
-      if (!src2gt.hasOwnProperty(sourceID)) {
-        src2gt[sourceID] = [];
+    for (let source_id of value.sources.map(Number)) {
+      if (!src2gt.hasOwnProperty(source_id)) {
+        src2gt[source_id] = [];
       }
-      src2gt[sourceID].push(kvid);
+      src2gt[source_id].push(kvid);
     }
   }
   return src2gt;
 };
 
-const createTranscriptTypeMap = (transcriptTypes: Record<string, TranscriptType>) => {
+const createTranscriptTypeMap = (transcript_types: Record<string, TranscriptType>) => {
   let src2tt: { [key: number]: number[] } = {};
-  for (let [key, value] of Object.entries(transcriptTypes)) {
+  for (let [key, value] of Object.entries(transcript_types)) {
     const kvid = Number(key);
-    for (let sourceID of value.sources.map(Number)) {
-      if (!src2tt.hasOwnProperty(sourceID)) {
-        src2tt[sourceID] = [];
+    for (let source_id of value.sources.map(Number)) {
+      if (!src2tt.hasOwnProperty(source_id)) {
+        src2tt[source_id] = [];
       }
-      src2tt[sourceID].push(kvid);
+      src2tt[source_id].push(kvid);
     }
   }
   return src2tt;

@@ -66,25 +66,25 @@ const settingsSlice = createSlice({
       state.value.attributes = action.payload;
     },
     addAttribute: (state, action: PayloadAction<[string, number, number]>) => {
-      const [key, sourceID, value] = action.payload;
-      if (!state.value.attributes[sourceID]) {
-        state.value.attributes[sourceID] = {};
+      const [key, source_id, value] = action.payload;
+      if (!state.value.attributes[source_id]) {
+        state.value.attributes[source_id] = {};
       }
-      if (!state.value.attributes[sourceID][key]) {
-        state.value.attributes[sourceID][key] = [];
+      if (!state.value.attributes[source_id][key]) {
+        state.value.attributes[source_id][key] = [];
       }
-      state.value.attributes[sourceID][key].push(value);
+      state.value.attributes[source_id][key].push(value);
     },
     removeAttribute: (state, action: PayloadAction<[string, number, number]>) => {
-      const [key, sourceID, value] = action.payload;
-      if (state.value.attributes[sourceID]) {
-        if (state.value.attributes[sourceID][key]) {
-          state.value.attributes[sourceID][key] = state.value.attributes[sourceID][key].filter((v) => v !== value);
-          if (state.value.attributes[sourceID][key].length === 0) {
-            delete state.value.attributes[sourceID][key];
+      const [key, source_id, value] = action.payload;
+      if (state.value.attributes[source_id]) {
+        if (state.value.attributes[source_id][key]) {
+          state.value.attributes[source_id][key] = state.value.attributes[source_id][key].filter((v) => v !== value);
+          if (state.value.attributes[source_id][key].length === 0) {
+            delete state.value.attributes[source_id][key];
           }
-          if (Object.keys(state.value.attributes[sourceID]).length === 0) {
-            delete state.value.attributes[sourceID];
+          if (Object.keys(state.value.attributes[source_id]).length === 0) {
+            delete state.value.attributes[source_id];
           }
         }
       }

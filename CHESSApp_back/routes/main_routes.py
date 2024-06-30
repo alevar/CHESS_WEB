@@ -53,12 +53,12 @@ def send_email():
 # Returns a JSON object with all sources in the database
 @main_blueprint.route('/getSources')
 def get_sources():
-    query = text("SELECT name, information, link, lastUpdated FROM Sources")
+    query = text("SELECT name, information, link, last_updated FROM sources")
     results = db.session.execute(query)
     json_res = [{"name":x.name,
                      "description":x.information,
                      "link":x.link,
-                     "lastUpdated":x.lastUpdated} for x in results]
+                     "last_updated":x.last_updated} for x in results]
     return jsonify(json_res)
 
 # Route: /seqids
@@ -66,9 +66,9 @@ def get_sources():
 # Returns: JSON object with all seqids in the database
 @main_blueprint.route('/assemblies')
 def get_seqids():
-    query = text("SELECT DISTINCT assemblyName FROM Assembly")
+    query = text("SELECT DISTINCT assembly_name FROM assembly")
     results = db.session.execute(query)
-    return jsonify([x.assemblyName for x in results])
+    return jsonify([x.assembly_name for x in results])
 
 # Route: /globalData
 # Fetches data about the database required for building the user interface and all interactions
@@ -92,7 +92,7 @@ def globalData():
     gene_types = db_methods.get_geneTypeSummary()
     transcript_types = db_methods.get_transcriptTypeSummary()
     nomenclatures = db_methods.get_assembly2nomenclature()
-    sequenceIDMap = db_methods.get_seqidMap()
+    sequence_id_map = db_methods.get_seqidMap()
 
     data = {
         "organisms":organisms,
@@ -102,7 +102,7 @@ def globalData():
         "gene_types":gene_types,
         "transcript_types":transcript_types,
         "nomenclature":nomenclatures,
-        "sequenceIDMap":sequenceIDMap
+        "sequence_id_map":sequence_id_map
     }
 
     return jsonify(data)
@@ -113,10 +113,10 @@ def txSummarySlice():
 
     # cleanup settings to prepare for the DB query
     clean_settings = dict()
-    for sourceID in settings["sources_include"]:
-        for key,values in settings["attributes"][str(sourceID)].items():
-            clean_settings.setdefault(int(sourceID),dict())
-            clean_settings[sourceID][key] = values
+    for source_id in settings["sources_include"]:
+        for key,values in settings["attributes"][str(source_id)].items():
+            clean_settings.setdefault(int(source_id),dict())
+            clean_settings[source_id][key] = values
             
 
     res = {"summary":[]}
@@ -138,7 +138,7 @@ def fetch_data():
 
     data = {}
 
-    query = text("SELECT source,COUNT(id) FROM features WHERE featuretype = 'transcript' AND seqid = :seqid GROUP BY source")
+    query = text("SELECT source,COUNT(id) FROM features WHERE feature_type = 'transcript' AND seqid = :seqid GROUP BY source")
     result = db.session.execute(query,{"seqid":settings['seqid']})
 
     for source,count in result:
@@ -149,8 +149,8 @@ def fetch_data():
 
 # Route: /getAttrCountsBySeqid
 # Route implemeted for testing purposes only
-# Accepts a JSON object with seqid values as keys and featuretype values as values
-# Returns: JSON object with seqid values as keys and a list of featuretype and count as values
+# Accepts a JSON object with seqid values as keys and feature_type values as values
+# Returns: JSON object with seqid values as keys and a list of feature_type and count as values
 # Illustrates how to parse data from the user and query the database
 @main_blueprint.route('/getAttrCountsBySeqid', methods=['POST'])
 def get_attribute_counts():
@@ -158,8 +158,8 @@ def get_attribute_counts():
 
     data = {}
     for key, value in settings.items():
-        query = text("SELECT COUNT(*) FROM features WHERE seqid = :seqid AND featuretype = :featuretype")
-        result = db.session.execute(query, {'seqid': key, 'featuretype': value}).scalar()
+        query = text("SELECT COUNT(*) FROM features WHERE seqid = :seqid AND feature_type = :feature_type")
+        result = db.session.execute(query, {'seqid': key, 'feature_type': value}).scalar()
         data[key] = [value,result]
 
     return jsonify(data)
@@ -173,12 +173,12 @@ def generate_file():
 # Route: /getChartData
 # Route implemented for testing purposes only
 # Fetches some data to be displayed as a chart onthe main interface
-# Returns: JSON object with seqid values as keys and a list of featuretype and count as values
+# Returns: JSON object with seqid values as keys and a list of feature_type and count as values
 @main_blueprint.route('/getChartData')
 def get_chart_data():
-    query = text("SELECT seqid, featuretype, COUNT(*) FROM features GROUP BY seqid, featuretype")
+    query = text("SELECT seqid, feature_type, COUNT(*) FROM features GROUP BY seqid, feature_type")
     results = db.session.execute(query)
-    return jsonify([{'seqid': x.seqid, 'featuretype': x.featuretype, 'count': x.count} for x in results])
+    return jsonify([{'seqid': x.seqid, 'feature_type': x.feature_type, 'count': x.count} for x in results])
 
 
 # Route: /getLociSummary
@@ -190,10 +190,10 @@ def getLociSummary():
 
     # cleanup settings to prepare for the DB query
     clean_settings = dict()
-    for sourceID in settings["sources_include"]:
-        for key,values in settings["attributes"][str(sourceID)].items():
-            clean_settings.setdefault(int(sourceID),dict())
-            clean_settings[sourceID][key] = values
+    for source_id in settings["sources_include"]:
+        for key,values in settings["attributes"][str(source_id)].items():
+            clean_settings.setdefault(int(source_id),dict())
+            clean_settings[source_id][key] = values
             
 
     res = {"summary":[]}
