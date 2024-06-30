@@ -5,27 +5,27 @@ import sys
 
 # GETTER FUNCTIONS
 def get_all_organisms():
-    query = text("SELECT * FROM Organism")
+    query = text("SELECT * FROM organism")
     res = db.session.execute(query)
     json_res = dict()
     for row in res:
-        json_res[row.organismID] = {
-            "id":row.organismID,
-            "scientificName":row.scientificName,
-            "commonName":row.commonName,
+        json_res[row.organism_id] = {
+            "id":row.organism_id,
+            "scientific_name":row.scientific_name,
+            "common_name":row.common_name,
             "information":row.information
         }
     return json_res
 
 def get_all_assemblies():
-    query = text("SELECT * FROM Assembly")
+    query = text("SELECT * FROM assembly")
     res = db.session.execute(query)
     json_res = dict()
     for row in res:
-        json_res[row.assemblyID] = {
-            "id":row.assemblyID,
-            "assembly":row.assemblyName,
-            "organismID":row.organismID,
+        json_res[row.assembly_id] = {
+            "id":row.assembly_id,
+            "assembly":row.assembly_name,
+            "organism_id":row.organism_id,
             "link":row.link,
             "information":row.information
         }
@@ -33,40 +33,40 @@ def get_all_assemblies():
 
 # get full source information
 def get_all_sources(genome=None):
-    query = text("SELECT * FROM Sources")
+    query = text("SELECT * FROM sources")
     if genome:
-        query  = text(f"SELECT * FROM Sources WHERE assemblyID = {genome}")
+        query  = text(f"SELECT * FROM sources WHERE assembly_id = {genome}")
     res = db.session.execute(query)
 
     # parse list into a dictionary
     sources = dict()
     for row in res:
-        sources[row.sourceID] = {
+        sources[row.source_id] = {
             "name":row.name,
-            "id":row.sourceID,
+            "id":row.source_id,
             "link":row.link,
             "information":row.information,
             "citation":row.citation,
-            "originalFormat":row.originalFormat,
-            "lastUpdated":row.lastUpdated,
-            "assemblyID":row.assemblyID
+            "original_format":row.original_format,
+            "last_updated":row.last_updated,
+            "assembly_id":row.assembly_id
         }
     return sources
 
 def get_seqidMap():
-    query = text("SELECT * FROM SequenceIDMap")
+    query = text("SELECT * FROM sequence_id_map")
     res = db.session.execute(query)
 
     # parse list into a dictionary
     seqids = dict()
     for row in res:
-        seqids.setdefault(row.assemblyID,{})
-        seqids[row.assemblyID].setdefault(row.sequenceID,dict())
-        seqids[row.assemblyID][row.sequenceID][row.nomenclature] = row.sequenceName
+        seqids.setdefault(row.assembly_id,{})
+        seqids[row.assembly_id].setdefault(row.sequence_id,dict())
+        seqids[row.assembly_id][row.sequence_id][row.nomenclature] = row.sequence_name
     return seqids
 
 def get_attributeSummary():
-    query = text("SELECT * FROM AttributeSummary")
+    query = text("SELECT * FROM attribute_summary")
     res = db.session.execute(query)
 
     # parse list into a dictionary
@@ -77,12 +77,12 @@ def get_attributeSummary():
                                         "description":row.description,
                                         "id":row.kvid,
                                         "sources":[]})
-        attributes[row.kvid]["sources"].append(row.sourceID)
+        attributes[row.kvid]["sources"].append(row.source_id)
     
     return attributes
 
 def get_transcriptTypeSummary():
-    query = text("SELECT * FROM TranscriptTypeSummary")
+    query = text("SELECT * FROM transcript_type_summary")
     res = db.session.execute(query)
 
     # parse list into a dictionary
@@ -93,12 +93,12 @@ def get_transcriptTypeSummary():
                                         "description":row.description,
                                         "id":row.kvid,
                                         "sources":[]})
-        attributes[row.kvid]["sources"].append(row.sourceID)
+        attributes[row.kvid]["sources"].append(row.source_id)
     
     return attributes
 
 def get_geneTypeSummary():
-    query = text("SELECT * FROM GeneTypeSummary")
+    query = text("SELECT * FROM gene_type_summary")
     res = db.session.execute(query)
 
     # parse list into a dictionary
@@ -109,12 +109,12 @@ def get_geneTypeSummary():
                                         "description":row.description,
                                         "id":row.kvid,
                                         "sources":[]})
-        attributes[row.kvid]["sources"].append(row.sourceID)
+        attributes[row.kvid]["sources"].append(row.source_id)
     
     return attributes
 
 def get_datasets():
-    query = text("SELECT * FROM Dataset")
+    query = text("SELECT * FROM dataset")
     res = db.session.execute(query)
 
     # parse list into a dictionary
@@ -127,7 +127,7 @@ def get_datasets():
     return datasets
 
 def get_assembly2nomenclature():
-    query = text("select distinct assemblyName, nomenclature from SequenceIDMap s JOIN Assembly a on s.assemblyID = a.assemblyID;")
+    query = text("select distinct assembly_name, nomenclature from sequence_id_map s JOIN assembly a on s.assembly_id = a.assembly_id;")
     res = db.session.execute(query)
 
     # parse list into a dictionary
@@ -138,7 +138,7 @@ def get_assembly2nomenclature():
     return assembly2nomenclature
 
 def get_AllCountSummaryTable() -> dict:
-    query = text("SELECT * FROM AllCountSummary")
+    query = text("SELECT * FROM all_count_summary")
     res = db.session.execute(query)
 
     summary = dict()
@@ -146,18 +146,18 @@ def get_AllCountSummaryTable() -> dict:
     for row in res:
         summary.setdefault(row[0],dict())
         summary[row[0]].setdefault(row[1],dict())
-        assert row[2] not in summary[row[0]][row[1]],"Duplicate source name found in AllCountSummary table: "+row[2]
+        assert row[2] not in summary[row[0]][row[1]],"Duplicate source name found in all_count_summary table: "+row[2]
         summary[row[0]][row[1]][row[2]] = {
-            "lastUpdated":row[3],
-            "totalTranscripts":row[4],
-            "totalGenes":row[5]
+            "last_updated":row[3],
+            "total_transcripts":row[4],
+            "total_genes":row[5]
             }
 
     return summary
 
 
 def get_upsetData():
-    query = text("SELECT * FROM UpsetData")
+    query = text("SELECT * FROM upset_data")
     res = db.session.execute(query)
 
     # parse list into a dictionary
@@ -173,9 +173,9 @@ def get_upsetData():
 
 def get_dbTxSlice(genome,attributes):
     # parameters:
-    # 1. assemblyID
-    # 2. attributes: for each sourceID to include:
-    #   - sourceID
+    # 1. assembly_id
+    # 2. attributes: for each source_id to include:
+    #   - source_id
     #       - key (standard name)
     #       - value (kvid)
     # returns a slice of the dbTxSummary table with matching data
@@ -184,20 +184,20 @@ def get_dbTxSlice(genome,attributes):
     # construct query
     query = "SELECT "
     # add all columns
-    for sourceID, attrs in attributes.items():
-        query += "dbtx.`"+str(sourceID)+"`, "
+    for source_id, attrs in attributes.items():
+        query += "dbtx.`"+str(source_id)+"`, "
         for k,v in attrs.items():
-            query += "dbtx.`"+str(sourceID)+"."+k+"`, "
+            query += "dbtx.`"+str(source_id)+"."+k+"`, "
     # add count
     query += " COUNT(*) as count"
 
-    query += " FROM dbTxSummary_"+str(genome)+" dbtx WHERE "
+    query += " FROM db_tx_summary_"+str(genome)+" dbtx WHERE "
 
-    for sourceID, attrs in attributes.items():
-        query += "( dbtx.`"+str(sourceID)+"` = 1"
+    for source_id, attrs in attributes.items():
+        query += "( dbtx.`"+str(source_id)+"` = 1"
         for key,values in attrs.items():
             # values are a list. test for containment
-            query += " AND dbtx.`"+str(sourceID)+"."+key+"` IN ("
+            query += " AND dbtx.`"+str(source_id)+"."+key+"` IN ("
             for v in values:
                 query += str(v)+","
             query = query[:-1] # remove last comma
@@ -207,10 +207,10 @@ def get_dbTxSlice(genome,attributes):
     
     # attach groupby
     query += " GROUP BY "
-    for sourceID, attrs in attributes.items():
-        query += "dbtx.`"+str(sourceID)+"`, "
+    for source_id, attrs in attributes.items():
+        query += "dbtx.`"+str(source_id)+"`, "
         for k,v in attrs.items():
-            query += "dbtx.`"+str(sourceID)+"."+k+"`, "
+            query += "dbtx.`"+str(source_id)+"."+k+"`, "
     query = query[:-2] # remove last comma
 
     query += ";"
@@ -227,53 +227,53 @@ def get_dbTxSlice(genome,attributes):
         # organize summary as: intersection: individual values for each source
         # when subsetting based on upset selection - just don't include the entries with the specific intersection
         tmp_summary = dict()
-        for sourceID, attrs in attributes.items():
-            if row.__getattr__(str(sourceID)) == 1:
-                row_source_intersection.append(str(sourceID))
+        for source_id, attrs in attributes.items():
+            if row.__getattr__(str(source_id)) == 1:
+                row_source_intersection.append(str(source_id))
 
                 has_gene_type = False
                 if "gene_type" in attrs:
-                    gene_type_intersection.append(str(row.__getattr__(str(sourceID)+".gene_type")))
+                    gene_type_intersection.append(str(row.__getattr__(str(source_id)+".gene_type")))
                     has_gene_type = True
 
                 has_transcript_type = False
                 if "transcript_type" in attrs:
-                    tx_type_intersection.append(str(row.__getattr__(str(sourceID)+".transcript_type")))
+                    tx_type_intersection.append(str(row.__getattr__(str(source_id)+".transcript_type")))
                     has_transcript_type = True
                     
                 if has_gene_type and has_transcript_type:
-                    tmp_summary.setdefault(sourceID,dict())
-                    tmp_summary[sourceID].setdefault(gene_type_intersection[-1],dict())
-                    tmp_summary[sourceID][gene_type_intersection[-1]].setdefault(tx_type_intersection[-1],0)
-                    tmp_summary[sourceID][gene_type_intersection[-1]][tx_type_intersection[-1]] += row.count
+                    tmp_summary.setdefault(source_id,dict())
+                    tmp_summary[source_id].setdefault(gene_type_intersection[-1],dict())
+                    tmp_summary[source_id][gene_type_intersection[-1]].setdefault(tx_type_intersection[-1],0)
+                    tmp_summary[source_id][gene_type_intersection[-1]][tx_type_intersection[-1]] += row.count
                 else:
                     pass
 
         row_source_intersection = ",".join(sorted(row_source_intersection))
         summary.setdefault(row_source_intersection,dict())
-        for sourceID, values in tmp_summary.items():
-            summary[row_source_intersection].setdefault(sourceID,dict())
+        for source_id, values in tmp_summary.items():
+            summary[row_source_intersection].setdefault(source_id,dict())
             for gene_type, tx_types in values.items():
-                summary[row_source_intersection][sourceID].setdefault(gene_type,dict())
+                summary[row_source_intersection][source_id].setdefault(gene_type,dict())
                 for tx_type, count in tx_types.items():
-                    summary[row_source_intersection][sourceID][gene_type].setdefault(tx_type,0)
-                    summary[row_source_intersection][sourceID][gene_type][tx_type] += count
+                    summary[row_source_intersection][source_id][gene_type].setdefault(tx_type,0)
+                    summary[row_source_intersection][source_id][gene_type][tx_type] += count
 
     return summary
 
 
 def get_dbLocusSlice(genome,attributes):
     # parameters:
-    # 1. assemblyID
-    # 2. attributes: for each sourceID to include:
-    #   - sourceID
+    # 1. assembly_id
+    # 2. attributes: for each source_id to include:
+    #   - source_id
     #       - key (standard name)
     #       - value (kvid)
     # returns a slice of the dbTxSummary table with matching data
     # summarized by the number of transcripts in each category
 
     # construct query
-    query = "SELECT *  FROM dbLocusSummary_"+str(genome)+" dbl;"
+    query = "SELECT *  FROM db_locus_summary_"+str(genome)+" dbl;"
 
     # execute query
     res = db.session.execute(text(query))
@@ -287,7 +287,7 @@ def get_dbLocusSlice(genome,attributes):
 
 def findLoci(genome:int,term:str):
     # parameters:
-    # 1. assemblyID
+    # 1. assembly_id
     # 2. term: search term
     # returns a list of loci that match the search term
     # construct query
@@ -297,14 +297,14 @@ def findLoci(genome:int,term:str):
     
     # get all sources for the genome
     query = f"""SELECT 
-                    dbl.lid AS locusID,
-                    dbl.sequenceID AS seqid,
+                    dbl.lid AS locus_id,
+                    dbl.sequence_id AS seq_id,
                     dbl.strand AS strand,
                     dbl.start AS start,
                     dbl.end AS end,
                     {','.join([f'dbl.`{x}.gene_id`' for x in sourceIDs])},
                     {','.join([f'dbl.`{x}.gene_name`' for x in sourceIDs])}
-                FROM dbLocusSummary_{genome} dbl
+                FROM db_locus_summary_{genome} dbl
                     WHERE 
                         MATCH (
                             {','.join([f'dbl.`{x}.gene_id`' for x in sourceIDs])},
@@ -316,36 +316,36 @@ def findLoci(genome:int,term:str):
     res = db.session.execute(text(query))
 
     loci = []
-    columns = ["locusID","seqid","strand","start","end"]+[sources[x]["name"]+" Gene ID" for x in sourceIDs]+[sources[x]["name"]+" Gene Name" for x in sourceIDs]
+    columns = ["locus_id","seq_id","strand","start","end"]+[sources[x]["name"]+" Gene ID" for x in sourceIDs]+[sources[x]["name"]+" Gene Name" for x in sourceIDs]
     # parse the results into a dictionary
     for row in res:
         loci.append({
-            "locusID":row.locusID,
-            "seqid":row.seqid,
+            "locus_id":row.locus_id,
+            "seq_id":row.seq_id,
             "strand":row.strand,
             "start":row.start,
             "end":row.end,
             "sources":{
             },
         })
-        for sourceID in sourceIDs:
-            loci[-1]["sources"][sourceID] = {"gene_id":row.__getattr__(f"{sourceID}.gene_id"),"gene_name":row.__getattr__(f"{sourceID}.gene_name")}
+        for source_id in sourceIDs:
+            loci[-1]["sources"][source_id] = {"gene_id":row.__getattr__(f"{source_id}.gene_id"),"gene_name":row.__getattr__(f"{source_id}.gene_name")}
 
     return loci
 
 def getLocus(lid:int):
     # parameters:
-    # 1. locusID
+    # 1. locus_id
     # returns a dictionary with the locus details
 
     # construct query
     query = f"""SELECT 
                     l.lid AS lid, 
-                    l.sequenceID AS seqid,
+                    l.sequence_id AS seq_id,
                     CAST(l.strand AS SIGNED) AS strand,
                     l.start AS locus_start,
                     l.end AS locus_end,
-                    g.sourceID AS sourceID,
+                    g.source_id AS source_id,
                     g.gid AS gid, 
                     g.gene_id AS gene_id,
                     g.name AS gene_name,
@@ -357,7 +357,7 @@ def getLocus(lid:int):
                     tx.cds_end AS cds_end,
                     i.start AS intron_start,
                     i.end AS intron_end
-                FROM Locus l
+                FROM locus l
                     JOIN Gene g ON l.lid = g.lid
                     JOIN TxDBXREF tx ON g.gid = tx.gid
                     JOIN Transcript t ON tx.tid = t.tid
@@ -372,7 +372,7 @@ def getLocus(lid:int):
     # parse the results into a dictionary
     for row_i,row in enumerate(res):
         if row_i == 0:
-            locus["position"] = {"seqid":row.seqid,
+            locus["position"] = {"seq_id":row.seq_id,
                                  "strand":row.strand,
                                  "start":row.locus_start,
                                  "end":row.locus_end}
@@ -383,7 +383,7 @@ def getLocus(lid:int):
         #      transcript_start,
         #      transcript_end,
         #      sources: {
-        #       sourceID: {
+        #       source_id: {
         #        gid: {
         #         transcript_id,
         #         transcript_start,
@@ -399,15 +399,15 @@ def getLocus(lid:int):
         #    gid: {
         #     gene_id,
         #     gene_name,
-        #     sourceID
+        #     source_id
         #    }
         #   }
         locus["data"]["transcripts"].setdefault(row.tid,{"intron_chain":[],
                                                          "transcript_start":sys.maxsize,
                                                          "transcript_end":0,
                                                          "sources":{}})
-        locus["data"]["transcripts"][row.tid]["sources"].setdefault(row.sourceID,dict())
-        locus["data"]["transcripts"][row.tid]["sources"][row.sourceID].setdefault(row.gid,{"transcript_id":row.transcript_id,
+        locus["data"]["transcripts"][row.tid]["sources"].setdefault(row.source_id,dict())
+        locus["data"]["transcripts"][row.tid]["sources"][row.source_id].setdefault(row.gid,{"transcript_id":row.transcript_id,
                                                                                             "transcript_start":row.transcript_start,
                                                                                             "transcript_end":row.transcript_end,
                                                                                             "cds_start":row.cds_start,
@@ -423,14 +423,14 @@ def getLocus(lid:int):
         locus["data"]["transcripts"][row.tid]["transcript_end"] = max(locus["data"]["transcripts"][row.tid]["transcript_end"],row.transcript_end)
         
         # add source and gene-specific versions of the transcripts
-        locus["data"]["transcripts"][row.tid]["sources"][row.sourceID][row.gid] = {"transcript_id":row.transcript_id,
+        locus["data"]["transcripts"][row.tid]["sources"][row.source_id][row.gid] = {"transcript_id":row.transcript_id,
                                                                                    "transcript_start":row.transcript_start,
                                                                                    "transcript_end":row.transcript_end,
                                                                                    "cds_start":row.cds_start,
                                                                                    "cds_end":row.cds_end}
 
         # add gene information
-        locus["data"]["genes"].setdefault(row.gid,{"gene_id":row.gene_id,"gene_name":row.gene_name,"sourceID":row.sourceID})
+        locus["data"]["genes"].setdefault(row.gid,{"gene_id":row.gene_id,"gene_name":row.gene_name,"source_id":row.source_id})
 
     return locus
 
