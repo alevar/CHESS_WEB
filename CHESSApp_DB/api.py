@@ -1,6 +1,7 @@
 import mysql.connector
 from definitions import *
 from TX import *
+import re
 
 # API for working with the CHESSApp database
 
@@ -53,32 +54,44 @@ class CHESS_DB_API:
 
     # returns result of the select query or the lastrowid of the insert query
     def execute_query(self, query, data=None):
-        result = False
         try:
+            # Format the query with data for printing
+            if data:
+                formatted_query = query
+                for value in data:
+                    if isinstance(value, str):
+                        value = f"'{value}'"
+                    formatted_query = formatted_query.replace('%s', str(value), 1)
+                print(f"Executing query: {formatted_query}")
+            else:
+                print(f"Executing query: {query}")
+
             cursor = self.connection.cursor()
             cursor.execute(query, data)
+            
             query_type = query.strip().split(" ")[0].lower()
-            if query_type.startswith('select'):
+            if query_type == 'select':
                 result = cursor.fetchall()
-            elif query_type.startswith('insert'):
+            elif query_type in {'insert', 'update'}:
+                self.connection.commit()
                 result = cursor.lastrowid
-            elif query_type.startswith('drop'):
-                result = True
-            elif query_type.startswith('create'):
-                result = True
-            elif query_type.startswith('update'):
-                result = cursor.lastrowid
-            elif query_type.startswith('delete'):
+            elif query_type in {'drop', 'create', 'delete'}:
+                self.connection.commit()
                 result = True
             else:
-                assert False,"Invalid query type."
+                raise ValueError("Invalid query type.")
+            
+            cursor.close()
+            return result
+        
         except mysql.connector.Error as err:
             print(f"Error: {err}")
-            exit(-1)
-        
-        self.commit()
-        cursor.close()
-        return result
+            exit(1)
+            return None
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+            exit(1)
+            return None
     
     def lastrowid(self):
         return self.connection.lastrowid
@@ -233,6 +246,10 @@ class CHESS_DB_API:
     def group_rows(self,rows:list,seqid_map:dict):
         tx = TX()
         for row in rows:
+            if row[2] not in seqid_map: # skip if sequence ID not found
+                print(f"Sequence ID {row[2]} not found in the sequence_id_map.")
+                continue
+            
             tid = row[0]
             if tx.tid != tid:
                 if tx.tid is not None:
@@ -857,6 +874,11 @@ class CHESS_DB_API:
         assert len(res) == 1,"Invalid organism name: "+name
         return res[0][0]
     
+    def get_all_seqids(self,assembly_id:int) -> list:
+        query = "SELECT sequence_name FROM sequence_id_map WHERE assembly_id = "+str(assembly_id)
+        res = self.execute_query(query)
+        return [x[0] for x in res]
+    
     def get_seqid_map(self,assembly_id:int,seqid_set:set=None,nomenclature:str=None) -> dict:
         # return map across all nomenclatures if both are None
         map = dict()
@@ -879,7 +901,7 @@ class CHESS_DB_API:
             for row in res:
                 map[row[0]] = row[1]
                 nomenclatures.add(row[2])
-            assert len(nomenclatures) == 1,"Multiple nomenclatures found for the same sequence_id: "+str(nomenclatures)
+            # assert len(nomenclatures) == 1,"Multiple nomenclatures found for the same sequence_id: "+str(nomenclatures)
             assert seqid_set == set(map.keys()),"Not all requested seqids were found in the database: "+str(seqid_set.difference(set(map.keys())))
         else:
             query = "SELECT sequence_name,sequence_id FROM sequence_id_map WHERE assembly_id = "+str(assembly_id)+" AND nomenclature = '"+nomenclature+"' AND sequence_name IN ("+",".join(["'"+str(s)+"'" for s in seqid_set])+")"

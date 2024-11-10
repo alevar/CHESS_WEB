@@ -883,8 +883,9 @@ Options:
             value_text = value
         
         # insert into database
-        query = f'INSERT INTO tx_attribute (tid, source_id, transcript_id, name, value, value_text, key_text) VALUES ({tid},{sid},"{transcript_id}","{std_key}","{ins_value}","{value_text}","{key}")'
-        return self.dbcon.execute_query(query)
+        query = f'INSERT INTO tx_attribute (tid, source_id, transcript_id, name, value, value_text, key_text) VALUES (%s,%s,%s,%s,%s,%s,%s)'
+        values = [tid,sid,transcript_id,std_key,ins_value,value_text,key]
+        return self.dbcon.execute_query(query,values)
     
     def get_fixed_table(self):
         # return a dictionary of all fixed attributes to their values using standard key and value names

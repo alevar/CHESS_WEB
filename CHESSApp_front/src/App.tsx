@@ -1,71 +1,47 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { Spinner } from 'react-bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import React, { useEffect } from 'react';
+import { Route, Routes } from 'react-router-dom';
+import { Container } from 'react-bootstrap';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchAppData } from './redux/App/AppThunks';
+import { RootState } from './redux/store';
 
-import { useGetGlobalDataQuery } from './features/database/databaseApi';
-import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
-import Header from './components/Header/Header';
-import Footer from './components/Footer/Footer';
-import './App.css';
-
-// Lazy load components
-const Main = lazy(() => import('./components/Main/Main'));
-const Custom = lazy(() => import('./components/Main/Custom/Custom'));
-const Explore = lazy(() => import('./components/Main/Explore/Explore'));
-const Home = lazy(() => import('./components/Main/Home/Home'));
-const About = lazy(() => import('./components/About/About'));
-const ContactUs = lazy(() => import('./components/ContactUs/ContactUs'));
-
-const LoadingSpinner: React.FC = () => (
-  <div className="loading">
-    <Spinner animation="border" role="status">
-      <span className="visually-hidden">Loading...</span>
-    </Spinner>
-  </div>
-);
+import Header from './components/layout/Header/Header';
+import Footer from './components/layout/Footer/Footer';
+import Home from './pages/Home/Home';
+import About from './pages/About/About';
+import LoadingSpinner from './components/common/LoadingSpinner/LoadingSpinner';
 
 const App: React.FC = () => {
-  const { data, error, isLoading } = useGetGlobalDataQuery();
+  const dispatch = useDispatch();
+  const { data, loading, error } = useSelector((state: RootState) => state.appData);
 
-  if (isLoading) {
-    return <LoadingSpinner />;
+  useEffect(() => {
+    dispatch(fetchAppData());
+  }, [dispatch]);
+
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
   if (error) {
-    return (
-      <div className="error">
-        <p>Error: {error.toString()}</p>
-      </div>
-    );
+    return <div>Error: {error}</div>;
   }
 
   return (
-    <Router>
-      <div className="App d-flex flex-column min-vh-100">
-        <Header />
-        <main className="flex-grow-1">
-          <ErrorBoundary>
-            <Suspense fallback={<LoadingSpinner />}>
-              <Routes>
-                <Route path="/main/:organismID/:assemblyID/:sourceIDs" element={<Main />}>
-                  <Route path="home" element={<Home />} />
-                  <Route path="custom" element={<Custom />} />
-                  <Route path="explore">
-                    <Route index element={<Explore />} />
-                    <Route path=":locus_id" element={<Explore />} />
-                  </Route>
-                </Route>
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<ContactUs />} />
-                <Route path="/*" element={<Navigate to="/main/1/1/4/home" />} />
-              </Routes>
-            </Suspense>
-          </ErrorBoundary>
-        </main>
-        <Footer />
-      </div>
-    </Router>
+    <>
+      <Header />
+      <main>
+        <Container className="mt-5">
+          <React.Suspense fallback={<LoadingSpinner />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
+            </Routes>
+          </React.Suspense>
+        </Container>
+      </main>
+      <Footer />
+    </>
   );
 };
 

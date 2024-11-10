@@ -301,6 +301,31 @@ def addSources(api_connection,config,args):
         # remove the normalized file if it already exists
         if os.path.exists(norm_gtf):
             os.remove(norm_gtf)
+
+        # if skipUnknownSeqids is enabled - skip any sequence_ids not already in the database
+        if args.skipUnknownSeqids:
+            # get list of all sequence IDs currently in the file
+            assembly_name = data["assembly_name"].replace("'","\\'")
+            assembly_id = api_connection.get_assembly_id(assembly_name)
+
+            db_seqids = api_connection.get_all_seqids(assembly_id)
+
+            # write output file skipping any sequence_ids not in the database
+            seqid_fix_gtf = os.path.abspath(args.temp)+"/"+str(si)+".seqid_skip.gtf"
+            with open(seqid_fix_gtf, 'w') as outFP:
+                with open(corrected_gtf, 'r') as inFP:
+                    for line in inFP:
+                        if line[0] == "#":
+                            outFP.write(line)
+                            continue
+                        lcs = line.rstrip().split("\t")
+                        if not len(lcs) == 9:
+                            outFP.write(line)
+                            continue
+
+                        if lcs[0] in db_seqids:
+                            outFP.write(line)
+            corrected_gtf = seqid_fix_gtf
             
         data["norm_file"] = corrected_gtf
         data["source_format"] = source_format
@@ -578,7 +603,7 @@ def addDatasets(api_connection,config, args):
             seen_transcripts.add(working_tid)
 
             # add dataset
-            api_connection.insert_transcriptEvidence(working_tid,working_datasetID,quant_data[transcript.tid])
+            api_connection.insert_transcript_evidence(working_tid,working_datasetID,quant_data[transcript.tid])
 
     api_connection.commit(True)
     logFP.close()
@@ -746,6 +771,10 @@ def main(args):
                                 required=False,
                                 action="store_true",
                                 help="If enabled this flag will ensure any attributes not already in the database are skipped without raising an error.")
+    parser_addSources.add_argument("--skipUnknownSeqids",
+                                   required=False,
+                                   action="store_true",
+                                   help="If enabled this flag will ensure any sequence_ids not already in the database are skipped without raising an error.")
     parser_addSources.set_defaults(func=establish_connection,main_fn=addSources)
 
     ##############################

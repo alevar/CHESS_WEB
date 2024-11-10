@@ -109,6 +109,7 @@
             "env": {
                 "FLASK_APP": "app.py",
                 "FLASK_DEBUG": "1",
+                "CHESSDB_HOST":"localhost",
                 "CHESSDB_NAME":"CHESS_DB",
                 "CHESSDB_PASS":"qwerty",
                 "CHESSDB_USER":"chess_master",

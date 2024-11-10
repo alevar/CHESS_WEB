@@ -1,18 +1,15 @@
-# main application file
-# this file is the entry point for the CHESS Web App
-# this file should not be modified unless you know what you are doing
-# this file is responsible for starting the server and registering blueprints
-# this file is responsible for handling errors
-# this file is responsible for rendering the index.html template
+from flask import Flask, render_template
+from flask_cors import CORS
+from routes.main import main
+from db.db import db
 
+app = Flask(__name__)
+CORS(app)
+app.config.from_object('config.Config')
 
-from CHESSApp_back import models, app, db
-from flask import jsonify, request, render_template
+db.init_app(app)
 
-from CHESSApp_back.routes.main_routes import main_blueprint
-
-# register blueprints
-app.register_blueprint(main_blueprint, url_prefix='/api/main')
+app.register_blueprint(main, url_prefix='/api/main')
 
 @app.errorhandler(404)
 def not_found(error):
@@ -31,4 +28,4 @@ def index():
     return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run(port=5000)
+    app.run(host="0.0.0.0", port=5000)

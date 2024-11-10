@@ -1,71 +1,42 @@
-/* App Component */
-.App {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
 }
 
-/* Header styles */
-.App-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  font-size: calc(10px + 2vmin);
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
-/* Logo animation */
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-float infinite 3s ease-in-out;
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
   }
 }
 
-/* Link styles */
-.App-link {
-  color: rgb(112, 76, 182);
+.card {
+  padding: 2em;
 }
 
-/* Loading Spinner */
-.loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-/* Loading Animation */
-@keyframes App-logo-float {
-  0% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(10px);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
-
-@keyframes loading {
-  0% {
-    transform: scale(1);
-  }
-  20% {
-    transform: scale(1, 2.5);
-  }
-  40% {
-    transform: scale(1);
-  }
-}
-
-/* CSS Variables */
-:root {
-  --loading-bar-color: #123abc;
+.read-the-docs {
+  color: #888;
 }

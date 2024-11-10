@@ -1,9 +1,0 @@
-.main {
-  padding: 12px;
-  background-color: white;
-  min-height: calc(100vh - 104px);
-}
-
-.main > * {
-  margin: 2px 0;
-}
