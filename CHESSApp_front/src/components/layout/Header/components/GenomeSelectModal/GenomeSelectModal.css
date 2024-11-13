@@ -1,0 +1,30 @@
+/* GenomeSelectModal.css */
+
+.selected-item {
+    background-color: #d0e8ff;
+    border: 2px solid #007bff;
+    color: #003366;
+}
+
+.organism-header {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.organism-info,
+.assembly-info {
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+    color: #555;
+}
+
+.assembly-link {
+    font-size: 0.9rem;
+    color: #007bff;
+    text-decoration: underline;
+}
+
+.assembly-link:hover {
+    color: #0056b3;
+}

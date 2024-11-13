@@ -1,2 +1,0 @@
-part of the redux store responsible for fetching and maintaining the data required for the working of the whole app.
-loaded first before all else

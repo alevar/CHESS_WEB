@@ -1,27 +1,32 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Organism, Assembly, Source } from '../../types/db';
+import { DB } from '../../types/db';
 
-interface AppDataState {
-  data: {
-    organisms: Organism[];
-    assemblies: Assembly[];
-    sources: Source[];
-  } | null;
+interface AppState {
+  data: DB | null;
   loading: boolean;
   error: string | null;
+  settings: {
+    organism_id: number;
+    assembly_id: number;
+  };
 }
 
-const initialState: AppDataState = {
+const initialState: AppState = {
   data: null,
   loading: false,
   error: null,
+  settings: {
+    organism_id: 1,
+    assembly_id: 1,
+  },
 };
 
-const appDataSlice = createSlice({
-  name: 'appData',
+const appSlice = createSlice({
+  name: 'app',
   initialState,
   reducers: {
-    setAppData: (state, action: PayloadAction<any>) => {
+    // Data-related reducers
+    setAppData: (state, action: PayloadAction<DB>) => {
       state.data = action.payload;
       state.loading = false;
     },
@@ -32,8 +37,16 @@ const appDataSlice = createSlice({
       state.error = action.payload;
       state.loading = false;
     },
+
+    // Settings-related reducers
+    setOrganism: (state, action: PayloadAction<number>) => {
+      state.settings.organism_id = action.payload;
+    },
+    setAssembly: (state, action: PayloadAction<number>) => {
+      state.settings.assembly_id = action.payload;
+    },
   },
 });
 
-export const { setAppData, setLoading, setError } = appDataSlice.actions;
-export default appDataSlice.reducer;
+export const { setAppData, setLoading, setError, setOrganism, setAssembly } = appSlice.actions;
+export default appSlice.reducer;

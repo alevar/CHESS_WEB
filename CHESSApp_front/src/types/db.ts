@@ -27,6 +27,15 @@ export interface Sequence {
     names: Record<string, string>;
 }
 
+export interface Attribute {
+    key: string;
+    description: string;
+    data: {
+        kvid: number;
+        value: string;
+    }[];
+}
+
 export interface Source {
     source_id: number;
     name: string;
@@ -36,6 +45,7 @@ export interface Source {
     last_updated?: string;
     assembly_id: number;
     citation: string;
+    attributes: Record<string, Attribute>;
 }
 
 export interface DB {
@@ -112,6 +122,21 @@ export class DBBuilder {
         else {
             assembly.sequences.push(sequence);
             assembly.sequenceIdMap[sequence.sequence_id] = assembly.sequences.length - 1;
+        }
+    }
+
+    addAttribute(attribute: Attribute, source_id: number) {
+        const source = get_source(this.db, source_id);
+        
+        // check if the current attribute key is already in the source
+        // if found - add values to the data of the existing key
+        // otherwise add new entry
+        if (attribute.key in source.attributes) {
+            source.attributes[attribute.key].data.push(...attribute.data);
+            return;
+        }
+        else {
+            source.attributes[attribute.key] = attribute;
         }
     }
 

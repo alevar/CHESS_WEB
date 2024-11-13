@@ -10,7 +10,7 @@ def get_all_organisms():
     json_res = list()
     for row in res:
         json_res.append({
-            "id":row.organism_id,
+            "organism_id":row.organism_id,
             "scientific_name":row.scientific_name,
             "common_name":row.common_name,
             "information":row.information
@@ -23,8 +23,8 @@ def get_all_assemblies():
     json_res = list()
     for row in res:
         json_res.append({
-            "id":row.assembly_id,
-            "assembly":row.assembly_name,
+            "assembly_id":row.assembly_id,
+            "assembly_name":row.assembly_name,
             "organism_id":row.organism_id,
             "link":row.link,
             "information":row.information
@@ -43,7 +43,7 @@ def get_all_sources(genome=None):
     for row in res:
         sources.append({
             "name":row.name,
-            "id":row.source_id,
+            "source_id":row.source_id,
             "link":row.link,
             "information":row.information,
             "citation":row.citation,
@@ -79,20 +79,32 @@ def get_seqidMap():
     return json_res
 
 def get_attributeSummary():
-    query = text("SELECT * FROM attribute_summary")
+    query = text("""
+                    SELECT 
+                        kvid,
+                        key_name,
+                        description,
+                        value,
+                        GROUP_CONCAT(source_id) AS sources
+                    FROM 
+                        attribute_summary
+                    GROUP BY 
+                        kvid, key_name, description, value
+                """)
     res = db.session.execute(query)
 
     # parse list into a dictionary
-    attributes = dict()
+    json_res = []
     for row in res:
-        attributes.setdefault(row.kvid,{"key":row.key_name,
-                                        "value":row.value,
-                                        "description":row.description,
-                                        "id":row.kvid,
-                                        "sources":[]})
-        attributes[row.kvid]["sources"].append(row.source_id)
+        json_res.append({
+            "kvid": row.kvid,
+            "key_name": row.key_name,
+            "value": row.value,
+            "description": row.description,
+            "sources": [int(s) for s in row.sources.split(',')]  # Convert to list of integers
+        })
     
-    return attributes
+    return json_res
 
 def get_transcriptTypeSummary():
     query = text("SELECT * FROM transcript_type_summary")

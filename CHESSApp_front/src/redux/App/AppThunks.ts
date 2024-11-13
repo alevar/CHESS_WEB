@@ -6,7 +6,8 @@ import {
   Organism,
   Assembly,
   Source,
-  Sequence
+  Sequence,
+  Attribute
 } from '../../types/db';
 
 export const fetchAppData = createAsyncThunk(
@@ -16,13 +17,11 @@ export const fetchAppData = createAsyncThunk(
     try {
       const response = await fetch('http://localhost:5000/api/main/globalData');
       const data = await response.json();
-      console.log("data", data);
-
       // Map response data to match the interfaces
       const dbBuilder = new DBBuilder();
       for (const org of Object.values(data.organisms) as any[]) {
         const organism: Organism = {
-          organism_id: org.id,
+          organism_id: org.organism_id,
           scientific_name: org.scientific_name,
           common_name: org.common_name,
           information: org.information,
@@ -34,7 +33,7 @@ export const fetchAppData = createAsyncThunk(
 
       for (const asm of Object.values(data.assemblies) as any[]) {
         const assembly: Assembly = {
-          assembly_id: asm.id,
+          assembly_id: asm.assembly_id,
           assembly_name: asm.assembly_name,
           information: asm.information,
           link: asm.link,
@@ -49,7 +48,7 @@ export const fetchAppData = createAsyncThunk(
 
       for (const src of Object.values(data.sources) as any[]) {
         const source: Source = {
-          source_id: src.id,
+          source_id: src.source_id,
           name: src.name,
           information: src.information,
           link: src.link,
@@ -57,6 +56,7 @@ export const fetchAppData = createAsyncThunk(
           last_updated: src.last_updated,
           assembly_id: src.assembly_id,
           citation: src.citation,
+          attributes: {},
         }
         dbBuilder.addSource(source);
       }
@@ -71,11 +71,24 @@ export const fetchAppData = createAsyncThunk(
         dbBuilder.addSequenceId(seqid);
       }
 
+      // assign the attributes to the sources
+      for (const attr of Object.values(data.attributes) as any[]) {
+        const attribute: Attribute = {
+          key: attr.key_name,
+          description: attr.description,
+          data: [{
+            kvid: attr.kvid,
+            value: attr.value,
+          }],
+        }
+        for (const source_id of attr.sources) {
+          dbBuilder.addAttribute(attribute, source_id);
+        }
+      }
+
       const db: DB = dbBuilder.getDB();
 
-      console.log("db", db);
-
-      dispatch(setAppData({ db }));
+      dispatch(setAppData(db));
     } catch (error) {
       dispatch(setError(`appData/fetchAppData: Failed to load Initial App data: ${error}`));
     }

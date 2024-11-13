@@ -90,17 +90,13 @@ def globalData():
     assemblies = db_methods.get_all_assemblies()
     sequence_ids = db_methods.get_seqidMap()
     attributes = db_methods.get_attributeSummary()
-    gene_types = db_methods.get_geneTypeSummary()
-    transcript_types = db_methods.get_transcriptTypeSummary()
 
     data = {
         "organisms":organisms,
         "assemblies":assemblies,
         "sources":sources,
-        "sequence_ids":sequence_ids
-        # "attributes":attributes,
-        # "gene_types":gene_types,
-        # "transcript_types":transcript_types
+        "sequence_ids":sequence_ids,
+        "attributes":attributes
     }
 
     return jsonify(data)
