@@ -1,0 +1,62 @@
+/* CardGrid styles for Bootstrap */
+.card-grid .card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.card-grid .card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.card-grid .card-img-top {
+  transition: transform 0.3s ease;
+}
+
+.card-grid .card:hover .card-img-top {
+  transform: scale(1.05);
+}
+
+.card-grid .card-body {
+  padding: 1.5rem;
+}
+
+.card-grid .card-title {
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 1rem;
+}
+
+.card-grid .card-text {
+  color: #6c757d;
+  line-height: 1.6;
+}
+
+.card-grid .btn {
+  border-radius: 6px;
+  font-weight: 500;
+  padding: 0.5rem 1.5rem;
+}
+
+.card-grid .btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.card-grid .btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .card-grid .card-body {
+    padding: 1rem;
+  }
+  
+  .card-grid .card-title {
+    font-size: 1.1rem;
+  }
+} 
