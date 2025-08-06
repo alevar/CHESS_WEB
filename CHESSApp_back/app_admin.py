@@ -1,6 +1,6 @@
 from flask import Flask, render_template
 from routes.admin_routes import admin_bp
-from routes.main_routes import main_bp
+from routes.public_routes import public_bp
 from db.db import db
 from config import Config
 from middleware import setup_cors
@@ -19,7 +19,7 @@ db.init_app(app)
 
 # Register only admin routes (full access)
 app.register_blueprint(admin_bp, url_prefix='/api/admin')
-app.register_blueprint(main_bp, url_prefix='/api/main')
+app.register_blueprint(public_bp, url_prefix='/api/public')
 
 # ============================================================================
 # ERROR HANDLERS

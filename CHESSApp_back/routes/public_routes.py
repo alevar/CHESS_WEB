@@ -1,5 +1,4 @@
-# Main application routes for the CHESS Web App
-# Routes for the public-facing genome browser and data access
+# Public-facing API routes for the CHESS Web App
 
 import os
 import smtplib
@@ -10,9 +9,9 @@ from sqlalchemy import text
 from db.methods import *
 from db.db import db
 
-main_bp = Blueprint('main', __name__)
+public_bp = Blueprint('public', __name__)
 
-@main_bp.route('/globalData', methods=['GET'])
+@public_bp.route('/globalData', methods=['GET'])
 def global_data():
     """
     Fetches comprehensive data about the database for UI building
@@ -59,7 +58,7 @@ def global_data():
 
     return jsonify(data)
 
-@main_bp.route('/organisms', methods=['GET'])
+@public_bp.route('/organisms', methods=['GET'])
 def get_organisms():
     """
     Returns all organisms from the database.
@@ -73,7 +72,7 @@ def get_organisms():
     except Exception as e:
         return jsonify({"success": False, "message": f"Failed to fetch organisms: {str(e)}"}), 500
 
-@main_bp.route('/assemblies', methods=['GET'])
+@public_bp.route('/assemblies', methods=['GET'])
 def get_assemblies():
     """
     Returns all assemblies from the database.
@@ -87,7 +86,7 @@ def get_assemblies():
     except Exception as e:
         return jsonify({"success": False, "message": f"Failed to fetch assemblies: {str(e)}"}), 500
 
-@main_bp.route('/assemblies/<int:assembly_id>/nomenclatures', methods=['GET'])
+@public_bp.route('/assemblies/<int:assembly_id>/nomenclatures', methods=['GET'])
 def get_assembly_nomenclatures(assembly_id):
     """
     Gets all nomenclatures for a specific assembly.

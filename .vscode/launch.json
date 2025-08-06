@@ -5,124 +5,48 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "DB: addOrganisms",
-            "type": "python",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/CHESSApp_DB",
-            "program": "./db_setup.py",
-            "args": [
-                "addOrganisms",
-                "--configuration","./example/configurations/example.organisms.json",
-                "--db_configuration","./example/configurations/example.mysql.json"
-	        ],
-	        "console": "integratedTerminal"
-        },
-        {
-            "name": "DB: addAssemblies",
-            "type": "python",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/CHESSApp_DB",
-            "program": "./db_setup.py",
-            "args": [
-                "addAssemblies",
-                "--configuration","./example/configurations/example.assemblies.json",
-                "--db_configuration","./example/configurations/example.mysql.json"
-	        ],
-	        "console": "integratedTerminal"
-        },
-        {
-            "name": "DB: addNomenclatures",
-            "type": "python",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/CHESSApp_DB",
-            "program": "./db_setup.py",
-            "args": [
-                "addNomenclatures",
-                "--configuration","./example/configurations/example.nomenclatures.json",
-                "--db_configuration","./example/configurations/example.mysql.json"
-	        ],
-	        "console": "integratedTerminal"
-        },
-        {
-            "name": "DB: addAttributes",
-            "type": "python",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/CHESSApp_DB",
-            "program": "./db_setup.py",
-            "args": [
-                "addAttributes",
-                "--configuration","./example/configurations/example.attributes.json",
-                "--db_configuration","./example/configurations/example.mysql.json"
-	        ],
-	        "console": "integratedTerminal"
-        },
-        {
-            "name": "DB: addSources",
-            "type": "python",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/CHESSApp_DB",
-            "program": "./db_setup.py",
-            "args": [
-                "addSources",
-                "--configuration","./example/configurations/example.sources.json",
-                "--db_configuration","./example/configurations/example.mysql.json",
-                "--temp","./example/temp",
-                "--log","./example/log",
-                "--skipUnknownAttributes"
-	        ],
-	        "console": "integratedTerminal"
-        },
-        {
-            "name": "DB: addSources trunc",
-            "type": "python",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/CHESSApp_DB",
-            "program": "./db_setup.py",
-            "args": [
-                "addSources",
-                "--configuration","./example/configurations/example.sources.trunc.json",
-                "--db_configuration","./example/configurations/example.mysql.json",
-                "--temp","./example/temp",
-                "--log","./example/log",
-                "--skipUnknownAttributes"
-	        ],
-	        "console": "integratedTerminal"
-        },
-        {
-            "name": "DB: compile",
-            "type": "python",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/CHESSApp_DB",
-            "program": "./db_setup.py",
-            "args": [
-                "compile",
-                "--db_configuration","./example/configurations/example.mysql.json"
-	        ],
-	        "console": "integratedTerminal"
-        },
-        {
-            "name": "Backend",
+            "name": "Public Backend",
             "type": "python",
             "request": "launch",
             "cwd": "${workspaceFolder}/CHESSApp_back",
             "module": "flask",
             "env": {
-                "FLASK_APP": "app.py",
+                "FLASK_APP": "app_public.py",
                 "FLASK_DEBUG": "1",
                 "CHESSDB_HOST":"localhost",
                 "CHESSDB_NAME":"CHESS_DB",
                 "CHESSDB_PASS":"qwerty",
-                "CHESSDB_USER":"chess_master",
-                "EMAIL_FROM_ADDRESS":"dummy_from@gmail.com",
-                "EMAIL_TO_ADDRESS":"dummy_to@gmail.com",
-                "EMAIL_FROM_PASSWORD":"qwerty"
+                "CHESSDB_USER":"chess_master"
             },
             "args": [
                 "run",
                 "--without-threads"
             ],
             "jinja": true,
-            "justMyCode": true
+            "justMyCode": true,
+            "pythonPath": "/ccb/salz7-home/avaraby1/miniconda3/envs/CHESS_WEB/bin/python"
+        },
+        {
+            "name": "Admin Backend",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/CHESSApp_back",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "app_admin.py",
+                "FLASK_DEBUG": "1",
+                "CHESSDB_HOST":"localhost",
+                "CHESSDB_NAME":"CHESS_DB",
+                "CHESSDB_PASS":"qwerty",
+                "CHESSDB_USER":"chess_master"
+            },
+            "args": [
+                "run",
+                "--without-threads"
+            ],
+            "jinja": true,
+            "justMyCode": true,
+            "pythonPath": "/ccb/salz7-home/avaraby1/miniconda3/envs/CHESS_WEB/bin/python"
         },
     ]
 }
