@@ -46,7 +46,7 @@ def global_data():
         file_path = genome_file_data["file_path"]
         if assembly_id in assemblies["data"]:
             assemblies["data"][assembly_id]["genome_files"].append({
-                "genome_file_id": genome_file_id,
+                "genome_file_id": genome_file_data["genome_file_id"],
                 "nomenclature": nomenclature,
                 "file_path": file_path
             })

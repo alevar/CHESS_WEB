@@ -474,13 +474,13 @@ def update_source(source_id):
         db.session.rollback()
         return jsonify({"success": False, "message": f"Failed to update source: {str(e)}"}), 500
 
-@admin_bp.route('/sources/<int:sv_id>', methods=['DELETE'])
-def delete_source(sv_id):
+@admin_bp.route('/sources/<int:source_id>', methods=['DELETE'])
+def delete_source(source_id):
     """
     Deletes a source.
     """
     try:
-        result = source_admin.delete_source(sv_id)
+        result = source_admin.delete_source(source_id)
         if result["success"]:
             db.session.commit()
             return jsonify(result)
@@ -496,23 +496,15 @@ def delete_source(sv_id):
 # SOURCE VERSION MANAGEMENT ROUTES
 # ============================================================================
 
-@admin_bp.route('/source-versions', methods=['POST'])
+@admin_bp.route('/sources/<int:source_id>/source-versions', methods=['POST'])
 @require_json
-@validate_required_fields(['source_id', 'version_name'])
-def add_source_version():
+@validate_required_fields(['version_name'])
+def add_source_version(source_id):
     """
     Adds a new source version.
     """
     try:
         data = request.get_json()
-        
-        # Validate source_id is a positive integer
-        try:
-            source_id = int(data['source_id'])
-            if source_id <= 0:
-                return jsonify({"success": False, "message": "Source ID must be a positive integer"}), 400
-        except (ValueError, TypeError):
-            return jsonify({"success": False, "message": "Source ID must be a valid integer"}), 400
         
         source_version_data = {
             "source_id": source_id,
@@ -533,8 +525,8 @@ def add_source_version():
         db.session.rollback()
         return jsonify({"success": False, "message": f"Failed to add source version: {str(e)}"}), 500
 
-@admin_bp.route('/source-versions/<int:sv_id>', methods=['DELETE'])
-def delete_source_version(sv_id):
+@admin_bp.route('/sources/<int:source_id>/source-versions/<int:sv_id>', methods=['DELETE'])
+def delete_source_version(source_id, sv_id):
     """
     Deletes a source version.
     """
@@ -551,17 +543,17 @@ def delete_source_version(sv_id):
         db.session.rollback()
         return jsonify({"success": False, "message": f"Failed to delete source version: {str(e)}"}), 500
 
-@admin_bp.route('/source-versions/reorder', methods=['POST'])
+@admin_bp.route('/sources/<int:source_id>/source-versions/reorder', methods=['POST'])
 @require_json
-@validate_required_fields(['source_id', 'new_order'])
-def reorder_source_versions():
+@validate_required_fields(['new_order'])
+def reorder_source_versions(source_id):
     """
     Reorders source versions by changing their rank.
     """
     try:
         data = request.get_json()
-        
-        result = source_admin.reorder_source_versions(data["source_id"], data["new_order"])
+
+        result = source_admin.reorder_source_versions(data)
         if result["success"]:
             db.session.commit()
             return jsonify(result)
@@ -577,9 +569,9 @@ def reorder_source_versions():
 # ANNOTATION UPLOAD ROUTES
 # ============================================================================
 
-@admin_bp.route('/source-versions/<int:sv_id>/upload-gtf', methods=['POST'])
+@admin_bp.route('/sources/<int:source_id>/source-versions/<int:sv_id>/upload-gtf', methods=['POST'])
 @validate_content_length(max_size_mb=50000)
-def upload_gtf(sv_id):
+def upload_gtf(source_id, sv_id):
     """
     Uploads a GTF annotation file for a source version.
     """
@@ -594,6 +586,7 @@ def upload_gtf(sv_id):
 
         data = {
             "file": gtf_file,
+            "source_id": source_id,
             "source_version_id": sv_id,
             "assembly_id": int(request.form.get('assembly_id')),
             "description": request.form.get('description', '')
@@ -608,15 +601,18 @@ def upload_gtf(sv_id):
     except Exception as e:
         return jsonify({"success": False, "message": f"Failed to upload GTF file: {str(e)}"}), 500
 
-@admin_bp.route('/source-versions/confirm-annotation', methods=['POST'])
+@admin_bp.route('/sources/<int:source_id>/source-versions/<int:sv_id>/confirm-annotation', methods=['POST'])
 @require_json
 @validate_required_fields(['selected_nomenclature', 'transcript_type_key', 'gene_type_key', 'gene_name_key', 'attribute_types', 'categorical_attribute_values', 'assembly_id', 'source_version_id', 'description', 'temp_file_path', 'norm_gtf_path'])
-def confirm_annotation_upload():
+def confirm_annotation_upload(source_id, sv_id):
     """
     Confirms the upload of annotation files and processes them.
     """
     try:
         data = request.get_json()
+
+        data["source_id"] = source_id
+        data["source_version_id"] = sv_id
         
         result = source_admin.confirm_and_process_annotation_file(data)
         if result["success"]:

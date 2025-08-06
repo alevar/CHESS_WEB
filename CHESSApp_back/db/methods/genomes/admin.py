@@ -83,7 +83,7 @@ def add_assembly(assembly_name, taxonomy_id, information=""):
     Adds a new assembly to the database.
     """
     try:
-        if not assembly_exists(assembly_name):
+        if assembly_exists(assembly_name):
             return {"success": False, "message": "Assembly with this name already exists"}
         
         if not organism_exists(taxonomy_id):
@@ -352,7 +352,6 @@ def process_nomenclature_tsv(source_file, assembly_id, source_nomenclature, new_
             insert_nomenclature(new_nomenclature,assembly_id)
             
             # Create new sequence mappings
-            mapping_count = 0
             for row in existing_nomenclatures["data"][assembly_id]:
                 if row["sequence_name"] in mapping:
                     # Insert new nomenclature mapping
@@ -365,7 +364,6 @@ def process_nomenclature_tsv(source_file, assembly_id, source_nomenclature, new_
                         "nomenclature": new_nomenclature,
                         "sequence_name": mapping[row["sequence_name"]]
                     })
-                    mapping_count += 1
 
             # lastly we need to create a version of the fasta file with the new nomenclature names and add it to the genome_file table
             # get the fasta file for the source nomenclature
@@ -392,7 +390,7 @@ def process_nomenclature_tsv(source_file, assembly_id, source_nomenclature, new_
                     """), {
                         "assembly_id": assembly_id,
                         "nomenclature": new_nomenclature,
-                        "file_path": new_file_path
+                        "file_path": new_full_path
                     })
                 else:
                     return {"success": False, "message": f"Source FASTA file not found: {source_file_path}"}
@@ -445,7 +443,7 @@ def process_nomenclature_tsv(source_file, assembly_id, source_nomenclature, new_
             
             return {
                 "success": True,
-                "message": f"Successfully created nomenclature '{new_nomenclature}' with {mapping_count} sequence mappings and new FASTA file"
+                "message": f"Successfully created nomenclature '{new_nomenclature}' and new FASTA file"
             }
             
         finally:
