@@ -553,7 +553,7 @@ def reorder_source_versions(source_id):
     try:
         data = request.get_json()
 
-        result = source_admin.reorder_source_versions(data)
+        result = source_admin.reorder_source_versions(source_id, data['new_order'])
         if result["success"]:
             db.session.commit()
             return jsonify(result)

@@ -1,0 +1,79 @@
+.organisms-management {
+  padding: 20px;
+}
+
+.organisms-header {
+  margin-bottom: 1.5rem;
+}
+
+.organisms-title {
+  margin-bottom: 0.25rem;
+}
+
+.organisms-subtitle {
+  color: #6c757d;
+  margin-bottom: 0;
+}
+
+.organisms-table {
+  margin-top: 1rem;
+}
+
+.organisms-table th {
+  font-weight: 600;
+  background-color: #f8f9fa;
+}
+
+.organisms-table td {
+  vertical-align: middle;
+}
+
+.organism-info {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.organism-info:hover {
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.organism-actions {
+  white-space: nowrap;
+}
+
+.organism-form {
+  padding: 1rem 0;
+}
+
+.organism-form .form-label {
+  font-weight: 500;
+}
+
+.organism-form .form-text {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.organism-form .required {
+  color: #dc3545;
+}
+
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.empty-state {
+  text-align: center;
+  color: #6c757d;
+  padding: 2rem;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+} 

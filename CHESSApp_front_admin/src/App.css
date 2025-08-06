@@ -1,0 +1,54 @@
+.admin-app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-content {
+  flex: 1;
+  padding: 20px;
+  background-color: #f8f9fa;
+}
+
+/* Card styling */
+.card {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border: none;
+  border-radius: 8px;
+}
+
+.card-header {
+  background-color: #fff;
+  border-bottom: 1px solid #e9ecef;
+  border-radius: 8px 8px 0 0 !important;
+}
+
+/* Button styling */
+.btn {
+  border-radius: 6px;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-success:hover,
+.btn-outline-info:hover,
+.btn-outline-warning:hover {
+  transform: translateY(-1px);
+  transition: transform 0.2s ease;
+}
+
+/* Badge styling */
+.badge {
+  font-size: 0.875rem;
+  padding: 0.5em 0.75em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .admin-content {
+    padding: 15px;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+} 
