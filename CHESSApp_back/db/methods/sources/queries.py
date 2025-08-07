@@ -56,6 +56,15 @@ def source_version_exists_by_id(sv_id):
     except Exception as e:
         return False
 
+def source_version_assembly_exists_by_ids(sv_id, assembly_id):
+    try:
+        result = db.session.execute(text("""
+            SELECT COUNT(*) FROM source_version_assembly WHERE sv_id = :sv_id AND assembly_id = :assembly_id
+        """), {"sv_id": sv_id, "assembly_id": assembly_id}).fetchone()
+        return result[0] > 0
+    except Exception as e:
+        return False
+
 def get_files_by_sv_id(sv_id):
     try:
         result = db.session.execute(text("""

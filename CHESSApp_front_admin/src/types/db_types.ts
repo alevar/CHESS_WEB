@@ -62,8 +62,6 @@ export interface SourceVersion {
 export interface SourceVersionAssembly {
   sva_id: number;
   assembly_id: number;
-  assembly_name: string;
-  assembly_information: string;
   files?: { [file_key: string]: SourceFile };
 }
 
@@ -72,5 +70,16 @@ export interface SourceFile {
   file_path: string;
   filetype: string;
   description: string;
+}
+
+export interface Configuration {
+  configuration_id: number;
+  active: boolean;
+  description: string;
+  organism_id: number;
+  assembly_id: number;
+  nomenclature: string;
+  source_id: number;
+  sv_id: number;
 }
 

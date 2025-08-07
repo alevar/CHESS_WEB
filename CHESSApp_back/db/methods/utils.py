@@ -40,7 +40,7 @@ def is_gff(fname:str) -> bool:
                 gff = None
                 break
             
-            if lcs[2] not in ["transcript","exon","CDS"]:
+            if lcs[2] not in ["gene","transcript","exon","CDS"]:
                 gff = None
                 break
 

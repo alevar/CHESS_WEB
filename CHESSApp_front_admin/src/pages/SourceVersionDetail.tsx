@@ -1,11 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Button, Alert, Card, Table, Badge, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, Button, Alert, Card, Table, Badge, Spinner, Modal } from 'react-bootstrap';
 import { RootState, AppDispatch } from '../redux/store';
 import { 
   uploadSourceVersionFile,
-  confirmAnnotationUpload
+  confirmAnnotationUpload,
+  removeSourceVersionAssembly
 } from '../redux/adminData/adminDataThunks';
 import SourceVersionFileUploadForm from '../components/sourceManager/SourceVersionFileUploadForm';
 import SourceVersionFileUploadConfirmationModal from '../components/sourceManager/SourceVersionFileUploadConfirmationModal';
@@ -33,6 +34,7 @@ const SourceVersionDetail: React.FC = () => {
   
   // File upload states
   const [showUploadForm, setShowUploadForm] = useState(false);
+  const [selectedAssemblyForUpload, setSelectedAssemblyForUpload] = useState<Assembly | null>(null);
   
   // Source version file upload confirmation states
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
@@ -53,11 +55,14 @@ const SourceVersionDetail: React.FC = () => {
       Object.values(sourceVersion.assemblies).forEach((assembly: any) => {
         console.log("Processing assembly:", assembly);
         
+        // Get the full assembly details from assembliesArray
+        const fullAssembly = assembliesArray.find(a => a.assembly_id === assembly.assembly_id);
+        
         assemblies.push({
           sva_id: assembly.sva_id,
           assembly_id: assembly.assembly_id,
-          assembly_name: assembly.assembly_name,
-          assembly_information: assembly.assembly_information,
+          assembly_name: fullAssembly?.assembly_name || `Assembly ${assembly.assembly_id}`,
+          assembly_information: fullAssembly?.information || assembly.assembly_information || '',
           files: assembly.files || {}
         });
       
@@ -70,7 +75,9 @@ const SourceVersionDetail: React.FC = () => {
               file_path: file.file_path,
               nomenclature: file.nomenclature,
               filetype: file.filetype,
-              file_description: file.file_description
+              file_description: file.file_description,
+              assembly_id: assembly.assembly_id,
+              assembly_name: fullAssembly?.assembly_name || `Assembly ${assembly.assembly_id}`
             };
           });
         }
@@ -80,7 +87,18 @@ const SourceVersionDetail: React.FC = () => {
     }
 
     return { assemblies, files };
-  }, [sourceVersion]);
+  }, [sourceVersion, assembliesArray]);
+
+  // Get assemblies that don't have files yet
+  const availableAssembliesForUpload = useMemo(() => {
+    if (!sourceVersionDetails) return assembliesArray;
+    
+    const assembliesWithFiles = new Set(
+      sourceVersionDetails.assemblies.map(sva => sva.assembly_id)
+    );
+    
+    return assembliesArray.filter(assembly => !assembliesWithFiles.has(assembly.assembly_id));
+  }, [sourceVersionDetails, assembliesArray]);
 
   // Check if files exist for this source version
   const hasFiles = useMemo(() => {
@@ -109,10 +127,14 @@ const SourceVersionDetail: React.FC = () => {
           source_version_id: detectionData.source_version_id || 0,
           description: detectionData.description || ''
         });
+        // Close the upload modal and show confirmation modal
+        setShowUploadForm(false);
+        setSelectedAssemblyForUpload(null);
         setShowConfirmationModal(true);
       } else {
         // Direct success (no confirmation needed)
         setShowUploadForm(false);
+        setSelectedAssemblyForUpload(null);
         setFormSuccess('File uploaded successfully!');
 
         dispatch(clearGlobalData());
@@ -139,6 +161,7 @@ const SourceVersionDetail: React.FC = () => {
           gene_name_key: attributeMapping.gene_name_key,
           attribute_types: attributeMapping.attribute_types,
           categorical_attribute_values: attributeMapping.categorical_attribute_values,
+          excluded_attributes: attributeMapping.excluded_attributes,
           temp_file_path: detectionResult.temp_file_path,
           norm_gtf_path: detectionResult.norm_gtf_path,
           assembly_id: detectionResult.assembly_id,
@@ -150,11 +173,17 @@ const SourceVersionDetail: React.FC = () => {
       setShowConfirmationModal(false);
       setDetectionResult(null);
       setShowUploadForm(false);
+      setSelectedAssemblyForUpload(null);
       setFormSuccess('File uploaded successfully!');
 
       dispatch(clearGlobalData());
     } catch (error: any) {
       setFormError(error.message || 'Failed to confirm annotation upload');
+      // Close modal on error as well
+      setShowConfirmationModal(false);
+      setDetectionResult(null);
+      setShowUploadForm(false);
+      setSelectedAssemblyForUpload(null);
     }
   };
 
@@ -162,6 +191,34 @@ const SourceVersionDetail: React.FC = () => {
     setShowConfirmationModal(false);
     setDetectionResult(null);
     setShowUploadForm(false);
+    setSelectedAssemblyForUpload(null);
+  };
+
+  const handleRemoveAssembly = async (assemblyId: number) => {
+    if (!window.confirm('Are you sure you want to remove this assembly and all its files? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setFormError(null);
+      setFormSuccess(null);
+      
+      await dispatch(removeSourceVersionAssembly({ 
+        source_id: parseInt(sourceId!), 
+        sv_id: parseInt(svId!), 
+        assembly_id: assemblyId 
+      })).unwrap();
+      
+      setFormSuccess('Assembly removed successfully!');
+      dispatch(clearGlobalData());
+    } catch (error: any) {
+      setFormError(error.message || 'Failed to remove assembly');
+    }
+  };
+
+  const handleStartUpload = (assembly: Assembly) => {
+    setSelectedAssemblyForUpload(assembly);
+    setShowUploadForm(true);
   };
 
   if (loading) {
@@ -220,22 +277,6 @@ const SourceVersionDetail: React.FC = () => {
               <Badge bg="info" className="fs-6 mb-2">
                 Version ID: {sourceVersion.sv_id}
               </Badge>
-              <div className="d-block">
-                {!hasFiles ? (
-                  <Button
-                    variant="primary"
-                    onClick={() => setShowUploadForm(true)}
-                  >
-                    <i className="fas fa-upload me-2"></i>
-                    Upload File
-                  </Button>
-                ) : (
-                  <Badge bg="success">
-                    <i className="fas fa-check me-1"></i>
-                    View Version Details
-                  </Badge>
-                )}
-              </div>
             </div>
           </div>
         </Col>
@@ -254,57 +295,105 @@ const SourceVersionDetail: React.FC = () => {
       )}
 
       <Row>
-        {/* File Upload Section - Only show if no files exist */}
-        {!hasFiles && (
+        {/* Available Assemblies for Upload */}
+        {availableAssembliesForUpload.length > 0 && (
           <Col xs={12} className="mb-4">
             <Card>
               <Card.Header>
                 <h5 className="mb-0">
                   <i className="fas fa-upload me-2"></i>
-                  GTF/GFF File Upload
+                  Available Assemblies for Upload
+                  <Badge bg="success" className="ms-2">
+                    {availableAssembliesForUpload.length} available
+                  </Badge>
                 </h5>
               </Card.Header>
               <Card.Body>
-                {!showUploadForm ? (
-                  <div className="text-center py-4">
-                    <Button
-                      variant="primary"
-                      size="lg"
-                      onClick={() => setShowUploadForm(true)}
-                    >
-                      <i className="fas fa-plus me-2"></i>
-                      Upload GTF/GFF File
-                    </Button>
-                    <p className="text-muted mt-3">
-                      Upload annotation files for this source version
-                    </p>
-                  </div>
-                ) : (
-                  <SourceVersionFileUploadForm
-                    sourceVersion={sourceVersion}
-                    organisms={organismsArray}
-                    assemblies={assembliesArray}
-                    onSubmit={handleUploadFile}
-                    onCancel={() => setShowUploadForm(false)}
-                    onError={setFormError}
-                    onSuccess={() => setFormSuccess('File uploaded successfully!')}
-                  />
-                )}
+                <div className="row">
+                  {availableAssembliesForUpload.map((assembly) => (
+                    <div key={assembly.assembly_id} className="col-md-6 col-lg-4 mb-3">
+                      <div className="card border-success h-100">
+                        <div className="card-body">
+                          <h6 className="card-title">
+                            <i className="fas fa-database me-2"></i>
+                            {assembly.assembly_name}
+                          </h6>
+                          <p className="card-text small">
+                            <strong>Organism:</strong> {
+                              organismsArray.find(org => org.taxonomy_id === assembly.taxonomy_id)?.scientific_name || 'Unknown'
+                            }
+                          </p>
+                        </div>
+                        <div className="card-footer bg-transparent">
+                          <Button
+                            variant="success"
+                            size="sm"
+                            onClick={() => handleStartUpload(assembly)}
+                            className="w-100"
+                          >
+                            <i className="fas fa-upload me-2"></i>
+                            Upload GTF/GFF File
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </Card.Body>
             </Card>
           </Col>
         )}
 
-        {/* Files Section */}
+        {/* File Upload Modal */}
+        <Modal 
+          show={showUploadForm && !!selectedAssemblyForUpload} 
+          onHide={() => {
+            setShowUploadForm(false);
+            setSelectedAssemblyForUpload(null);
+          }}
+          size="lg"
+          centered
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>
+              <i className="fas fa-upload me-2"></i>
+              Upload GTF/GFF File
+              {selectedAssemblyForUpload && (
+                <span className="ms-2 badge bg-primary">
+                  Assembly: {selectedAssemblyForUpload.assembly_name}
+                </span>
+              )}
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {selectedAssemblyForUpload && (
+              <SourceVersionFileUploadForm
+                sourceVersion={sourceVersion}
+                organisms={organismsArray}
+                assemblies={assembliesArray}
+                selectedAssembly={selectedAssemblyForUpload}
+                onSubmit={handleUploadFile}
+                onCancel={() => {
+                  setShowUploadForm(false);
+                  setSelectedAssemblyForUpload(null);
+                }}
+                onError={setFormError}
+                onSuccess={() => setFormSuccess('File uploaded successfully!')}
+              />
+            )}
+          </Modal.Body>
+        </Modal>
+
+        {/* Files Section - Grouped by Assembly */}
         <Col xs={12}>
           <Card>
             <Card.Header>
               <h5 className="mb-0">
                 <i className="fas fa-file-alt me-2"></i>
-                Uploaded Files
-                {sourceVersionDetails?.files && (
+                Uploaded Files by Assembly
+                {sourceVersionDetails?.assemblies && (
                   <Badge bg="info" className="ms-2">
-                    {Object.keys(sourceVersionDetails.files).length} file{Object.keys(sourceVersionDetails.files).length !== 1 ? 's' : ''}
+                    {sourceVersionDetails.assemblies.length} assembly{sourceVersionDetails.assemblies.length !== 1 ? 'ies' : 'y'}
                   </Badge>
                 )}
               </h5>
@@ -317,44 +406,77 @@ const SourceVersionDetail: React.FC = () => {
                   </Spinner>
                   <p className="text-muted">Loading files...</p>
                 </div>
-              ) : sourceVersionDetails?.files && Object.keys(sourceVersionDetails.files).length > 0 ? (
-                <div className="table-responsive">
-                  <Table striped hover>
-                    <thead>
-                      <tr>
-                        <th>Nomenclature</th>
-                        <th>File Type</th>
-                        <th>Description</th>
-                        <th>Path</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.values(sourceVersionDetails.files).map((file: any, index: number) => {
-                        console.log(`File ${index}:`, file);
-                        return (
-                        <tr key={file.file_key}>
-                          <td>
-                            <Badge bg="secondary">{file.nomenclature || 'Unknown'}</Badge>
-                          </td>
-                          <td>
-                            <Badge bg="primary">{file.filetype || 'Unknown'}</Badge>
-                          </td>
-                          <td>{file.file_description || 'No description'}</td>
-                          <td>
-                            <code className="small">{file.file_path}</code>
-                          </td>
-                        </tr>
-                        );
-                      })}
-                    </tbody>
-                  </Table>
+              ) : sourceVersionDetails?.assemblies && sourceVersionDetails.assemblies.length > 0 ? (
+                <div>
+                  {sourceVersionDetails.assemblies.map((assembly, index) => (
+                    <div key={assembly.sva_id}>
+                      {/* Assembly Header */}
+                      <div className="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded">
+                        <h6 className="mb-0">
+                          <i className="fas fa-database me-2"></i>
+                          {assembly.assembly_name}
+                          <Badge bg="secondary" className="ms-2">
+                            {Object.keys(assembly.files || {}).length} file{Object.keys(assembly.files || {}).length !== 1 ? 's' : ''}
+                          </Badge>
+                        </h6>
+                        <Button
+                          variant="outline-danger"
+                          size="sm"
+                          onClick={() => handleRemoveAssembly(assembly.assembly_id)}
+                        >
+                          <i className="fas fa-trash me-2"></i>
+                          Remove Assembly
+                        </Button>
+                      </div>
+                      
+                      {/* Assembly Files Table */}
+                      {assembly.files && Object.keys(assembly.files).length > 0 ? (
+                        <div className="table-responsive mb-4">
+                          <Table striped hover size="sm" className="border">
+                            <thead className="table-light">
+                              <tr>
+                                <th>Nomenclature</th>
+                                <th>File Type</th>
+                                <th>Path</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {Object.values(assembly.files).map((file: any, fileIndex: number) => (
+                                <tr key={file.file_key || fileIndex}>
+                                  <td>
+                                    <Badge bg="secondary">{file.nomenclature || 'Unknown'}</Badge>
+                                  </td>
+                                  <td>
+                                    <Badge bg="primary">{file.filetype || 'Unknown'}</Badge>
+                                  </td>
+                                  <td>
+                                    <code className="small">{file.file_path}</code>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </Table>
+                        </div>
+                      ) : (
+                        <div className="text-center py-3 bg-light rounded mb-4">
+                          <i className="fas fa-exclamation-triangle text-warning me-2"></i>
+                          <span className="text-muted">No files uploaded for this assembly</span>
+                        </div>
+                      )}
+                      
+                      {/* Separator between assemblies */}
+                      {index < sourceVersionDetails.assemblies.length - 1 && (
+                        <hr className="my-4" />
+                      )}
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div className="text-center py-4">
                   <i className="fas fa-file-alt fa-3x text-muted mb-3"></i>
                   <p className="text-muted">No files uploaded for this source version.</p>
                   <p className="text-muted small">
-                    Upload GTF/GFF files to get started.
+                    Upload GTF/GFF files for available assemblies to get started.
                   </p>
                 </div>
               )}

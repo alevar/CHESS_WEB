@@ -19,7 +19,7 @@ const OrganismsManagement: React.FC = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
 
-  const handleAddOrganism = async (organismData: Omit<Organism, 'taxonomy_id'> & { taxonomy_id: number }) => {
+  const handleAddOrganism = async (organismData: Organism) => {
     try {
       setFormError(null);
       setFormSuccess(null);
@@ -35,7 +35,7 @@ const OrganismsManagement: React.FC = () => {
     }
   };
 
-  const handleEditOrganism = async (taxonomy_id: number, organismData: Omit<Organism, 'taxonomy_id'>) => {
+  const handleEditOrganism = async (taxonomy_id: number, organismData: Organism) => {
     try {
       setFormError(null);
       setFormSuccess(null);

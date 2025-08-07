@@ -7,7 +7,7 @@ import Header from './components/Header';
 import './App.css';
 
 const App: React.FC = () => {
-  const { sources, assemblies, organisms, lastUpdated } = useSelector((state: RootState) => state.globalData);
+  const { sources, assemblies, organisms, configurations, lastUpdated } = useSelector((state: RootState) => state.globalData);
   const dispatch = useDispatch<AppDispatch>();
   const location = useLocation();
 

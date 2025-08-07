@@ -32,6 +32,17 @@ const AssemblyForm: React.FC<AssemblyFormProps> = ({
     });
   }, [assembly]);
 
+  // Reset form data when modal is opened for adding a new assembly
+  useEffect(() => {
+    if (show && !assembly) {
+      setFormData({
+        assembly_name: '',
+        taxonomy_id: 0,
+        information: '',
+      });
+    }
+  }, [show, assembly]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     

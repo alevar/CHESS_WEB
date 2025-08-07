@@ -313,16 +313,16 @@ def verify_annotation_file_upload_data(data) -> Dict:
         with temp_manager.managed_temp_file(name='gtf_file') as temp_gtf_file_path:
             data["file"].save(temp_gtf_file_path)
 
-        file_format = is_gff(temp_gtf_file_path)
-        if file_format == True:
-            file_format = "GFF"
-        elif file_format == False:
-            file_format = "GTF"
-        else:
-            return {
-                "success": False,
-                "message": "Invalid file format. Please upload a GTF or GFF file."
-            }
+        # file_format = is_gff(temp_gtf_file_path)
+        # if file_format == True:
+        #     file_format = "GFF"
+        # elif file_format == False:
+        #     file_format = "GTF"
+        # else:
+        #     return {
+        #         "success": False,
+        #         "message": "Invalid file format. Please upload a GTF or GFF file."
+        #     }
 
         # Create normalized GTF file path
         with temp_manager.managed_temp_file(name='normalized_gtf') as norm_gtf_path:
@@ -438,64 +438,7 @@ def confirm_and_process_annotation_file(confirmation_data: Dict) -> Dict:
         sva_id = result.lastrowid
         if not sva_id:
             return {"success": False,"message": "Failed to create entry in the source_version_assembly table"}
-
-        # now we need to process all attributes
-        for attribute_key, attribute_type in attribute_types.items():
-            existing_key = db.session.execute(
-                text("SELECT key_name FROM attribute_key WHERE key_name = :key_name"),
-                {"key_name": attribute_key}
-            ).fetchone()
-            
-            if not existing_key:
-                variable = 1 if attribute_type == "variable" else 0
-                db.session.execute(
-                    text("INSERT INTO attribute_key (key_name, variable, description) VALUES (:key_name, :variable, :description)"),
-                    {
-                        "key_name": attribute_key,
-                        "variable": variable,
-                        "description": f"Auto-generated key for {attribute_key}"
-                    }
-                )
                 
-                db.session.execute(
-                    text("INSERT INTO attribute_key_map (og_key, std_key) VALUES (:og_key, :std_key)"),
-                    {
-                        "og_key": attribute_key,
-                        "std_key": attribute_key
-                    }
-                )
-                
-                if attribute_type == "variable":
-                    db.session.execute(
-                        text("INSERT INTO attribute_key_value (key_name, value) VALUES (:key_name, '')"),
-                        {"key_name": attribute_key}
-                    )
-                    db.session.execute(
-                        text("INSERT INTO attribute_value_map (key_name, og_value, std_value) VALUES (:key_name, '', '')"),
-                        {"key_name": attribute_key}
-                    )
-                
-                if attribute_type == "categorical":
-                    attr_values = categorical_attribute_values.get(attribute_key, [])
-                    for attr_value in attr_values:
-                        transformed_attr_value = attr_value.replace("'","\\'").replace("\"","\\\"")
-                        
-                        existing_value = db.session.execute(
-                            text("SELECT value FROM attribute_key_value WHERE key_name = :key_name AND value = :value"),
-                            {"key_name": attribute_key, "value": transformed_attr_value}
-                        ).fetchone()
-                        
-                        if not existing_value:
-                            db.session.execute(
-                                text("INSERT INTO attribute_key_value (key_name, value) VALUES (:key_name, :value)"),
-                                {"key_name": attribute_key, "value": transformed_attr_value}
-                            )
-                            
-                            db.session.execute(
-                                text("INSERT INTO attribute_value_map (key_name, std_value, og_value) VALUES (:key_name, :std_value, :og_value)"),
-                                {"key_name": attribute_key, "std_value": transformed_attr_value, "og_value": transformed_attr_value}
-                            )
-        
         # extract current GTF for the database
         with temp_manager.managed_temp_file(name='db_gtf') as db_gtf_fname:
             to_gtf(assembly_id,selected_nomenclature,db_gtf_fname)
@@ -538,7 +481,10 @@ def confirm_and_process_annotation_file(confirmation_data: Dict) -> Dict:
                     raise Exception(f"Failed to insert transcript: {working_tid['message']}")
                 working_tid = working_tid["transcript_id"]
 
-            insert_dbxref(transcript,working_tid,working_gid,sva_id)
+            dbxref_res = insert_dbxref(transcript,working_tid,working_gid,sva_id)
+            if not dbxref_res["success"]:
+                raise Exception(f"Failed to insert dbxref: {dbxref_res['message']}")
+            
             for attribute_key, attribute_value in transcript.attributes.items():
                 if attribute_key in ["transcript_id", "gene_id"]:
                     continue
@@ -547,25 +493,39 @@ def confirm_and_process_annotation_file(confirmation_data: Dict) -> Dict:
                 
                 attribute_type = attribute_types[attribute_key]
                 
-                # For categorical attributes, values are already added upfront
                 value_text = ""
-                value = ""
+                value_cat = ""
                 if attribute_type == "categorical":
-                    value = attribute_value
+                    value_cat = attribute_value
                 else:
                     value_text = attribute_value
-                db.session.execute(
-                    text("INSERT INTO tx_attribute (tid, sva_id, transcript_id, name, value, value_text, key_text) VALUES (:tid, :sva_id, :transcript_id, :name, :value, :value_text, :key_text)"),
-                    {
-                        "tid": working_tid,
-                        "sva_id": sva_id,
-                        "transcript_id": transcript.tid,
-                        "name": attribute_key,
-                        "value": value,
-                        "value_text": value_text,
-                        "key_text": attribute_key
-                    }
-                )
+                try:
+                    # concatenate value and value_text if the primary key already exists
+                    db.session.execute(
+                        text("""INSERT INTO tx_attribute (tid, sva_id, transcript_id, key_name, value_cat, value_text) 
+                                VALUES (:tid, :sva_id, :transcript_id, :key_name, :value_cat, :value_text)
+                                ON DUPLICATE KEY UPDATE 
+                                value_cat = CASE 
+                                    WHEN value_cat = '' OR value_cat IS NULL THEN VALUES(value_cat)
+                                    WHEN VALUES(value_cat) = '' OR VALUES(value_cat) IS NULL THEN value_cat
+                                    ELSE CONCAT(value_cat, '; ', VALUES(value_cat))
+                                END,
+                                value_text = CASE 
+                                    WHEN value_text IS NULL OR value_text = '' THEN VALUES(value_text)
+                                    WHEN VALUES(value_text) IS NULL OR VALUES(value_text) = '' THEN value_text
+                                    ELSE CONCAT(value_text, '; ', VALUES(value_text))
+                                END"""),
+                        {
+                            "tid": working_tid,
+                            "sva_id": sva_id,
+                            "transcript_id": transcript.tid,
+                            "key_name": attribute_key,
+                            "value_cat": value_cat,
+                            "value_text": value_text
+                        }
+                    )
+                except Exception as e:
+                    raise e
 
         for target_nomenclature in db_seqids["nomenclatures"]:
             gtf_filename = f"{sva_id}_{target_nomenclature}.gtf"

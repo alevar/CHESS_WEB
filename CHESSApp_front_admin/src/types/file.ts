@@ -72,4 +72,5 @@ export interface AttributeMapping {
   gene_name_key: string;
   attribute_types: Record<string, 'categorical' | 'variable'>;
   categorical_attribute_values: Record<string, string[]>;
+  excluded_attributes: string[]; // New field to track attributes that should not be stored
 } 

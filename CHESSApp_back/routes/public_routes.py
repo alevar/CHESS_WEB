@@ -22,6 +22,7 @@ def global_data():
     assemblies = get_all_assemblies()
     nomenclatures = get_nomenclatures()
     genome_files = get_genome_files()
+    configurations = get_all_configurations()
 
     if not organisms["success"] or not assemblies["success"] or not sources["success"] or not nomenclatures["success"] or not genome_files["success"]:
         return jsonify({"error": "Failed to fetch organisms, assemblies, or sources, nomenclatures, or genome files`"}), 500
@@ -53,7 +54,8 @@ def global_data():
     data = {
         "organisms": organisms["data"],
         "assemblies": assemblies["data"],
-        "sources": sources
+        "sources": sources,
+        "configurations": configurations
     }
 
     return jsonify(data)
@@ -108,3 +110,21 @@ def get_assembly_nomenclatures(assembly_id):
         
     except Exception as e:
         return jsonify({"success": False, "message": f"Failed to get nomenclatures: {str(e)}"}), 500
+
+# ============================================================================
+# CONFIGURATIONS ROUTES
+# ============================================================================
+
+@public_bp.route('/configurations', methods=['GET'])
+def get_configurations():
+    """
+    Get all configurations
+    """
+    try:
+        configurations = get_all_configurations()
+        return jsonify({
+            "success": True,
+            "configurations": configurations
+        })
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Failed to get configurations: {str(e)}"}), 500

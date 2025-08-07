@@ -25,6 +25,7 @@ const SourceVersionFileUploadConfirmationModal: React.FC<SourceVersionFileUpload
   const [geneTypeKey, setGeneTypeKey] = useState<string>('');
   const [geneNameKey, setGeneNameKey] = useState<string>('');
   const [attributeTypes, setAttributeTypes] = useState<Record<string, 'categorical' | 'variable'>>({});
+  const [excludedAttributes, setExcludedAttributes] = useState<string[]>([]);
   const [confirming, setConfirming] = useState(false);
   const [activeTab, setActiveTab] = useState<'nomenclature' | 'attributes'>('nomenclature');
 
@@ -37,13 +38,14 @@ const SourceVersionFileUploadConfirmationModal: React.FC<SourceVersionFileUpload
     }
   }, [detectedNomenclatures]);
 
-  // Initialize attribute types
+  // Initialize attribute types and excluded attributes
   React.useEffect(() => {
     const initialTypes: Record<string, 'categorical' | 'variable'> = {};
     Object.keys(attributes).forEach(attrName => {
       initialTypes[attrName] = attributes[attrName].type;
     });
     setAttributeTypes(initialTypes);
+    setExcludedAttributes([]); // Reset excluded attributes
     
     // Debug logging
     console.log('Initializing attribute types:', initialTypes);
@@ -156,7 +158,8 @@ const SourceVersionFileUploadConfirmationModal: React.FC<SourceVersionFileUpload
         gene_type_key: geneTypeKey,
         gene_name_key: geneNameKey,
         attribute_types: attributeTypes,
-        categorical_attribute_values: categoricalAttributeValues
+        categorical_attribute_values: categoricalAttributeValues,
+        excluded_attributes: excludedAttributes
       };
       await onConfirm(selectedNomenclature, attributeMapping);
     } catch (error: any) {
@@ -372,10 +375,23 @@ const SourceVersionFileUploadConfirmationModal: React.FC<SourceVersionFileUpload
                     </h6>
                   </div>
                   <div className="card-body">
+                    <div className="alert alert-info">
+                      <i className="fas fa-info-circle me-2"></i>
+                      <strong>Attribute Management:</strong> Choose which attributes to store and how to categorize them.
+                      <br />
+                      <small className="text-muted">
+                        • <strong>Categorical:</strong> Attributes with a limited set of values (e.g., transcript types)
+                        <br />
+                        • <strong>Variable:</strong> Attributes with many unique values (e.g., gene names)
+                        <br />
+                        • <strong>Exclude:</strong> Attributes you don't want to store in the database
+                      </small>
+                    </div>
                     <div className="table-responsive">
                       <table className="table table-sm">
                         <thead>
                           <tr>
+                            <th>Include</th>
                             <th>Attribute Name</th>
                             <th>Type</th>
                             <th>Values</th>
@@ -385,17 +401,38 @@ const SourceVersionFileUploadConfirmationModal: React.FC<SourceVersionFileUpload
                         <tbody>
                           {attributeNames.map((attrName) => {
                             const attr = attributes[attrName];
+                            const isExcluded = excludedAttributes.includes(attrName);
                             return (
-                              <tr key={attrName}>
+                              <tr key={attrName} className={isExcluded ? 'table-secondary' : ''}>
+                                <td>
+                                  <div className="form-check">
+                                    <input
+                                      className="form-check-input"
+                                      type="checkbox"
+                                      checked={!isExcluded}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          setExcludedAttributes(prev => prev.filter(name => name !== attrName));
+                                        } else {
+                                          setExcludedAttributes(prev => [...prev, attrName]);
+                                        }
+                                      }}
+                                      disabled={confirming}
+                                    />
+                                  </div>
+                                </td>
                                 <td>
                                   <strong>{attrName}</strong>
+                                  {isExcluded && (
+                                    <span className="badge bg-secondary ms-2">Excluded</span>
+                                  )}
                                 </td>
                                 <td>
                                   <select
                                     className="form-select form-select-sm"
                                     value={attributeTypes[attrName]}
                                     onChange={(e) => handleAttributeTypeChange(attrName, e.target.value as 'categorical' | 'variable')}
-                                    disabled={confirming}
+                                    disabled={confirming || isExcluded}
                                   >
                                     <option value="categorical">Categorical</option>
                                     <option value="variable">Variable</option>
@@ -411,7 +448,7 @@ const SourceVersionFileUploadConfirmationModal: React.FC<SourceVersionFileUpload
                                   )}
                                 </td>
                                 <td>
-                                  {attr.type === 'categorical' && attr.values.length > 0 && (
+                                  {attr.type === 'categorical' && attr.values.length > 0 && !isExcluded && (
                                     <button
                                       type="button"
                                       className="btn btn-sm btn-outline-info"

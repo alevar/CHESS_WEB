@@ -14,7 +14,7 @@ import { StatsCard } from '../components/dashboard/StatsCard';
 import { QuickActionButton } from '../components/dashboard/QuickActionButton';
 
 const Dashboard: React.FC = () => {
-  const { sources, assemblies, organisms, loading, error } = useSelector(
+  const { sources, assemblies, organisms, configurations, loading, error } = useSelector(
     (state: RootState) => state.globalData
   );
   const navigate = useNavigate();
@@ -23,18 +23,20 @@ const Dashboard: React.FC = () => {
     navigate(`/${section}`);
   };
 
-  const hasData = sources && assemblies && organisms;
+  const hasData = sources && assemblies && organisms && configurations;
   const stats = hasData ? {
     organisms: Object.keys(organisms).length,
     assemblies: Object.keys(assemblies).length,
     sources: Object.keys(sources).length,
+    configurations: Object.keys(configurations).length,
   } : null;
 
-  const quickActions = [
+  const actions = [
     { icon: 'fas fa-database', label: 'Manage Database', section: 'database', variant: 'primary' },
     { icon: 'fas fa-dna', label: 'Manage Organisms', section: 'organisms', variant: 'primary' },
     { icon: 'fas fa-layer-group', label: 'Manage Assemblies', section: 'assemblies', variant: 'success' },
     { icon: 'fas fa-tags', label: 'Manage Sources', section: 'sources', variant: 'warning' },
+    { icon: 'fas fa-cogs', label: 'Manage Configurations', section: 'configurations', variant: 'secondary' },
   ];
 
   const renderStats = () => {
@@ -69,6 +71,7 @@ const Dashboard: React.FC = () => {
         <StatsCard count={stats!.organisms} label="Organisms" variant="primary" />
         <StatsCard count={stats!.assemblies} label="Assemblies" variant="success" />
         <StatsCard count={stats!.sources} label="Sources" variant="secondary" />
+        <StatsCard count={stats!.configurations} label="Configurations" variant="secondary" />
       </Row>
     );
   };
@@ -97,12 +100,12 @@ const Dashboard: React.FC = () => {
             <Card.Header>
               <h5 className="mb-0">
                 <i className="fas fa-bolt me-2" />
-                Quick Actions
+                Actions
               </h5>
             </Card.Header>
             <Card.Body>
               <Row>
-                {quickActions.map((action) => (
+                {actions.map((action) => (
                   <QuickActionButton
                     key={action.section}
                     icon={action.icon}

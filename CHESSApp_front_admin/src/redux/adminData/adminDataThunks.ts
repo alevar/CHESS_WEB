@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { Organism, Assembly, Source, SourceVersion, SourceVersionAssembly, SourceFile } from '../../types/db_types';
+import { Organism, Assembly, Source, SourceVersion, SourceFile, Configuration } from '../../types/db_types';
 
 const API_BASE_URL = 'http://localhost:5000/api';
 
@@ -619,6 +619,7 @@ export const confirmAnnotationUpload = createAsyncThunk(
       gene_name_key: string;
       attribute_types: Record<string, 'categorical' | 'variable'>;
       categorical_attribute_values: Record<string, string[]>;
+      excluded_attributes: string[];
       temp_file_path: string;
       norm_gtf_path: string;
       assembly_id: number;
@@ -649,6 +650,35 @@ export const confirmAnnotationUpload = createAsyncThunk(
   }
 );
 
+export const removeSourceVersionAssembly = createAsyncThunk(
+  'adminData/removeSourceVersionAssembly',
+  async ({ source_id, sv_id, assembly_id }: {
+    source_id: number;
+    sv_id: number;
+    assembly_id: number;
+  }, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/sources/${source_id}/source-versions/${sv_id}/assemblies/${assembly_id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        return rejectWithValue(result.message || 'Failed to remove assembly');
+      }
+      
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to remove assembly';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
 export const removeSourceVersionFile = createAsyncThunk(
   'adminData/removeSourceVersionFile',
   async (sourceFileID: number, { rejectWithValue }) => {
@@ -666,6 +696,106 @@ export const removeSourceVersionFile = createAsyncThunk(
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to remove file';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// ============================================================================
+// CONFIGURATION MANAGEMENT THUNKS
+// ============================================================================
+
+export const createConfiguration = createAsyncThunk(
+  'adminData/createConfiguration',
+  async (configData: Configuration, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/configurations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(configData),
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        return rejectWithValue(result.message || 'Failed to create configuration');
+      }
+      
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create configuration';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const updateConfiguration = createAsyncThunk(
+  'adminData/updateConfiguration',
+  async (configData: Configuration, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/configurations/${configData.configuration_id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(configData),
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        return rejectWithValue(result.message || 'Failed to update configuration');
+      }
+      
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update configuration';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const deleteConfiguration = createAsyncThunk(
+  'adminData/deleteConfiguration',
+  async (configurationId: number, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/configurations/${configurationId}`, {
+        method: 'DELETE',
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        return rejectWithValue(result.message || 'Failed to delete configuration');
+      }
+      
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete configuration';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const activateConfiguration = createAsyncThunk(
+  'adminData/activateConfiguration',
+  async (configurationId: number, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/configurations/${configurationId}/activate`, {
+        method: 'POST',
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        return rejectWithValue(result.message || 'Failed to activate configuration');
+      }
+      
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to activate configuration';
       return rejectWithValue(errorMessage);
     }
   }

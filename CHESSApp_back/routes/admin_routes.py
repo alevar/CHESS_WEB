@@ -5,6 +5,9 @@ from flask import Blueprint, jsonify, request
 from db.methods.database import admin as db_admin
 from db.methods.genomes import admin as genome_admin
 from db.methods.sources import admin as source_admin
+from db.methods.configurations import admin as config_admin
+from db.methods.configurations import utils as config_utils
+from db.methods.configurations import queries as config_queries
 from db.methods import db
 from sqlalchemy import text
 from middleware import *
@@ -379,6 +382,91 @@ def upload_nomenclature_tsv(assembly_id):
     finally:
         temp_manager = get_temp_file_manager()
         temp_manager.cleanup_all()
+
+# ============================================================================
+# CONFIGURATION MANAGEMENT ROUTES
+# ============================================================================
+
+@admin_bp.route('/configurations', methods=['POST'])
+@require_json
+@validate_required_fields(['description', 'organism_id', 'assembly_id', 'nomenclature', 'source_id', 'sv_id'])
+def create_configuration():
+    """
+    Create a new configuration
+    """
+    try:
+        data = request.get_json()
+        result = config_admin.create_configuration(data)
+        
+        if result["success"]:
+            db.session.commit()
+            return jsonify(result)
+        else:
+            db.session.rollback()
+            return jsonify(result), 400
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": f"Failed to create configuration: {str(e)}"}), 500
+
+@admin_bp.route('/configurations/<int:configuration_id>', methods=['PUT'])
+@require_json
+def update_configuration(configuration_id):
+    """
+    Update an existing configuration
+    """
+    try:
+        data = request.get_json()
+        result = config_admin.update_configuration(configuration_id, data)
+        
+        if result["success"]:
+            db.session.commit()
+            return jsonify(result)
+        else:
+            db.session.rollback()
+            return jsonify(result), 400
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": f"Failed to update configuration: {str(e)}"}), 500
+
+@admin_bp.route('/configurations/<int:configuration_id>', methods=['DELETE'])
+def delete_configuration(configuration_id):
+    """
+    Delete a configuration
+    """
+    try:
+        result = config_admin.delete_configuration(configuration_id)
+        
+        if result["success"]:
+            db.session.commit()
+            return jsonify(result)
+        else:
+            db.session.rollback()
+            return jsonify(result), 400
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": f"Failed to delete configuration: {str(e)}"}), 500
+
+@admin_bp.route('/configurations/<int:configuration_id>/activate', methods=['POST'])
+def activate_configuration(configuration_id):
+    """
+    Set a configuration as active
+    """
+    try:
+        result = config_admin.set_active_configuration(configuration_id)
+        
+        if result["success"]:
+            db.session.commit()
+            return jsonify(result)
+        else:
+            db.session.rollback()
+            return jsonify(result), 400
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": f"Failed to activate configuration: {str(e)}"}), 500
 
 @admin_bp.route('/assemblies/<int:assembly_id>/nomenclatures/<nomenclature>', methods=['DELETE'])
 def remove_nomenclature_from_assembly(assembly_id, nomenclature):

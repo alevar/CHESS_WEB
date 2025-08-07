@@ -13,6 +13,7 @@ import AssemblyDetail from './pages/AssemblyDetail';
 import SourceManagement from './pages/SourceManagement';
 import SourceDetail from './pages/SourceDetail';
 import SourceVersionDetail from './pages/SourceVersionDetail';
+import ConfigurationsManagement from './pages/ConfigurationsManagement';
 
 const routes = [
   {
@@ -27,6 +28,7 @@ const routes = [
       { path: 'sources', element: <SourceManagement /> },
       { path: 'sources/:sourceId', element: <SourceDetail /> },
       { path: 'sources/:sourceId/sv/:svId', element: <SourceVersionDetail /> },
+      { path: 'configurations', element: <ConfigurationsManagement /> },
     ],
   }
 ];

@@ -32,6 +32,18 @@ export const OrganismForm: React.FC<OrganismFormProps> = ({
     });
   }, [organism]);
 
+  // Reset form data when modal is opened for adding a new organism
+  useEffect(() => {
+    if (show && !organism) {
+      setFormData({
+        taxonomy_id: 0,
+        scientific_name: '',
+        common_name: '',
+        information: '',
+      });
+    }
+  }, [show, organism]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     

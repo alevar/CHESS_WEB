@@ -1,10 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { Source, Assembly, Organism } from '../../types';
+import { Source, Assembly, Organism, Configuration } from '../../types';
 
 export interface GlobalDataState {
   sources: { [source_id: number]: Source };
   assemblies: { [assembly_id: number]: Assembly };
   organisms: { [taxonomy_id: number]: Organism };
+  configurations: { [configuration_id: number]: Configuration };
   loading: boolean;
   error: string | null;
   lastUpdated: string | null;
@@ -14,6 +15,7 @@ const initialState: GlobalDataState = {
   sources: {},
   assemblies: {},
   organisms: {},
+  configurations: {},
   loading: false,
   error: null,
   lastUpdated: null,
@@ -31,6 +33,7 @@ const globalDataSlice = createSlice({
       state.sources = action.payload.sources || {};
       state.assemblies = action.payload.assemblies || {};
       state.organisms = action.payload.organisms || {};
+      state.configurations = action.payload.configurations || {};
       state.loading = false;
       state.error = null;
       state.lastUpdated = new Date().toISOString();
@@ -43,6 +46,7 @@ const globalDataSlice = createSlice({
       state.sources = {};
       state.assemblies = {};
       state.organisms = {};
+      state.configurations = {};
       state.lastUpdated = null;
       state.loading = false;
       state.error = null;

@@ -8,7 +8,7 @@ export const fetchGlobalData = createAsyncThunk(
   async (_, { dispatch }) => {
     dispatch(setLoading());
     try {
-      const response = await fetch(`${API_BASE_URL}/main/globalData`);
+      const response = await fetch(`${API_BASE_URL}/public/globalData`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -19,6 +19,7 @@ export const fetchGlobalData = createAsyncThunk(
         organisms: data.organisms || {},
         assemblies: data.assemblies || {},
         sources: data.sources || {},
+        configurations: data.configurations || {},
       };
       
       dispatch(setGlobalData(globalData));
