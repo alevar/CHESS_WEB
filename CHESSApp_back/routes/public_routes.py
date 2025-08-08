@@ -23,9 +23,10 @@ def global_data():
     nomenclatures = get_nomenclatures()
     genome_files = get_genome_files()
     configurations = get_all_configurations()
+    datasets = get_all_datasets()
 
-    if not organisms["success"] or not assemblies["success"] or not sources["success"] or not nomenclatures["success"] or not genome_files["success"]:
-        return jsonify({"error": "Failed to fetch organisms, assemblies, or sources, nomenclatures, or genome files`"}), 500
+    if not organisms["success"] or not assemblies["success"] or not sources["success"] or not nomenclatures["success"] or not genome_files["success"] or not datasets["success"]:
+        return jsonify({"error": "Failed to fetch organisms, assemblies, sources, nomenclatures, genome files, or datasets"}), 500
     
     sources = organize_all_source_versions(sources["data"])
     nomenclatures = organize_nomenclatures(nomenclatures["data"])
@@ -55,7 +56,8 @@ def global_data():
         "organisms": organisms["data"],
         "assemblies": assemblies["data"],
         "sources": sources,
-        "configurations": configurations
+        "configurations": configurations,
+        "datasets": datasets["data"] if isinstance(datasets, dict) and "data" in datasets else datasets
     }
 
     return jsonify(data)

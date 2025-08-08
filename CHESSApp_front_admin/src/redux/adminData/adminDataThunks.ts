@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { Organism, Assembly, Source, SourceVersion, SourceFile, Configuration } from '../../types/db_types';
+import { Organism, Assembly, Source, SourceVersion, SourceFile, Configuration, Dataset, TranscriptData } from '../../types/db_types';
 
 const API_BASE_URL = 'http://localhost:5000/api';
 
@@ -796,6 +796,165 @@ export const activateConfiguration = createAsyncThunk(
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to activate configuration';
+      return rejectWithValue(errorMessage);
+    }
+  }
+); 
+
+// ============================================================================
+// DATASET MANAGEMENT THUNKS
+// ============================================================================
+
+export const createDataset = createAsyncThunk(
+  'adminData/createDataset',
+  async (datasetData: Partial<Dataset> & { file?: File; sva_id?: number }, { rejectWithValue }) => {
+    try {
+      const formData = new FormData();
+      formData.append('name', datasetData.name!);
+      formData.append('description', datasetData.description!);
+      formData.append('data_type', datasetData.data_type!);
+      
+      if (datasetData.sva_id) {
+        formData.append('sva_id', datasetData.sva_id.toString());
+      }
+      
+      if (datasetData.file) {
+        formData.append('file', datasetData.file);
+      }
+
+      const response = await fetch(`${API_BASE_URL}/admin/datasets`, {
+        method: 'POST',
+        body: formData,
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        return rejectWithValue(result.message || 'Failed to create dataset');
+      }
+      
+      return result.dataset;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create dataset';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const updateDataset = createAsyncThunk(
+  'adminData/updateDataset',
+  async ({ datasetId, datasetData }: { datasetId: number; datasetData: Partial<Dataset> }, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/datasets/${datasetId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(datasetData),
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        return rejectWithValue(result.message || 'Failed to update dataset');
+      }
+      
+      return result.dataset;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update dataset';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const deleteDataset = createAsyncThunk(
+  'adminData/deleteDataset',
+  async (datasetId: number, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/datasets/${datasetId}`, {
+        method: 'DELETE',
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        return rejectWithValue(result.message || 'Failed to delete dataset');
+      }
+      
+      return { datasetId, message: result.message };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete dataset';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const fetchDataset = createAsyncThunk(
+  'adminData/fetchDataset',
+  async (datasetId: number, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/datasets/${datasetId}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data.dataset;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch dataset';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Transcript data operations
+export const fetchTranscriptData = createAsyncThunk(
+  'adminData/fetchTranscriptData',
+  async (datasetId: number, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/datasets/${datasetId}/transcript_data`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data.transcript_data || [];
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch transcript data';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const uploadTranscriptData = createAsyncThunk(
+  'adminData/uploadTranscriptData',
+  async (uploadData: {
+    dataset_id: number;
+    sva_id: number;
+    data_type: string;
+    file: File;
+  }, { rejectWithValue }) => {
+    try {
+      const formData = new FormData();
+      formData.append('dataset_id', uploadData.dataset_id.toString());
+      formData.append('sva_id', uploadData.sva_id.toString());
+      formData.append('data_type', uploadData.data_type);
+      formData.append('file', uploadData.file);
+
+      const response = await fetch(`${API_BASE_URL}/admin/datasets/${uploadData.dataset_id}/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        return rejectWithValue(result.message || 'Failed to upload transcript data');
+      }
+      
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to upload transcript data';
       return rejectWithValue(errorMessage);
     }
   }

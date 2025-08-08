@@ -20,6 +20,7 @@ export const fetchGlobalData = createAsyncThunk(
         assemblies: data.assemblies || {},
         sources: data.sources || {},
         configurations: data.configurations || {},
+        datasets: data.datasets || {},
       };
       
       dispatch(setGlobalData(globalData));

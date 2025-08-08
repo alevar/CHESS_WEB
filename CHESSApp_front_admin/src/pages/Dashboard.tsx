@@ -14,7 +14,7 @@ import { StatsCard } from '../components/dashboard/StatsCard';
 import { QuickActionButton } from '../components/dashboard/QuickActionButton';
 
 const Dashboard: React.FC = () => {
-  const { sources, assemblies, organisms, configurations, loading, error } = useSelector(
+  const { sources, assemblies, organisms, configurations, datasets, loading, error } = useSelector(
     (state: RootState) => state.globalData
   );
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ const Dashboard: React.FC = () => {
     navigate(`/${section}`);
   };
 
-  const hasData = sources && assemblies && organisms && configurations;
+  const hasData = sources && assemblies && organisms && configurations && datasets;
   const stats = hasData ? {
     organisms: Object.keys(organisms).length,
     assemblies: Object.keys(assemblies).length,
@@ -37,6 +37,7 @@ const Dashboard: React.FC = () => {
     { icon: 'fas fa-layer-group', label: 'Manage Assemblies', section: 'assemblies', variant: 'success' },
     { icon: 'fas fa-tags', label: 'Manage Sources', section: 'sources', variant: 'warning' },
     { icon: 'fas fa-cogs', label: 'Manage Configurations', section: 'configurations', variant: 'secondary' },
+    { icon: 'fas fa-chart-bar', label: 'Manage Datasets', section: 'datasets', variant: 'info' },
   ];
 
   const renderStats = () => {

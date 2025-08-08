@@ -11,3 +11,13 @@ export interface DatabaseTableData {
   rows: any[][];
   search_term?: string;
 }
+
+export interface TranscriptDataUpload {
+  dataset_id: number;
+  organism_id: number;
+  assembly_id: number;
+  source_id: number;
+  source_version_id: number;
+  data_type: string;
+  file: File;
+}

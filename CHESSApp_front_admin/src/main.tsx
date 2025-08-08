@@ -14,6 +14,7 @@ import SourceManagement from './pages/SourceManagement';
 import SourceDetail from './pages/SourceDetail';
 import SourceVersionDetail from './pages/SourceVersionDetail';
 import ConfigurationsManagement from './pages/ConfigurationsManagement';
+import DatasetsManagement from './pages/DatasetsManagement';
 
 const routes = [
   {
@@ -29,6 +30,7 @@ const routes = [
       { path: 'sources/:sourceId', element: <SourceDetail /> },
       { path: 'sources/:sourceId/sv/:svId', element: <SourceVersionDetail /> },
       { path: 'configurations', element: <ConfigurationsManagement /> },
+      { path: 'datasets', element: <DatasetsManagement /> },
     ],
   }
 ];

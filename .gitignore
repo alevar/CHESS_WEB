@@ -3,7 +3,7 @@
 
 # Database
 # ========
-CHESSApp_DB/data/
+*data/
 CHESSApp_DB/production/
 CHESSApp_DB/*.sql
 CHESSApp_DB/*.sqlite

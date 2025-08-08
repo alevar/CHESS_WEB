@@ -5,6 +5,7 @@ from flask import Blueprint, jsonify, request
 from db.methods.database import admin as db_admin
 from db.methods.genomes import admin as genome_admin
 from db.methods.sources import admin as source_admin
+from db.methods.datasets import admin as dataset_admin
 from db.methods.configurations import admin as config_admin
 from db.methods.configurations import utils as config_utils
 from db.methods.configurations import queries as config_queries
@@ -716,3 +717,112 @@ def confirm_annotation_upload(source_id, sv_id):
     finally:
         temp_manager = get_temp_file_manager()
         temp_manager.cleanup_all()
+
+# ============================================================================
+# DATASET MANAGEMENT ROUTES
+# ============================================================================
+
+@admin_bp.route('/datasets', methods=['POST'])
+@validate_content_length(max_size_mb=1000)
+def create_dataset():
+    """
+    Create a new dataset with TSV file upload.
+    """
+    try:
+        # Check if file was uploaded
+        if 'file' not in request.files:
+            return jsonify({"success": False, "message": "No file provided"}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({"success": False, "message": "No file selected"}), 400
+        
+        # Get form data
+        name = request.form.get('name', '').strip()
+        description = request.form.get('description', '').strip()
+        data_type = request.form.get('data_type', '').strip()
+        sva_id = request.form.get('sva_id')
+        
+        # Validate required fields
+        if not name:
+            return jsonify({"success": False, "message": "Dataset name is required"}), 400
+        
+        if not description:
+            return jsonify({"success": False, "message": "Dataset description is required"}), 400
+        
+        if not data_type:
+            return jsonify({"success": False, "message": "Data type is required"}), 400
+        
+        if not sva_id:
+            return jsonify({"success": False, "message": "Source version assembly ID is required"}), 400
+        
+        try:
+            sva_id = int(sva_id)
+        except (ValueError, TypeError):
+            return jsonify({"success": False, "message": "Source version assembly ID must be a valid integer"}), 400
+        
+        dataset_data = {
+            "name": name,
+            "description": description,
+            "data_type": data_type,
+            "sva_id": sva_id,
+            "file": file
+        }
+        
+        result = dataset_admin.create_dataset(dataset_data)
+        if result["success"]:
+            db.session.commit()
+            return jsonify(result)
+        else:
+            db.session.rollback()
+            return jsonify(result), 400
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": f"Failed to create dataset: {str(e)}"}), 500
+
+@admin_bp.route('/datasets/<int:dataset_id>', methods=['PUT'])
+@require_json
+@validate_required_fields(['name', 'description'])
+def update_dataset(dataset_id):
+    """
+    Update an existing dataset.
+    """
+    try:
+        data = request.get_json()
+
+        dataset_data = {
+            "name": data['name'].strip(),
+            "description": data.get('description', '').strip(),
+            "data_type": data.get('data_type', '').strip()
+        }
+        
+        result = dataset_admin.update_dataset(dataset_id, dataset_data)
+        if result["success"]:
+            db.session.commit()
+            return jsonify(result)
+        else:
+            db.session.rollback()
+            return jsonify(result), 400
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": f"Failed to update dataset: {str(e)}"}), 500
+
+@admin_bp.route('/datasets/<int:dataset_id>', methods=['DELETE'])
+def delete_dataset(dataset_id):
+    """
+    Delete a dataset.
+    """
+    try:
+        result = dataset_admin.delete_dataset(dataset_id)
+        if result["success"]:
+            db.session.commit()
+            return jsonify(result)
+        else:
+            db.session.rollback()
+            return jsonify(result), 400
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": f"Failed to delete dataset: {str(e)}"}), 500

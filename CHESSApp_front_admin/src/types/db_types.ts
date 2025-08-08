@@ -83,3 +83,20 @@ export interface Configuration {
   sv_id: number;
 }
 
+// Dataset management types
+export interface Dataset {
+  dataset_id: number;
+  name: string;
+  description: string;
+  data_type: string;
+}
+
+export interface TranscriptData {
+  td_id: number;
+  tid: number;
+  sva_id: number;
+  transcript_id: string;
+  dataset_id: number;
+  data: string;
+}
+

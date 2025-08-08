@@ -1,0 +1,96 @@
+.datasets-management {
+  padding: 20px;
+}
+
+.datasets-header {
+  margin-bottom: 30px;
+}
+
+.datasets-title {
+  color: #2c3e50;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.datasets-subtitle {
+  color: #7f8c8d;
+  margin-bottom: 0;
+}
+
+.datasets-table {
+  margin-top: 20px;
+}
+
+.datasets-table th {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+  color: #495057;
+  font-weight: 600;
+}
+
+.datasets-table td {
+  vertical-align: middle;
+}
+
+.datasets-table .btn-group {
+  gap: 5px;
+}
+
+.datasets-table .btn-group .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.datasets-table .text-truncate {
+  max-width: 300px;
+}
+
+/* Modal styles */
+.modal-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.modal-title {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+/* Form styles */
+.form-label {
+  font-weight: 500;
+  color: #495057;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Badge styles */
+.badge {
+  font-size: 0.75em;
+  padding: 0.35em 0.65em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .datasets-header .d-flex {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .datasets-table {
+    font-size: 0.875rem;
+  }
+  
+  .datasets-table .btn-group {
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .datasets-table .btn-group .btn {
+    width: 100%;
+  }
+} 
