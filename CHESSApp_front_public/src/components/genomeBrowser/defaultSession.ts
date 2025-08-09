@@ -1,4 +1,10 @@
-export const getDefaultSession = (accession_id: string) => {
+export interface BrowserSessionProps {
+  assembly_name: string;
+  assembly_id: number;
+  nomenclature: string;
+}
+
+export const getDefaultSession = (session: BrowserSessionProps) => {
   return {
     "id": "MoEhmcAxUwmpuPBDxDdrl",
     "name": "this session",

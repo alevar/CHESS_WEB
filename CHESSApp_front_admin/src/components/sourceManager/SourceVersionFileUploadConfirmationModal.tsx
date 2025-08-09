@@ -368,11 +368,33 @@ const SourceVersionFileUploadConfirmationModal: React.FC<SourceVersionFileUpload
 
                 {/* Attribute Type Configuration */}
                 <div className="card">
-                  <div className="card-header">
+                  <div className="card-header d-flex justify-content-between align-items-center">
                     <h6 className="mb-0">
                       <i className="fas fa-list me-2"></i>
                       Attribute Type Configuration
                     </h6>
+                    <div className="btn-group" role="group">
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={() => setExcludedAttributes([])}
+                        disabled={confirming}
+                        title="Include all attributes"
+                      >
+                        <i className="fas fa-check-square me-1"></i>
+                        Check All
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={() => setExcludedAttributes(attributeNames)}
+                        disabled={confirming}
+                        title="Exclude all attributes"
+                      >
+                        <i className="fas fa-square me-1"></i>
+                        Uncheck All
+                      </button>
+                    </div>
                   </div>
                   <div className="card-body">
                     <div className="alert alert-info">

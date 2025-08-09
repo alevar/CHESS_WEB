@@ -84,17 +84,26 @@ def get_all_assemblies():
     except Exception as e:
         return {"success": False, "message": str(e)}
 
-def get_all_source_files(assembly_id: int, source_nomenclature: str, filetype: str):
+def get_all_source_files(assembly_id: int, source_nomenclature: str, filetype: str=None):
     try:
-        result = db.session.execute(text("""
+        # Build the base query
+        base_query = """
             SELECT file_path, sva_id, assembly_id, nomenclature, filetype, description
             FROM source_file
-            WHERE assembly_id = :assembly_id AND nomenclature = :source_nomenclature AND filetype = :filetype
-        """), {
+            WHERE assembly_id = :assembly_id AND nomenclature = :source_nomenclature
+        """
+
+        params = {
             "assembly_id": assembly_id,
-            "source_nomenclature": source_nomenclature,
-            "filetype": filetype
-        }).fetchall()
+            "source_nomenclature": source_nomenclature
+        }
+
+        # Add filetype condition only if specified
+        if filetype is not None:
+            base_query += " AND filetype = :filetype"
+            params["filetype"] = filetype
+
+        result = db.session.execute(text(base_query), params).fetchall()
 
         return {"success": True, "data": result}
     except Exception as e:
@@ -163,3 +172,68 @@ def get_genome_files():
         return {"success": True, "data": genome_files}
     except Exception as e:
         return {"success": False, "message": str(e)}
+
+def get_fasta_file(assembly_id, nomenclature):
+    """
+    Get the FASTA file path for a specific assembly and nomenclature.
+    Returns: {"file_path": directory_path, "file_name": filename}
+    """
+    try:
+        # Query the genome_file table for the specific assembly and nomenclature
+        result = db.session.execute(text("""
+            SELECT file_path FROM genome_file 
+            WHERE assembly_id = :assembly_id AND nomenclature = :nomenclature
+        """), {
+            "assembly_id": assembly_id,
+            "nomenclature": nomenclature
+        }).fetchone()
+        
+        if not result:
+            raise Exception(f"No FASTA file found for assembly {assembly_id} with nomenclature '{nomenclature}'")
+        
+        file_path = result.file_path
+        
+        # Split into directory and filename
+        directory_path = os.path.dirname(file_path)
+        file_name = os.path.basename(file_path)
+        
+        # Verify file exists
+        if not os.path.exists(file_path):
+            raise Exception(f"FASTA file not found at path: {file_path}")
+        
+        return {
+            "file_path": directory_path,
+            "file_name": file_name
+        }
+        
+    except Exception as e:
+        raise Exception(f"Error retrieving FASTA file: {str(e)}")
+
+def get_fai_file(assembly_id, nomenclature):
+    """
+    Get the FAI (FASTA index) file path for a specific assembly and nomenclature.
+    Returns: {"file_path": directory_path, "file_name": filename}
+    """
+    try:
+        # Get the FASTA file path first
+        fasta_info = get_fasta_file(assembly_id, nomenclature)
+        
+        # FAI file has the same name as FASTA with .fai extension
+        fasta_file_path = os.path.join(fasta_info["file_path"], fasta_info["file_name"])
+        fai_file_path = fasta_file_path + ".fai"
+        
+        # Verify FAI file exists
+        if not os.path.exists(fai_file_path):
+            raise Exception(f"FAI index file not found at path: {fai_file_path}")
+        
+        directory_path = os.path.dirname(fai_file_path)
+        file_name = os.path.basename(fai_file_path)
+        
+        return {
+            "file_path": directory_path,
+            "file_name": file_name
+        }
+        
+    except Exception as e:
+        raise Exception(f"Error retrieving FAI file: {str(e)}")
+        

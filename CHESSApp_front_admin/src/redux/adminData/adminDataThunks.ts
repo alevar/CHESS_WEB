@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { Organism, Assembly, Source, SourceVersion, SourceFile, Configuration, Dataset, TranscriptData } from '../../types/db_types';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'http://localhost:5001/api';
 
 export const fetchDatabaseList = createAsyncThunk(
   'adminData/fetchDatabaseList',
@@ -652,13 +652,13 @@ export const confirmAnnotationUpload = createAsyncThunk(
 
 export const removeSourceVersionAssembly = createAsyncThunk(
   'adminData/removeSourceVersionAssembly',
-  async ({ source_id, sv_id, assembly_id }: {
+  async ({ source_id, sv_id, sva_id }: {
     source_id: number;
     sv_id: number;
-    assembly_id: number;
+    sva_id: number;
   }, { rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/sources/${source_id}/source-versions/${sv_id}/assemblies/${assembly_id}`, {
+      const response = await fetch(`${API_BASE_URL}/admin/sources/${source_id}/source-versions/${sv_id}/assemblies/${sva_id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

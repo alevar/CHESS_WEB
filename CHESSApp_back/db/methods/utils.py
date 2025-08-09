@@ -268,7 +268,7 @@ def read_gffread_gtf(infname:str):
         assert not len(transcript_lines)==0,"empty transcript lines for: "+current_tid
         yield transcript_lines 
 
-def convert_nomenclature(input_gtf:str,output_gtf:str,seqid_map:dict):
+def convert_gtf_nomenclature(input_gtf:str,output_gtf:str,seqid_map:dict):
     assert os.path.exists(input_gtf),"input file does not exist: "+input_gtf
 
     with open(input_gtf,"r") as inFP, open(output_gtf,"w") as outFP:
@@ -326,3 +326,80 @@ def run_gffread_gtf_to_gff(gtf_file: str, gff_file: str):
    
     proc = subprocess.Popen(cmd, stderr=subprocess.PIPE)
     proc.wait()
+
+def prepare_source_files_from_gtf(input_gtf_file: str, source_file_base_name: str):
+    """
+    Generates all files to represent the source annotation in the database.
+    
+    Args:
+        gtf_file: Path to input GTF file
+    """
+
+    result = {
+        "gtf_file": {
+            "file_type": "gtf",
+            "file_path": source_file_base_name + ".gtf.gz",
+            "description": "GTF file for source version assembly " + source_file_base_name
+        },
+        "gff_file": {
+            "file_type": "gff",
+            "file_path": source_file_base_name + ".gff.gz",
+            "description": "GFF file for source version assembly " + source_file_base_name
+        },
+        "sorted_gff_file_bgz": {
+            "file_type": "sorted_gff_bgz",
+            "file_path": source_file_base_name + ".sorted.gff.gz",
+            "description": "Sorted GFF file for source version assembly " + source_file_base_name
+        },
+        "sorted_gff_file_bgz_tbi": {
+            "file_type": "sorted_gff_bgz_tbi",
+            "file_path": source_file_base_name + ".sorted.gff.gz.tbi",
+            "description": "Tabix index for sorted GFF file for source version assembly " + source_file_base_name
+        }
+    }
+
+    assert os.path.exists(input_gtf_file), "GTF file does not exist: " + input_gtf_file
+
+    try:
+        # Create a gtf_file from the input_gtf_file by compressing it
+        gzip_cmd = f"gzip -c {input_gtf_file} > {result['gtf_file']['file_path']}"
+        subprocess.run(gzip_cmd, shell=True, check=True)
+    except Exception as e:
+        raise f"Error creating gtf_file: {e}"
+
+    try:
+        # Use the gtf_file to create a gff_file
+        run_gffread_gtf_to_gff(input_gtf_file, result["gff_file"]["file_path"].rstrip(".gz"))
+    except Exception as e:
+        raise f"Error creating gff_file: {e}"
+
+    # Compress the gff_file - no need to keep the original gff_file
+    try:
+        gzip_cmd = f"gzip -f {result['gff_file']['file_path'].rstrip('.gz')}"
+        subprocess.run(gzip_cmd, shell=True, check=True)
+    except Exception as e:
+        raise f"Error compressing gff_file: {e}"
+
+    # Sort the gff_file
+    try:
+        base = source_file_base_name
+        sort_cmd = f"gffread -F --keep-exon-attrs -o- {input_gtf_file} | sort -t$'\t' -k1,1 -k4,4n > {result['sorted_gff_file_bgz']['file_path'].rstrip('.gz')}"
+        subprocess.run(sort_cmd, shell=True, check=True)
+    except Exception as e:
+        raise f"Error sorting gff_file: {e}"
+    
+    # Compress the sorted gff_file - no need to keep the original sorted gff_file
+    try:
+        bgzip_cmd = f"bgzip -f {result['sorted_gff_file_bgz']['file_path'].rstrip('.gz')}"
+        subprocess.run(bgzip_cmd, shell=True, check=True)
+    except Exception as e:
+        raise f"Error compressing sorted gff_file: {e}"
+
+    # Index the sorted gff_file
+    try:
+        tabix_cmd = f"tabix -p gff {result['sorted_gff_file_bgz']['file_path']}"
+        subprocess.run(tabix_cmd, shell=True, check=True)
+    except Exception as e:
+        raise f"Error indexing sorted gff_file: {e}"
+
+    return result

@@ -206,7 +206,7 @@ const SourceVersionDetail: React.FC = () => {
       await dispatch(removeSourceVersionAssembly({ 
         source_id: parseInt(sourceId!), 
         sv_id: parseInt(svId!), 
-        assembly_id: assemblyId 
+        sva_id: assemblyId 
       })).unwrap();
       
       setFormSuccess('Assembly removed successfully!');
@@ -393,7 +393,7 @@ const SourceVersionDetail: React.FC = () => {
                 Uploaded Files by Assembly
                 {sourceVersionDetails?.assemblies && (
                   <Badge bg="info" className="ms-2">
-                    {sourceVersionDetails.assemblies.length} assembly{sourceVersionDetails.assemblies.length !== 1 ? 'ies' : 'y'}
+                    {sourceVersionDetails.assemblies.length} assembl{sourceVersionDetails.assemblies.length !== 1 ? 'ies' : 'y'}
                   </Badge>
                 )}
               </h5>
@@ -422,7 +422,7 @@ const SourceVersionDetail: React.FC = () => {
                         <Button
                           variant="outline-danger"
                           size="sm"
-                          onClick={() => handleRemoveAssembly(assembly.assembly_id)}
+                          onClick={() => handleRemoveAssembly(assembly.sva_id)}
                         >
                           <i className="fas fa-trash me-2"></i>
                           Remove Assembly

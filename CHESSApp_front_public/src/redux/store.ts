@@ -1,12 +1,14 @@
 // src/redux/store.ts
 import { configureStore } from '@reduxjs/toolkit';
 import rootReducer from './rootReducer';
-import { lociApi } from './GenomeBrowser/lociApi';
 
 export const store = configureStore({
   reducer: rootReducer,
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(lociApi.middleware),
+  middleware: (getDefaultMiddleware) => {
+    return getDefaultMiddleware({
+      serializableCheck: false,
+    });
+  }
 });
 
 export type RootState = ReturnType<typeof store.getState>;

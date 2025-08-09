@@ -8,9 +8,13 @@ CHESSApp_DB/production/
 CHESSApp_DB/*.sql
 CHESSApp_DB/*.sqlite
 CHESSApp_DB/*.db
+CHESSApp_DB/production/
+CHESSApp_DB/backups/
 
 # Python Flask Backend (CHESSApp_back)
 # ====================================
+CHESSApp_back/data
+CHESSApp_back/backups
 __pycache__/
 *.py[cod]
 *$py.class
@@ -253,7 +257,6 @@ tmp/
 temp/
 
 # Editor directories and files
-.vscode/
 .idea/
 *.swp
 *.swo

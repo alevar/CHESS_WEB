@@ -22,6 +22,8 @@ def setup_cors(app: Flask, app_type: str = 'public'):
         origins = [
             'http://localhost:5112',
             'http://127.0.0.1:5112',
+            'http://localhost:5113',
+            'http://127.0.0.1:5113',
         ]
         
         CORS(app, 

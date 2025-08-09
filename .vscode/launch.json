@@ -5,48 +5,52 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Public Backend",
+            "name": "Public Backend (Port 5000)",
             "type": "python",
             "request": "launch",
+            "program": "${workspaceFolder}/CHESSApp_back/app_public.py",
             "cwd": "${workspaceFolder}/CHESSApp_back",
-            "module": "flask",
             "env": {
-                "FLASK_APP": "app_public.py",
-                "FLASK_DEBUG": "1",
+                "CONDA_DEFAULT_ENV": "CHESS_WEB",
+                "CONDA_PREFIX": "/ccb/salz7-home/avaraby1/miniconda3/envs/CHESS_WEB",
+                "PATH": "/ccb/salz7-home/avaraby1/miniconda3/envs/CHESS_WEB/bin:${env:PATH}",
                 "CHESSDB_HOST":"localhost",
                 "CHESSDB_NAME":"CHESS_DB",
                 "CHESSDB_PASS":"qwerty",
-                "CHESSDB_USER":"chess_master"
+                "CHESSDB_USER":"chess_master",
+                "CHESS_PUBLIC_PORT": "5000"
             },
             "args": [
-                "run",
-                "--without-threads"
+                "--port", "5000"
             ],
+            "console": "integratedTerminal",
             "jinja": true,
             "justMyCode": true,
-            "pythonPath": "/ccb/salz7-home/avaraby1/miniconda3/envs/CHESS_WEB/bin/python"
+            "python": "/ccb/salz7-home/avaraby1/miniconda3/envs/CHESS_WEB/bin/python"
         },
         {
-            "name": "Admin Backend",
+            "name": "Admin Backend (Port 5001)",
             "type": "python",
             "request": "launch",
+            "program": "${workspaceFolder}/CHESSApp_back/app_admin.py",
             "cwd": "${workspaceFolder}/CHESSApp_back",
-            "module": "flask",
             "env": {
-                "FLASK_APP": "app_admin.py",
-                "FLASK_DEBUG": "1",
+                "CONDA_DEFAULT_ENV": "CHESS_WEB",
+                "CONDA_PREFIX": "/ccb/salz7-home/avaraby1/miniconda3/envs/CHESS_WEB",
+                "PATH": "/ccb/salz7-home/avaraby1/miniconda3/envs/CHESS_WEB/bin:${env:PATH}",
                 "CHESSDB_HOST":"localhost",
                 "CHESSDB_NAME":"CHESS_DB",
                 "CHESSDB_PASS":"qwerty",
-                "CHESSDB_USER":"chess_master"
+                "CHESSDB_USER":"chess_master",
+                "CHESS_ADMIN_PORT": "5001"
             },
             "args": [
-                "run",
-                "--without-threads"
+                "--port", "5001"
             ],
+            "console": "integratedTerminal",
             "jinja": true,
             "justMyCode": true,
-            "pythonPath": "/ccb/salz7-home/avaraby1/miniconda3/envs/CHESS_WEB/bin/python"
+            "python": "/ccb/salz7-home/avaraby1/miniconda3/envs/CHESS_WEB/bin/python"
         },
     ]
 }

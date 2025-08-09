@@ -1,10 +1,10 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { setLoading, setGlobalData, setError } from './globalDataSlice';
+import { setLoading, setDbData, setError } from './dbDataSlice';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = 'http://localhost:5000/api';
 
-export const fetchGlobalData = createAsyncThunk(
-  'globalData/fetchGlobalData',
+export const fetchDbData = createAsyncThunk(
+  'dbData/fetchDbData',
   async (_, { dispatch }) => {
     dispatch(setLoading());
     try {
@@ -15,7 +15,7 @@ export const fetchGlobalData = createAsyncThunk(
       
       const data = await response.json();
       
-      const globalData = {
+      const dbData = {
         organisms: data.organisms || {},
         assemblies: data.assemblies || {},
         sources: data.sources || {},
@@ -23,12 +23,12 @@ export const fetchGlobalData = createAsyncThunk(
         datasets: data.datasets || {},
       };
       
-      dispatch(setGlobalData(globalData));
-      return globalData;
+      dispatch(setDbData(dbData));
+      return dbData;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch global data';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch database data';
       dispatch(setError(errorMessage));
       throw error;
     }
   }
-); 
+);

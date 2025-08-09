@@ -55,7 +55,23 @@ def middleware_stats():
     }
 
 if __name__ == '__main__':
-    print("🚀 Starting CHESS Web App - public (Read-Only) on port 5000")
+    import argparse
+    import os
+    
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='CHESS Web App - Public Interface')
+    parser.add_argument('--port', '-p', type=int, default=None,
+                       help='Port to run the public server on (default: 5000)')
+    parser.add_argument('--host', type=str, default="0.0.0.0",
+                       help='Host to bind to (default: 0.0.0.0 for external access)')
+    args = parser.parse_args()
+    
+    # Determine port: command line > environment variable > default
+    port = args.port or int(os.environ.get('CHESS_PUBLIC_PORT', 5000))
+    host = args.host or os.environ.get('CHESS_PUBLIC_HOST', '0.0.0.0')
+    
+    print(f"🚀 Starting CHESS Web App - Public (Read-Only) on {host}:{port}")
     print("📖 This application provides read-only access to the database")
-    print("🌐 Access the public frontend at: http://localhost:5000")
-    app.run(host="0.0.0.0", port=5000) 
+    print(f"🌐 Access the public frontend at: http://{host}:{port}")
+    
+    app.run(host=host, port=port, debug=True) 

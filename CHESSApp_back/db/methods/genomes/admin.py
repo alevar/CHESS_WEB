@@ -279,13 +279,15 @@ def remove_nomenclature_from_assembly(assembly_id, nomenclature):
             return {"success": False, "message": "Nomenclature not found for this assembly"}
 
         # Get genome file info before deletion for file cleanup
-        genome_file = db.session.execute(text("""
+        genome_fasta_file = db.session.execute(text("""
             SELECT file_path FROM genome_file 
             WHERE assembly_id = :assembly_id AND nomenclature = :nomenclature
         """), {
             "assembly_id": assembly_id,
             "nomenclature": nomenclature
         }).fetchone()
+
+        source_files = get_all_source_files(assembly_id, nomenclature)
         
         # cascade should propagate deletion to everything else that is relevant
         # delete from nomenclature table
@@ -297,8 +299,22 @@ def remove_nomenclature_from_assembly(assembly_id, nomenclature):
         })
         
         # Clean up the actual file from disk
-        if genome_file and genome_file.file_path:
-            file_path = os.path.join(os.getcwd(), genome_file.file_path)
+        if genome_fasta_file and genome_fasta_file.file_path:
+            genome_fasta_file_path = os.path.join(os.getcwd(), genome_fasta_file.file_path)
+            genome_fasta_fai_file_path = genome_fasta_file_path + ".fai"
+            if os.path.exists(genome_fasta_file_path):
+                try:
+                    os.remove(genome_fasta_file_path)
+                except Exception as e:
+                    print(f"Warning: Could not delete file {genome_fasta_file_path}: {str(e)}")
+            if os.path.exists(genome_fasta_fai_file_path):
+                try:
+                    os.remove(genome_fasta_fai_file_path)
+                except Exception as e:
+                    print(f"Warning: Could not delete file {genome_fasta_fai_file_path}: {str(e)}")
+
+        for source_file in source_files["data"]:
+            file_path = source_file.file_path
             if os.path.exists(file_path):
                 try:
                     os.remove(file_path)
@@ -383,6 +399,7 @@ def process_nomenclature_tsv(source_file, assembly_id, source_nomenclature, new_
                     new_full_path = os.path.join(FASTA_FILES_DIR, new_filename)
                     
                     translate_fasta_file(source_file_path, new_full_path, mapping)
+                    validate_and_index_fasta(new_full_path)
                     
                     db.session.execute(text("""
                         INSERT INTO genome_file (assembly_id, nomenclature, file_path)
@@ -405,38 +422,36 @@ def process_nomenclature_tsv(source_file, assembly_id, source_nomenclature, new_
                 sva_id = source_file.sva_id
                 file_path = source_file.file_path
 
-                gtf_filename = f"{sva_id}_{new_nomenclature}.gtf"
-                gff_filename = f"{sva_id}_{new_nomenclature}.gff"
-                gtf_filepath = os.path.join(SOURCE_FILES_DIR, gtf_filename)
-                gff_filepath = os.path.join(SOURCE_FILES_DIR, gff_filename)
+                temp_new_nomenclature_gtf_file = temp_manager.create_temp_filename(name=f"{sva_id}_{new_nomenclature}.gtf")
+                source_file_base_name = f"{sva_id}_{new_nomenclature}"
+                source_file_base_name = os.path.join(SOURCE_FILES_DIR, source_file_base_name)
                 
                 try:
-                    convert_nomenclature(file_path,gtf_filepath,mapping)
-                    run_gffread_gtf_to_gff(gtf_filepath, gff_filepath)
-                    
-                    db.session.execute(
-                        text("INSERT INTO source_file (sva_id, assembly_id, file_path, nomenclature, filetype, description) VALUES (:sva_id, :assembly_id, :file_path, :nomenclature, :filetype, :description)"),
-                        {
-                            "sva_id": sva_id,
-                            "assembly_id": assembly_id,
-                            "file_path": gtf_filepath,
-                            "nomenclature": new_nomenclature,
-                            "filetype": "gtf",
-                            "description": f"GTF file for source version assembly {sva_id} with nomenclature {new_nomenclature}"
-                        }
-                    )
-                    
-                    db.session.execute(
-                        text("INSERT INTO source_file (sva_id, assembly_id, file_path, nomenclature, filetype, description) VALUES (:sva_id, :assembly_id, :file_path, :nomenclature, :filetype, :description)"),
-                        {
-                            "sva_id": sva_id,
-                            "assembly_id": assembly_id,
-                            "file_path": gff_filepath,
-                            "nomenclature": new_nomenclature,
-                            "filetype": "gff",
-                            "description": f"GFF file for source version assembly {sva_id} with nomenclature {new_nomenclature}"
-                        }
-                    )
+                    try:
+                        # if the input_gtf_file is already compressed, then we need to uncompress it into a temporary file and use that instead
+                        if file_path.endswith(".gz"):
+                            temp_file_path = temp_manager.create_temp_filename(name=f"{source_file_base_name}.gtf")
+                            gunzip_cmd = f"gunzip -c {file_path} > {temp_file_path}"
+                            subprocess.run(gunzip_cmd, shell=True, check=True)
+                            file_path = temp_file_path
+                    except Exception as e:
+                        raise f"Error uncompressing gtf file: {e}"
+
+                    convert_gtf_nomenclature(file_path,temp_new_nomenclature_gtf_file,mapping)
+                    source_files = prepare_source_files_from_gtf(temp_new_nomenclature_gtf_file,source_file_base_name)
+                
+                    for source_file, source_file_data in source_files.items():
+                        db.session.execute(
+                            text("INSERT INTO source_file (sva_id, assembly_id, file_path, nomenclature, filetype, description) VALUES (:sva_id, :assembly_id, :file_path, :nomenclature, :filetype, :description)"),
+                            {
+                                "sva_id": sva_id,
+                                "assembly_id": assembly_id,
+                                "file_path": source_file_data["file_path"],
+                                "nomenclature": new_nomenclature,
+                                "filetype": source_file_data["file_type"],
+                                "description": source_file_data["description"]
+                            }
+                        )
                     
                 except Exception as e:
                     raise e

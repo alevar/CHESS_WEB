@@ -100,11 +100,11 @@ def translate_fasta_file(source_file_path, new_full_path, mapping):
     with open(source_file_path, 'r') as source_file, open(new_full_path, 'w') as new_file:
         for line in source_file:
             if line.startswith('>'):
-                seqid = line.strip()[1:]
+                seqid = line.strip()[1:].split(" ")[0]
                 if seqid in mapping:
                     new_seqid = mapping[seqid]
                     new_file.write(f">{new_seqid}\n")
                 else:
-                    new_file.write(line)
+                    raise Exception(f"Sequence ID {seqid} not found in mapping")
             else:
                 new_file.write(line)

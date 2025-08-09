@@ -118,14 +118,26 @@ def delete_source(source_id: int) -> Dict:
         Dictionary with success status
     """
     try:
+        # delete the source
         if not source_exists_by_id(source_id):
             return {"success": False,"message": f"Source with ID '{source_id}' does not exist"}
         
+        # get files to cleanup
+        files_to_remove = get_files_by_source_id(source_id)
+        files_to_remove = [file_data[0] for file_data in files_to_remove]
+        if files_to_remove is None:
+            return {"success": False,"message": f"Error getting files for source with ID {source_id}"}
         
+        # delete the source
         db.session.execute(
             text("DELETE FROM source WHERE source_id = :source_id"),
             {"source_id": source_id}
         )
+        
+        # cleanup the files
+        for file_path in files_to_remove:
+            if os.path.exists(file_path):
+                os.remove(file_path)
         
         return {
             "success": True,
@@ -215,6 +227,7 @@ def delete_source_version(sv_id: int) -> Dict:
             }
 
         files_to_remove = get_files_by_sv_id(sv_id)
+        files_to_remove = [file_data[0] for file_data in files_to_remove]
         if files_to_remove is None:
             return {"success": False,"message": f"Error getting files for source version with ID {sv_id}"}
         
@@ -223,10 +236,10 @@ def delete_source_version(sv_id: int) -> Dict:
             {"sv_id": sv_id}
         )
         
-        for file_data in files_to_remove:
-            if os.path.exists(file_data["file_path"]):
+        for file_path in files_to_remove:
+            if os.path.exists(file_path):
                 try:
-                    os.remove(file_data["file_path"])
+                    os.remove(file_path)
                 except Exception as e:
                     continue
         
@@ -528,41 +541,30 @@ def confirm_and_process_annotation_file(confirmation_data: Dict) -> Dict:
                     raise e
 
         for target_nomenclature in db_seqids["nomenclatures"]:
-            gtf_filename = f"{sva_id}_{target_nomenclature}.gtf"
-            gff_filename = f"{sva_id}_{target_nomenclature}.gff"
-            gtf_filepath = os.path.join(SOURCE_FILES_DIR, gtf_filename)
-            gff_filepath = os.path.join(SOURCE_FILES_DIR, gff_filename)
+            source_file_base_name = f"{sva_id}_{target_nomenclature}"
+            source_file_base_name = os.path.join(SOURCE_FILES_DIR, source_file_base_name)
 
             nomenclature_map = {}
             for source_seqname, seqid in db_seqids["sequence_name_mappings"][selected_nomenclature].items():
                 nomenclature_map[source_seqname] = db_seqids["sequence_id_mappings"][seqid]["nomenclatures"][target_nomenclature]
             
             try:
-                convert_nomenclature(norm_gtf_path,gtf_filepath,nomenclature_map)
-                run_gffread_gtf_to_gff(gtf_filepath, gff_filepath)
+                with temp_manager.managed_temp_file(name=f"{sva_id}_{target_nomenclature}.gtf") as temp_new_nomenclature_gtf_file:
+                    convert_gtf_nomenclature(norm_gtf_path,temp_new_nomenclature_gtf_file,nomenclature_map)
+                    source_files = prepare_source_files_from_gtf(temp_new_nomenclature_gtf_file,source_file_base_name)
                 
-                db.session.execute(
-                    text("INSERT INTO source_file (sva_id, assembly_id, file_path, nomenclature, filetype, description) VALUES (:sva_id, :assembly_id, :file_path, :nomenclature, :filetype, :description)"),
-                    {
-                        "sva_id": sva_id,
-                        "assembly_id": assembly_id,
-                        "file_path": gtf_filepath,
-                        "nomenclature": target_nomenclature,
-                        "filetype": "gtf",
-                        "description": f"GTF file for source version assembly {sva_id} with nomenclature {target_nomenclature}"
-                    }
-                )
-                db.session.execute(
-                    text("INSERT INTO source_file (sva_id, assembly_id, file_path, nomenclature, filetype, description) VALUES (:sva_id, :assembly_id, :file_path, :nomenclature, :filetype, :description)"),
-                    {
-                        "sva_id": sva_id,
-                        "assembly_id": assembly_id,
-                        "file_path": gff_filepath,
-                        "nomenclature": target_nomenclature,
-                        "filetype": "gff",
-                        "description": f"GFF file for source version assembly {sva_id} with nomenclature {target_nomenclature}"
-                    }
-                )
+                for source_file, source_file_data in source_files.items():
+                    db.session.execute(
+                        text("INSERT INTO source_file (sva_id, assembly_id, file_path, nomenclature, filetype, description) VALUES (:sva_id, :assembly_id, :file_path, :nomenclature, :filetype, :description)"),
+                        {
+                            "sva_id": sva_id,
+                            "assembly_id": assembly_id,
+                            "file_path": source_file_data["file_path"],
+                            "nomenclature": target_nomenclature,
+                            "filetype": source_file_data["file_type"],
+                            "description": source_file_data["description"]
+                        }
+                    )
                 
             except Exception as e:
                 raise e
@@ -815,3 +817,24 @@ def insert_dbxref(transcript: TX, tid: int, gid: int, sva_id: int) -> Dict:
             "success": False,
             "message": f"Failed to insert database cross-reference: {str(e)}"
         }
+
+def delete_source_version_assembly(sva_id: int) -> Dict:
+    """
+    Deletes a source version assembly.
+    """
+    try:
+        # Get file paths before deleting the records
+        source_files_result = db.session.execute(text("SELECT file_path FROM source_file WHERE sva_id = :sva_id"), {"sva_id": sva_id})
+        file_paths = [row.file_path for row in source_files_result]
+        
+        # Delete the database records
+        db.session.execute(text("DELETE FROM source_version_assembly WHERE sva_id = :sva_id"), {"sva_id": sva_id})
+        
+        # Cleanup the files
+        for file_path in file_paths:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                
+        return {"success": True, "message": "Source version assembly deleted successfully"}
+    except Exception as e:
+        return {"success": False, "message": f"Failed to delete source version assembly: {str(e)}"}

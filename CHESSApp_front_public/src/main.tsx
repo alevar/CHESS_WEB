@@ -7,25 +7,25 @@ import { store } from './redux/store';
 import App from './App';
 import Home from './pages/Home/Home';
 import About from './pages/About/About';
-import Download from './pages/Download';
+// import Download from './pages/Download';
 import GenomeBrowser from './pages/GenomeBrowser';
-import Explore from './pages/Explore';
-import CustomAnnotation from './pages/CustomAnnotation';
+// import Explore from './pages/Explore';
+// import CustomAnnotation from './pages/CustomAnnotation';
 
 // Bootstrap CSS is now loaded via CDN in index.html
 // import 'bootstrap/dist/css/bootstrap.min.css';
 
 const routes = [
   {
-    path: "/:organism?/:assembly?",
+    path: "/:organism?/:assembly?/:source?/:version?/:nomenclature?",
     element: <App />,
     children: [
       { path: '', element: <Home /> },
       { path: 'about', element: <About /> },
-      { path: 'download', element: <Download /> },
+      // { path: 'download', element: <Download /> },
       { path: 'browser', element: <GenomeBrowser /> },
-      { path: 'explore', element: <Explore /> },
-      { path: 'custom', element: <CustomAnnotation /> },
+      // { path: 'explore', element: <Explore /> },
+      // { path: 'custom', element: <CustomAnnotation /> },
     ],
   }
 ];

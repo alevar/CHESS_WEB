@@ -320,6 +320,7 @@ const SourceDetail: React.FC = () => {
                         <th style={{ width: '50px' }}></th>
                         <th>Version Name</th>
                         <th>Rank</th>
+                        <th>Assemblies</th>
                         <th>Last Updated</th>
                         <th>Actions</th>
                       </tr>
@@ -327,7 +328,7 @@ const SourceDetail: React.FC = () => {
                     <tbody>
                       {localVersions.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="text-center text-muted">
+                          <td colSpan={6} className="text-center text-muted">
                             No versions found for this source.
                           </td>
                         </tr>
@@ -346,6 +347,20 @@ const SourceDetail: React.FC = () => {
                             </td>
                             <td><strong>{version.version_name}</strong></td>
                             <td><Badge bg="info">{version.version_rank}</Badge></td>
+                            <td>
+                              <Badge 
+                                bg={version.assemblies && Object.keys(version.assemblies).length > 0 ? 'success' : 'secondary'}
+                                className="me-1"
+                              >
+                                <i className="fas fa-database me-1"></i>
+                                {version.assemblies ? Object.keys(version.assemblies).length : 0}
+                              </Badge>
+                              {version.assemblies && Object.keys(version.assemblies).length > 0 && (
+                                <small className="text-muted">
+                                  assembl{Object.keys(version.assemblies).length === 1 ? 'y' : 'ies'}
+                                </small>
+                              )}
+                            </td>
                             <td>{version.last_updated ? (
                               <small className="text-muted">{new Date(version.last_updated).toLocaleDateString()}</small>
                             ) : (

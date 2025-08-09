@@ -632,6 +632,24 @@ def delete_source_version(source_id, sv_id):
         db.session.rollback()
         return jsonify({"success": False, "message": f"Failed to delete source version: {str(e)}"}), 500
 
+@admin_bp.route('/sources/<int:source_id>/source-versions/<int:sv_id>/assemblies/<int:sva_id>', methods=['DELETE'])
+def delete_source_version_assembly(source_id, sv_id, sva_id):
+    """
+    Deletes a source version assembly.
+    """
+    try:
+        result = source_admin.delete_source_version_assembly(sva_id)
+        if result["success"]:
+            db.session.commit()
+            return jsonify(result)
+        else:
+            db.session.rollback()
+            return jsonify(result), 400
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": f"Failed to delete source version assembly: {str(e)}"}), 500
+
 @admin_bp.route('/sources/<int:source_id>/source-versions/reorder', methods=['POST'])
 @require_json
 @validate_required_fields(['new_order'])

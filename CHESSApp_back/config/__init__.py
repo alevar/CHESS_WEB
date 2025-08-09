@@ -24,7 +24,7 @@ class Config:
     # Flask-SQLAlchemy settings
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    CORS_ORIGINS = ['http://localhost:5112']
+    CORS_ORIGINS = ['http://localhost:5112', 'http://localhost:5113']
 
 config = Config()
 

@@ -1,19 +1,11 @@
 // src/redux/rootReducer.ts
 import { combineReducers } from '@reduxjs/toolkit';
-import appDataReducer from './App/AppSlice';
-import exploreReducer from './Explore/ExploreSlice';
-import downloadReducer from './Download/DownloadSlice';
-import genomeBrowserReducer from './GenomeBrowser/GenomeBrowserSlice';
-import customAnnotationReducer from './CustomAnnotation/CustomAnnotationSlice';
-import { lociApi } from './GenomeBrowser/lociApi';
+import { dbDataReducer } from './dbData';
+import { appDataReducer } from './appData';
 
 const rootReducer = combineReducers({
-  global: appDataReducer,
-  explore: exploreReducer,
-  download: downloadReducer,
-  genomeBrowser: genomeBrowserReducer,
-  customAnnotation: customAnnotationReducer,
-  [lociApi.reducerPath]: lociApi.reducer,
+  dbData: dbDataReducer,
+  appData: appDataReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

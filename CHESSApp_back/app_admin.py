@@ -61,8 +61,24 @@ def middleware_stats():
     }
 
 if __name__ == '__main__':
-    print("🔧 Starting CHESS Web App - Admin (Full Access) on port 5001")
+    import argparse
+    import os
+    
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='CHESS Web App - Admin Interface')
+    parser.add_argument('--port', '-p', type=int, default=None, 
+                       help='Port to run the admin server on (default: 5001)')
+    parser.add_argument('--host', type=str, default="127.0.0.1",
+                       help='Host to bind to (default: 127.0.0.1 for security)')
+    args = parser.parse_args()
+    
+    # Determine port: command line > environment variable > default
+    port = args.port or int(os.environ.get('CHESS_ADMIN_PORT', 5001))
+    host = args.host or os.environ.get('CHESS_ADMIN_HOST', '127.0.0.1')
+    
+    print(f"🔧 Starting CHESS Web App - Admin (Full Access) on {host}:{port}")
     print("⚠️  This application provides full database access - use only locally!")
-    print("🔒 Access the admin dashboard at: http://localhost:5001")
+    print(f"🔒 Access the admin dashboard at: http://{host}:{port}")
     print("📝 Remember: This should NEVER be exposed to external users")
-    app.run(host="127.0.0.1", port=5001)  # Only bind to localhost for security 
+    
+    app.run(host=host, port=port, debug=True)  # Only bind to localhost for security 

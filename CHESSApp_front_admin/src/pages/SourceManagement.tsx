@@ -210,9 +210,29 @@ const SourceManagement: React.FC = () => {
                             )}
                           </td>
                           <td>
-                            <Badge bg="secondary">
-                              {Object.keys(source.versions || {}).length} version{Object.keys(source.versions || {}).length !== 1 ? 's' : ''}
-                            </Badge>
+                            {(() => {
+                              const validVersions = Object.values(source.versions || {}).filter(version => 
+                                version !== null && version !== undefined && typeof version === 'object' && version.sv_id
+                              );
+                              const versionCount = validVersions.length;
+                              
+                              return (
+                                <>
+                                  <Badge 
+                                    bg={versionCount > 0 ? 'success' : 'secondary'}
+                                    className="me-1"
+                                  >
+                                    <i className="fas fa-code-branch me-1"></i>
+                                    {versionCount}
+                                  </Badge>
+                                  {versionCount > 0 && (
+                                    <small className="text-muted">
+                                      version{versionCount === 1 ? '' : 's'}
+                                    </small>
+                                  )}
+                                </>
+                              );
+                            })()}
                           </td>
                           <td>
                             {source.last_updated ? (

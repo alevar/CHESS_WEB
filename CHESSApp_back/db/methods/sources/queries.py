@@ -65,6 +65,19 @@ def source_version_assembly_exists_by_ids(sv_id, assembly_id):
     except Exception as e:
         return False
 
+def get_files_by_source_id(source_id):
+    try:
+        result = db.session.execute(text("""
+            SELECT file_path, nomenclature, filetype
+            FROM source_file
+            JOIN source_version_assembly ON source_file.sva_id = source_version_assembly.sva_id
+            JOIN source_version ON source_version_assembly.sv_id = source_version.sv_id
+            WHERE source_version.source_id = :source_id
+        """), {"source_id": source_id}).fetchall()
+        return result
+    except Exception as e:
+        return None
+
 def get_files_by_sv_id(sv_id):
     try:
         result = db.session.execute(text("""
@@ -162,4 +175,67 @@ def get_latest_source_versions():
     except Exception as e:
         return {"success": False, "message": str(e)}
 
+def get_gff3bgz_file(sva_id, nomenclature):
+    try:
+        result = db.session.execute(text("""
+            SELECT file_path
+            FROM source_file
+            WHERE sva_id = :sva_id AND nomenclature = :nomenclature AND filetype = :filetype
+        """), {
+            "sva_id": sva_id,
+            "nomenclature": nomenclature,
+            "filetype": "sorted_gff_bgz"
+        }).fetchone()
+        
+        if not result:
+            raise Exception(f"No GFF3.bgz file found for assembly {sva_id} with nomenclature '{nomenclature}'")
+        
+        file_path = result.file_path
+        
+        # Split into directory and filename
+        directory_path = os.path.dirname(file_path)
+        file_name = os.path.basename(file_path)
+        
+        # Verify file exists
+        if not os.path.exists(file_path):
+            raise Exception(f"GFF3.bgz file not found at path: {file_path}")
+        
+        return {
+            "file_path": directory_path,
+            "file_name": file_name
+        }
+        
+    except Exception as e:
+        raise Exception(f"Error retrieving GFF3.bgz file: {str(e)}")
 
+def get_gff3bgztbi_file(sva_id, nomenclature):
+    try:
+        result = db.session.execute(text("""
+            SELECT file_path
+            FROM source_file
+            WHERE sva_id = :sva_id AND nomenclature = :nomenclature AND filetype = :filetype
+        """), {
+            "sva_id": sva_id,
+            "nomenclature": nomenclature,
+            "filetype": "sorted_gff_bgz_tbi"
+        }).fetchone()
+        
+        if not result:
+            raise Exception(f"No GFF3.bgz.tbi file found for assembly {sva_id} with nomenclature '{nomenclature}'")
+        
+        file_path = result.file_path
+        
+        # Split into directory and filename
+        directory_path = os.path.dirname(file_path)
+        file_name = os.path.basename(file_path)
+
+        # Verify file exists
+        if not os.path.exists(file_path):
+            raise Exception(f"GFF3.bgz.tbi file not found at path: {file_path}")
+        
+        return {
+            "file_path": directory_path,
+            "file_name": file_name
+        }
+    except Exception as e:
+        raise Exception(f"Error retrieving GFF3.bgz.tbi file: {str(e)}")

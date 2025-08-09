@@ -1,19 +1,26 @@
-export const getTracks = (accession_id: string) => {
+const API_BASE_URL = 'http://localhost:5000/api';
+export interface BrowserTrackProps {
+  name: string;
+  assembly_name: string;
+  sva_id: number;
+  nomenclature: string;
+}
+export const getTracks = (track: BrowserTrackProps) => {
   return [
     {
       type: 'FeatureTrack',
       trackId: 'genes',
-      name: 'Atlas',
-      assemblyNames: ["hg38"],
+      name: track.name,
+      assemblyNames: [track.assembly_name],
       category: ['Genes'],
       adapter: {
         type: 'Gff3TabixAdapter',
         gffGzLocation: {
-          uri: `https://raw.githubusercontent.com/chess-genome/chess/master/chess3.1.3.GRCh38.sorted.gff.gz`,
+          uri: `${API_BASE_URL}/public/gff3bgz/${track.sva_id}/${track.nomenclature}`,
         },
         index: {
           location: {
-            uri: `https://raw.githubusercontent.com/chess-genome/chess/master/chess3.1.3.GRCh38.sorted.gff.gz.tbi`,
+            uri: `${API_BASE_URL}/public/gff3bgztbi/${track.sva_id}/${track.nomenclature}`,
           },
           indexType: 'TBI',
         },
