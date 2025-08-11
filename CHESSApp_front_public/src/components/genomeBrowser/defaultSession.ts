@@ -51,21 +51,8 @@ export const getDefaultSession = (session: BrowserSessionProps) => {
               "showTranslation": true
             }
           ]
-        },
-        {
-          "id": "mCdx9J1_uOSpW-jBh1zLm",
-          "type": "FeatureTrack",
-          "configuration": "genes",
-          "minimized": false,
-          "displays": [
-            {
-              "id": "Gt6r3d-aiCyyT6r6rxI6i",
-              "type": "LinearBasicDisplay",
-              "height": 500,
-              "configuration": "genes-LinearBasicDisplay"
-            }
-          ]
         }
+        // Dynamic tracks will be added here based on user selection
       ],
       // "hideHeader": true,
       "hideHeaderOverview": true,
@@ -73,11 +60,49 @@ export const getDefaultSession = (session: BrowserSessionProps) => {
       "trackSelectorType": "hierarchical",
       "showCenterLine": false,
       "showCytobandsSetting": false,
-      "trackLabels": "hidden",
+      "trackLabels": "left",
       "showGridlines": true,
       "highlight": [],
       "colorByCDS": false,
       "showTrackOutlines": true
     }
   };
+};
+
+// Function to generate session with dynamic tracks
+export const generateSessionWithTracks = (session: BrowserSessionProps, trackIds: string[]) => {
+  const baseSession = getDefaultSession(session);
+  
+  // Add dynamic tracks to the session
+  const dynamicTracks = trackIds.map(trackId => ({
+    "id": trackId,
+    "type": "FeatureTrack",
+    "configuration": trackId,
+    "minimized": false,
+    "displays": [
+      {
+        "id": `${trackId}-LinearBasicDisplay`,
+        "type": "LinearBasicDisplay",
+        "height": 80,
+        "configuration": `${trackId}-LinearBasicDisplay`
+      }
+    ]
+  }));
+
+  // Insert dynamic tracks after the reference sequence track
+  baseSession.view.tracks.splice(
+    1,
+    0,
+    ...dynamicTracks.map(track => ({
+      ...track,
+      displays: track.displays.map(display => ({
+        ...display,
+        showForward: false,
+        showReverse: false,
+        showTranslation: false,
+      })),
+    }))
+  );
+
+  return baseSession;
 };

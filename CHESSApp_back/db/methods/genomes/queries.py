@@ -175,14 +175,16 @@ def get_genome_files():
 
 def get_fasta_file(assembly_id, nomenclature):
     """
-    Get the FASTA file path for a specific assembly and nomenclature.
-    Returns: {"file_path": directory_path, "file_name": filename}
+    Get the FASTA file path and assembly metadata for a specific assembly and nomenclature.
+    Returns: {"file_path": directory_path, "file_name": filename, "assembly_name": assembly_name}
     """
     try:
-        # Query the genome_file table for the specific assembly and nomenclature
+        # Query the genome_file and assembly tables for the specific assembly and nomenclature
         result = db.session.execute(text("""
-            SELECT file_path FROM genome_file 
-            WHERE assembly_id = :assembly_id AND nomenclature = :nomenclature
+            SELECT gf.file_path, a.assembly_name 
+            FROM genome_file gf
+            JOIN assembly a ON gf.assembly_id = a.assembly_id
+            WHERE gf.assembly_id = :assembly_id AND gf.nomenclature = :nomenclature
         """), {
             "assembly_id": assembly_id,
             "nomenclature": nomenclature
@@ -192,6 +194,7 @@ def get_fasta_file(assembly_id, nomenclature):
             raise Exception(f"No FASTA file found for assembly {assembly_id} with nomenclature '{nomenclature}'")
         
         file_path = result.file_path
+        friendly_file_name = result.assembly_name + "_" + nomenclature + ".fasta"
         
         # Split into directory and filename
         directory_path = os.path.dirname(file_path)
@@ -203,7 +206,8 @@ def get_fasta_file(assembly_id, nomenclature):
         
         return {
             "file_path": directory_path,
-            "file_name": file_name
+            "file_name": file_name,
+            "friendly_file_name": friendly_file_name
         }
         
     except Exception as e:
@@ -217,6 +221,8 @@ def get_fai_file(assembly_id, nomenclature):
     try:
         # Get the FASTA file path first
         fasta_info = get_fasta_file(assembly_id, nomenclature)
+
+        friendly_file_name = fasta_info["friendly_file_name"] + ".fai"
         
         # FAI file has the same name as FASTA with .fai extension
         fasta_file_path = os.path.join(fasta_info["file_path"], fasta_info["file_name"])
@@ -231,9 +237,9 @@ def get_fai_file(assembly_id, nomenclature):
         
         return {
             "file_path": directory_path,
-            "file_name": file_name
+            "file_name": file_name,
+            "friendly_file_name": friendly_file_name
         }
         
     except Exception as e:
         raise Exception(f"Error retrieving FAI file: {str(e)}")
-        

@@ -18,7 +18,6 @@ const Header: React.FC = () => {
         { to: 'download', label: 'Download' },
         { to: 'browser', label: 'Genome Browser' },
         { to: 'explore', label: 'Explore' },
-        { to: 'custom', label: 'Custom Annotation' },
         { to: 'about', label: 'About' }
     ];
 

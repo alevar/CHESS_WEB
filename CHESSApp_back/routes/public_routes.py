@@ -2,6 +2,11 @@
 
 import os
 import smtplib
+import tempfile
+import zipfile
+import threading
+import uuid
+from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 from timeit import main
 from flask import Blueprint, jsonify, request, send_from_directory, Response
@@ -137,8 +142,17 @@ def get_fasta(assembly_id, nomenclature):
     Get the fasta file for a specific organism, assembly, source, version, and nomenclature
     """
     try:
-        fasta_file = get_fasta_file(assembly_id, nomenclature)
-        return send_from_directory(fasta_file["file_path"], fasta_file["file_name"])
+        fasta_file_result = get_fasta_file(assembly_id, nomenclature)
+        
+        return send_from_directory(
+            fasta_file_result["file_path"],
+            fasta_file_result["file_name"],
+            as_attachment=True,
+            download_name=fasta_file_result["friendly_file_name"],  # This sets the filename
+            mimetype='text/plain',
+            max_age=3600  # Cache control
+        )
+        
     except Exception as e:
         return jsonify({"success": False, "message": f"Failed to get fasta file: {str(e)}"}), 500
 
@@ -148,21 +162,29 @@ def get_fai(assembly_id, nomenclature):
     Get the fai file for a specific organism, assembly, source, version, and nomenclature
     """
     try:
-        fai_file = get_fai_file(assembly_id, nomenclature)
-        return send_from_directory(fai_file["file_path"], fai_file["file_name"])
+        fai_file_result = get_fai_file(assembly_id, nomenclature)
+        
+        return send_from_directory(
+            fai_file_result["file_path"],
+            fai_file_result["file_name"],
+            as_attachment=True,
+            download_name=fai_file_result["friendly_file_name"],  # Custom filename
+            mimetype='text/plain',
+            max_age=3600  # Cache control
+        )
+        
     except Exception as e:
         return jsonify({"success": False, "message": f"Failed to get fai file: {str(e)}"}), 500
 
-@public_bp.route('/gff3bgz/<int:sva_id>/<string:nomenclature>', methods=['GET'])
-def get_gff3bgz(sva_id, nomenclature):
+@public_bp.route('/gff3bgz_jbrowse2/<int:sva_id>/<string:nomenclature>', methods=['GET'])
+def get_gff3bgz_jbrowse2(sva_id, nomenclature):
     """
     Get the gff3bgz file for a specific organism, assembly, source, version, and nomenclature
     """
     try:
-        gff3bgz_file = get_gff3bgz_file(sva_id, nomenclature)
+        gff3bgz_file = get_source_file_by_extension(sva_id, nomenclature, "sorted_gff_bgz")
         full_path = os.path.join(gff3bgz_file["file_path"], gff3bgz_file["file_name"])
         
-        # Try alternative approach: manually read file and create response
         try:
             with open(full_path, 'rb') as f:
                 file_data = f.read()
@@ -179,15 +201,7 @@ def get_gff3bgz(sva_id, nomenclature):
             return response
             
         except Exception as file_read_error:
-            # Fallback to send_from_directory
-            response = send_from_directory(gff3bgz_file["file_path"], gff3bgz_file["file_name"])
-            response.headers['Content-Type'] = 'application/gzip'
-            response.headers['Accept-Ranges'] = 'bytes'
-            
-            # Ensure no encoding is applied
-            if 'Content-Encoding' in response.headers:
-                del response.headers['Content-Encoding']
-            return response
+            raise file_read_error
     except Exception as e:
         print(f"ERROR: Failed to get gff3bgz file: {str(e)}")
         return jsonify({"success": False, "message": f"Failed to get gff3bgz file: {str(e)}"}), 500
@@ -198,7 +212,7 @@ def get_gff3bgztbi(sva_id, nomenclature):
     Get the gff3bgztbi file for a specific organism, assembly, source, version, and nomenclature
     """
     try:
-        gff3bgztbi_file = get_gff3bgztbi_file(sva_id, nomenclature)
+        gff3bgztbi_file = get_source_file_by_extension(sva_id, nomenclature, "sorted_gff_bgz_tbi")
         full_path = os.path.join(gff3bgztbi_file["file_path"], gff3bgztbi_file["file_name"])
         
         response = send_from_directory(gff3bgztbi_file["file_path"], gff3bgztbi_file["file_name"])
@@ -206,3 +220,22 @@ def get_gff3bgztbi(sva_id, nomenclature):
         return response
     except Exception as e:
         return jsonify({"success": False, "message": f"Failed to get gff3bgztbi file: {str(e)}"}), 500
+
+@public_bp.route('/source_file/<int:sva_id>/<string:nomenclature>/<string:file_type>', methods=['GET'])
+def get_source_file(sva_id, nomenclature, file_type):
+    """
+    Get a file for a specific organism, assembly, source, version, and nomenclature
+    """
+    try:
+        source_file = get_source_file_by_extension(sva_id, nomenclature, file_type)
+
+        return send_from_directory(
+            source_file["file_path"],
+            source_file["file_name"],
+            as_attachment=True,
+            download_name=source_file["friendly_file_name"],  # Custom filename from source_file
+            max_age=3600  # Cache control
+        )
+        
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Failed to get source file: {str(e)}"}), 500

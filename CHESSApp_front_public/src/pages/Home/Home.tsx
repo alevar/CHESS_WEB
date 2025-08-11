@@ -7,22 +7,22 @@ import search_penguin from '../../assets/images/search.penguin.1.jpeg';
 
 const cards = [
   {
-    link: 'custom',
-    title: 'Customize CHESS Annotation',
+    link: 'browser',
+    title: 'Genome Browser',
     imageSrc: build_penguin,
-    description: 'User friendly interface for enhancing the CHESS annotation with custom collections of genes and transcripts based on multiple gene catalogs and experimental evidence.'
+    description: 'Explore the genomes and annotations included in the CHESS database.'
   },
   {
     link: 'download',
     title: 'Download Curated Files',
     imageSrc: download_penguin,
-    description: 'Browse, explore and download various files curated, built and provided by the CHESS 3 team.'
+    description: 'Download curated files from the CHESS database.'
   },
   {
     link: 'explore',
     title: 'Explore',
     imageSrc: search_penguin,
-    description: 'Browse, explore and download various files curated, built and provided by the CHESS 3 team.'
+    description: 'Explore genes and transcripts in the CHESS database.'
   }
 ];
 

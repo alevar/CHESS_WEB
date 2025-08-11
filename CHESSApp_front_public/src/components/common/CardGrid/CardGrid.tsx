@@ -31,9 +31,6 @@ const CardGrid: React.FC<CardGridProps> = ({ cards }) => {
                 <Card.Body className="d-flex flex-column">
                   <Card.Title>{card.title}</Card.Title>
                   <Card.Text className="flex-grow-1">{card.description}</Card.Text>
-                  <div className="mt-auto">
-                    <button className="btn btn-primary">Go</button>
-                  </div>
                 </Card.Body>
               </Card>
             </Link>

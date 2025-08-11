@@ -87,3 +87,8 @@ export const useSelectedConfiguration = () => {
   const configurations = useConfigurations();
   return selections.configuration_id ? configurations[selections.configuration_id] : null;
 };
+
+export const useSelectedNomenclature = () => {
+  const selections = useAppSelections();
+  return selections.nomenclature || null;
+};

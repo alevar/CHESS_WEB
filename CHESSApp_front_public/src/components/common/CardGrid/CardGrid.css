@@ -1,14 +1,16 @@
 /* CardGrid styles for Bootstrap */
 .card-grid .card {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: none;
-  border-radius: 10px;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .card-grid .card:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border-color: #dee2e6;
 }
 
 .card-grid .card-img-top {

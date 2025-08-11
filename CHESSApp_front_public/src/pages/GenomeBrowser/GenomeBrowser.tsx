@@ -1,22 +1,34 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Container, Row, Col, Card, Alert } from 'react-bootstrap';
-import { useDbData, useSelectedOrganism, useSelectedAssembly } from '../../hooks/useGlobalData';
+import { useDbData, useSelectedOrganism, useSelectedAssembly, useAppData } from '../../hooks/useGlobalData';
 import GenomeBrowserComponent from '../../components/genomeBrowser/GenomeBrowser';
-import './GenomeBrowser.css';
+import TrackManager from '../../components/genomeBrowser/TrackManager';
+import { TrackConfig } from '../../components/genomeBrowser/tracks';
 import Sidebar from '../../components/common/Sidebar/Sidebar';
 
 const GenomeBrowser: React.FC = () => {
   const dbData = useDbData();
   const organism = useSelectedOrganism();
   const assembly = useSelectedAssembly();
+  const appData = useAppData();
   const browserRef = useRef<any>(null);
+  const [currentTracks, setCurrentTracks] = useState<TrackConfig[]>([]);
+
+  const handleTracksChange = (newTracks: TrackConfig[]) => {
+    setCurrentTracks(newTracks);
+  };
 
   return (
     <Container className="py-5">
       <Row>
         <Col xs={12} md={3} lg={3} className="mb-4 mb-md-0">
-          <Sidebar title="Genome Tools">
-            <div>Sidebar content for genome browser.</div>
+          <Sidebar title="Track Management">
+            <TrackManager
+              currentTracks={currentTracks}
+              onTracksChange={handleTracksChange}
+              currentAssembly={assembly?.assembly_id || 0}
+              currentNomenclature={appData.selections.nomenclature || ''}
+            />
           </Sidebar>
         </Col>
         <Col xs={12} md={9} lg={9}>
@@ -41,6 +53,8 @@ const GenomeBrowser: React.FC = () => {
                 <div className="genome-browser-wrapper">
                   <GenomeBrowserComponent 
                     ref={browserRef}
+                    currentTracks={currentTracks}
+                    onTracksChange={handleTracksChange}
                   />
                 </div>
               </Card.Body>
