@@ -92,7 +92,7 @@ def get_files_by_sv_id(sv_id):
 
 def get_all_source_versions():
     """
-    Returns all source versions with source names from the all_source_versions view.
+    Returns all source versions with source names and feature types from the all_source_versions view.
     Returns a dictionary with success status and data or error message.
     """
     try:
@@ -101,6 +101,10 @@ def get_all_source_versions():
         
         source_versions = []
         for row in res:
+            # Convert comma-separated strings to lists
+            gene_types = row.gene_types.split(',') if row.gene_types else []
+            transcript_types = row.transcript_types.split(',') if row.transcript_types else []
+            
             source_versions.append({
                 "source_id": row.source_id,
                 "source_name": row.source_name,
@@ -126,7 +130,10 @@ def get_all_source_versions():
                 "file_path": row.file_path,
                 "filetype": row.filetype,
                 "nomenclature": row.nomenclature,
-                "file_description": row.file_description
+                "file_description": row.file_description,
+                # Feature types
+                "gene_types": gene_types,
+                "transcript_types": transcript_types
             })
         
         return {"success": True, "data": source_versions}
@@ -223,3 +230,33 @@ def get_source_file_by_extension(sva_id, nomenclature, file_type):
         }
     except Exception as e:
         raise Exception(f"Error retrieving file: {str(e)}")
+
+def get_all_gene_types(sva_id: int=None):
+    """
+    Get all gene types for a specific sva_id or all sva_ids if sva_id is None.
+    """
+    try:
+        query = "SELECT DISTINCT sva_id, type_value FROM gene"
+        params = {}
+        if sva_id:
+            query += " WHERE sva_id = :sva_id"
+            params = {"sva_id": sva_id}
+        result = db.session.execute(text(query), params).fetchall()
+        return {"success": True, "data": result}
+    except Exception as e:
+        return {"success": False, "message": str(e)}
+
+def get_all_transcript_types(sva_id: int=None):
+    """
+    Get all transcript types for a specific sva_id or all sva_ids if sva_id is None.
+    """
+    try:
+        query = "SELECT DISTINCT sva_id, type_value FROM tx_dbxref"
+        params = {}
+        if sva_id:
+            query += " WHERE sva_id = :sva_id"
+            params = {"sva_id": sva_id}
+        result = db.session.execute(text(query), params).fetchall()
+        return {"success": True, "data": result}
+    except Exception as e:
+        return {"success": False, "message": str(e)}

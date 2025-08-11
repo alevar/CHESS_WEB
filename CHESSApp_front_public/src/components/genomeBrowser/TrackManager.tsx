@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useDbData, useAppData } from '../../hooks/useGlobalData';
+import { useDbData, useAppData } from '../../redux/hooks';
 import { Source, SourceVersion, SourceVersionAssembly } from '../../types/dbTypes';
 import './TrackManager.css';
 

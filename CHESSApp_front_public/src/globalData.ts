@@ -35,8 +35,8 @@ export {
     setNomenclature
 } from './redux/appData/appDataSlice';
 
-// Hooks
-export * from './hooks/useGlobalData';
+// Hooks - now exported from Redux hooks
+export * from './redux/hooks';
 
 // Utils
 export * from './utils/dbDataBuilder';

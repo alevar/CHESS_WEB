@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchDbData } from './redux/dbData/dbDataThunks';
 import { initializeAppSelections } from './redux/appData/appDataThunks';
 import { RootState, AppDispatch } from './redux/store';
-import { useAppData } from './hooks/useGlobalData';
+import { useAppData } from './redux/hooks';
 
 import { PathParts, parsePathname, buildPathname } from './utils/utils';
 import { Source, Assembly, SourceVersion } from './types/dbTypes';

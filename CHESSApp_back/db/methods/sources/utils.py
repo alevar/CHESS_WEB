@@ -68,7 +68,10 @@ def organize_all_source_versions(source_versions_data):
                 sources_dict[source_id]["versions"][sv_id]["assemblies"][sva_id] = {
                     "sva_id": sva_id,
                     "assembly_id": source.get('assembly_id'),
-                    "files": {}
+                    "files": {},
+                    # Add feature types here
+                    "gene_types": source.get('gene_types', []),
+                    "transcript_types": source.get('transcript_types', [])
                 }
             
             file_path = source.get('file_path')
@@ -135,3 +138,24 @@ def load_tracking(tracking_fname:str) -> dict:
                 qry_tid = lcs[4].split("|")[1]
                 res[qry_tid] = ref_tid
     return res
+
+def organize_feature_types(feature_types_data):
+    """
+    Organize feature types (genes or transcripts) by sva_id.
+    Returns: {sva_id: [list of type_values]}
+    """
+    types_by_sva = {}
+    for row in feature_types_data:
+        sva_id = row.sva_id
+        type_value = row.type_value
+        
+        if sva_id not in types_by_sva:
+            types_by_sva[sva_id] = set()
+        
+        types_by_sva[sva_id].add(type_value)
+    
+    # Convert sets to sorted lists for JSON serialization
+    for sva_id in types_by_sva:
+        types_by_sva[sva_id] = sorted(list(types_by_sva[sva_id]))
+    
+    return types_by_sva

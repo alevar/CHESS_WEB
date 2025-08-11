@@ -5,13 +5,13 @@ const About: React.FC = () => (
   <Container className="mt-5">
     <Row>
       <Col lg={10} className="mx-auto">
-        <h1 className="mb-4">About CHESS 3</h1>
+        <h1 className="mb-4">About the CHESS Project</h1>
         
         <Card className="mb-4">
           <Card.Body>
             <h3>What is CHESS?</h3>
             <p>
-              CHESS 3 represents an improved human gene catalog based on nearly 10,000 RNA-seq experiments 
+              CHESS represents an improved human gene catalog based on nearly 10,000 RNA-seq experiments 
               across 54 body sites. It significantly improves current genome annotation by integrating the 
               latest reference data and algorithms, machine learning techniques for noise filtering, and 
               new protein structure prediction methods.
@@ -22,6 +22,7 @@ const About: React.FC = () => (
         <Card className="mb-4">
           <Card.Body>
             <h3>Key Features</h3>
+            <h5>The current release of CHESS includes:</h5>
             <ul>
               <li><strong>41,356 genes</strong> including 19,839 protein-coding genes</li>
               <li><strong>158,377 transcripts</strong> with direct experimental evidence</li>

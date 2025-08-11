@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Card, Row, Col, Badge, Alert, Table, Modal } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useDbData, useSelectedOrganism, useSelectedAssembly, useAppSelections } from '../../../../../hooks/useGlobalData';
+import { useDbData, useSelectedOrganism, useSelectedAssembly, useAppSelections } from '../../../../../redux/hooks';
 import { parsePathname, buildPathname } from '../../../../../utils/utils';
 import { Organism, Assembly, Source, SourceVersion } from '../../../../../types/dbTypes';
 

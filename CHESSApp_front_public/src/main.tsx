@@ -10,6 +10,7 @@ import About from './pages/About/About';
 import Downloads from './pages/Downloads';
 import GenomeBrowser from './pages/GenomeBrowser';
 import Explore from './pages/Explore/Explore';
+import Gene from './pages/Gene/Gene';
 
 const routes = [
   {
@@ -21,6 +22,7 @@ const routes = [
       { path: 'download', element: <Downloads /> },
       { path: 'browser', element: <GenomeBrowser /> },
       { path: 'explore', element: <Explore /> },
+      { path: 'gene/:gid', element: <Gene /> },
     ],
   }
 ];

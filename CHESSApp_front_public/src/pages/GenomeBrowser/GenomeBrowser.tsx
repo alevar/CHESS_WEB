@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Container, Row, Col, Card, Alert } from 'react-bootstrap';
-import { useDbData, useSelectedOrganism, useSelectedAssembly, useAppData } from '../../hooks/useGlobalData';
+import { useDbData, useSelectedOrganism, useSelectedAssembly, useAppData } from '../../redux/hooks';
+import { useLocation } from 'react-router-dom';
 import GenomeBrowserComponent from '../../components/genomeBrowser/GenomeBrowser';
 import TrackManager from '../../components/genomeBrowser/TrackManager';
 import { TrackConfig } from '../../components/genomeBrowser/tracks';
@@ -11,8 +12,13 @@ const GenomeBrowser: React.FC = () => {
   const organism = useSelectedOrganism();
   const assembly = useSelectedAssembly();
   const appData = useAppData();
+  const location = useLocation();
   const browserRef = useRef<any>(null);
   const [currentTracks, setCurrentTracks] = useState<TrackConfig[]>([]);
+  
+  // Get location from navigation state (passed from gene search)
+  const geneLocation = location.state?.location;
+  const geneName = location.state?.geneName;
 
   const handleTracksChange = (newTracks: TrackConfig[]) => {
     setCurrentTracks(newTracks);
@@ -48,17 +54,14 @@ const GenomeBrowser: React.FC = () => {
               <p>Please select an organism and assembly using the dropdown in the header.</p>
             </Alert>
           ) : (
-            <Card>
-              <Card.Body className="p-0">
-                <div className="genome-browser-wrapper">
-                  <GenomeBrowserComponent 
-                    ref={browserRef}
-                    currentTracks={currentTracks}
-                    onTracksChange={handleTracksChange}
-                  />
-                </div>
-              </Card.Body>
-            </Card>
+            <>
+              <GenomeBrowserComponent 
+                ref={browserRef}
+                currentTracks={currentTracks}
+                onTracksChange={handleTracksChange}
+                initialLocation={geneLocation}
+              />
+            </>
           )}
         </Col>
       </Row>

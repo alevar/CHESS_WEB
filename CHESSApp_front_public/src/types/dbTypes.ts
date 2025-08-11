@@ -1,4 +1,4 @@
-// Database Data Types - for storing general database information
+// Updated Database Data Types - for storing general database information
 export interface Organism {
   taxonomy_id: number;
   scientific_name: string;
@@ -59,9 +59,12 @@ export interface SourceVersion {
   assemblies?: { [sva_id: number]: SourceVersionAssembly };
 }
 
+// Updated interface to include feature types
 export interface SourceVersionAssembly {
   sva_id: number;
   assembly_id: number;
+  gene_types?: string[];        // New: list of gene types for this sva_id
+  transcript_types?: string[];  // New: list of transcript types for this sva_id
   files?: { [file_key: string]: SourceFile };
 }
 
@@ -99,7 +102,7 @@ export interface TranscriptData {
   data: string;
 }
 
-// Database Data State Interface
+// Database Data State Interface - unchanged
 export interface DbDataState {
   sources: { [source_id: number]: Source };
   assemblies: { [assembly_id: number]: Assembly };
