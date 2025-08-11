@@ -68,7 +68,7 @@ export const fetchDownloadFiles = createAsyncThunk(
             name: `${source.name}_v${version.version_name}_${assembly_name}_${nomenclature}.gff3`,
             description: `${source.name} annotations in GFF3 format`,
             type: 'gff3.gz',
-            downloadUrl: `${API_BASE_URL}/public/source_file/${svaEntry.sva_id}/${encodeURIComponent(nomenclature)}/gff3`,
+            downloadUrl: `${API_BASE_URL}/public/source_file/${svaEntry.sva_id}/${encodeURIComponent(nomenclature)}/gff`,
             assembly_id,
             nomenclature,
             sva_id: svaEntry.sva_id,

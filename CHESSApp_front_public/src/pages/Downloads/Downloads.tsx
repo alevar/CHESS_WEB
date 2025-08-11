@@ -5,6 +5,8 @@ import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { fetchDownloadFiles, downloadFile } from '../../redux/dbData';
 import { DownloadFile } from '../../redux/dbData';
 
+import './Downloads.css';
+
 const Downloads: React.FC = () => {
   const dispatch = useAppDispatch();
   const appData = useAppData();

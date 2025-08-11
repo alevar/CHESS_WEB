@@ -107,11 +107,3 @@ export class DbDataBuilder {
 export const createDbDataBuilder = (dbDataState: DbDataState): DbDataBuilder => {
   return new DbDataBuilder(dbDataState);
 };
-
-// Legacy function for backward compatibility
-export const createGlobalDataBuilder = (dbDataState: DbDataState): DbDataBuilder => {
-  return new DbDataBuilder(dbDataState);
-};
-
-// Keep the old class name as an alias for backward compatibility
-export const GlobalDataBuilder = DbDataBuilder;

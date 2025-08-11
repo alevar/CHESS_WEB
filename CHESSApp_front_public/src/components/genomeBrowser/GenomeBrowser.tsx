@@ -163,4 +163,4 @@ const GenomeBrowser = forwardRef<any, BrowserProps>(({ currentTracks, onTracksCh
   );
 });
 
-export default GenomeBrowser; 
+export default GenomeBrowser;
