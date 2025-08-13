@@ -243,3 +243,12 @@ def get_fai_file(assembly_id, nomenclature):
         
     except Exception as e:
         raise Exception(f"Error retrieving FAI file: {str(e)}")
+
+def sequence_id_to_name(assembly_id, nomenclature, sequence_id):
+    try:
+        result = db.session.execute(text("""
+            SELECT sequence_name FROM sequence_id_map WHERE assembly_id = :assembly_id AND nomenclature = :nomenclature AND sequence_id = :sequence_id
+        """), {"assembly_id": assembly_id, "nomenclature": nomenclature, "sequence_id": sequence_id}).fetchone()
+        return result[0]
+    except Exception as e:
+        return None

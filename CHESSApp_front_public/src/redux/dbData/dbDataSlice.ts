@@ -6,7 +6,10 @@ const initialState: DbDataState = {
   assemblies: {},
   organisms: {},
   configurations: {},
-  datasets: {},
+  datasets: {
+    datasets: {},
+    data_types: {},
+  },
   loading: false,
   error: null,
   lastUpdated: null,
@@ -25,7 +28,10 @@ const dbDataSlice = createSlice({
       state.assemblies = action.payload.assemblies || {};
       state.organisms = action.payload.organisms || {};
       state.configurations = action.payload.configurations || {};
-      state.datasets = action.payload.datasets || {};
+      state.datasets = action.payload.datasets || {
+        datasets: {},
+        data_types: {},
+      };
       state.loading = false;
       state.error = null;
       state.lastUpdated = new Date().toISOString();
@@ -39,7 +45,10 @@ const dbDataSlice = createSlice({
       state.assemblies = {};
       state.organisms = {};
       state.configurations = {};
-      state.datasets = {};
+      state.datasets = {
+        datasets: {},
+        data_types: {},
+      };
       state.lastUpdated = null;
       state.loading = false;
       state.error = null;

@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { Organism, Assembly, Source, SourceVersion, SourceFile, Configuration, Dataset, TranscriptData } from '../../types/db_types';
+import { Organism, Assembly, Source, SourceVersion, SourceFile, Configuration, Dataset } from '../../types/db_types';
 
 const API_BASE_URL = 'http://localhost:5001/api';
 
@@ -889,43 +889,6 @@ export const deleteDataset = createAsyncThunk(
   }
 );
 
-export const fetchDataset = createAsyncThunk(
-  'adminData/fetchDataset',
-  async (datasetId: number, { rejectWithValue }) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/admin/datasets/${datasetId}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      return data.dataset;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch dataset';
-      return rejectWithValue(errorMessage);
-    }
-  }
-);
-
-// Transcript data operations
-export const fetchTranscriptData = createAsyncThunk(
-  'adminData/fetchTranscriptData',
-  async (datasetId: number, { rejectWithValue }) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/admin/datasets/${datasetId}/transcript_data`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      return data.transcript_data || [];
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch transcript data';
-      return rejectWithValue(errorMessage);
-    }
-  }
-);
-
 export const uploadTranscriptData = createAsyncThunk(
   'adminData/uploadTranscriptData',
   async (uploadData: {
@@ -955,6 +918,87 @@ export const uploadTranscriptData = createAsyncThunk(
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to upload transcript data';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const createDataType = createAsyncThunk(
+  'adminData/createDataType',
+  async (dataTypeData: { data_type: string; description: string }, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/datasets/add_data_type`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dataTypeData),
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        return rejectWithValue(result.message || 'Failed to create data type');
+      }
+      
+      return result.data_type;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create data type';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const updateDataType = createAsyncThunk(
+  'adminData/updateDataType',
+  async ({ dataType, dataTypeData }: { dataType: string; dataTypeData: Partial<{ data_type: string; description: string }> }, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/datasets/edit_data_type`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          data_type: dataType,
+          description: dataTypeData.description || ''
+        }),
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        return rejectWithValue(result.message || 'Failed to update data type');
+      }
+      
+      return result.data_type;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update data type';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const deleteDataType = createAsyncThunk(
+  'adminData/deleteDataType',
+  async (dataType: string, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/datasets/delete_data_type`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ data_type: dataType }),
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        return rejectWithValue(result.message || 'Failed to delete data type');
+      }
+      
+      return { dataType, message: result.message };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete data type';
       return rejectWithValue(errorMessage);
     }
   }

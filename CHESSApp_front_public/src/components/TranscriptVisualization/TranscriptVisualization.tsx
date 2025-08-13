@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { Transcript } from '../../redux/gene/geneSlice';
+import { useAppDispatch } from '../../redux/hooks';
+import { fetchFullTranscriptData } from '../../redux/gene/transcriptThunks';
 import './TranscriptVisualization.css';
 
 interface TranscriptVisualizationProps {
@@ -11,8 +13,11 @@ interface TranscriptVisualizationProps {
     sequence_id: string;
     strand: boolean | null;
   } | null;
+  assembly_id: number;
+  nomenclature: string;
   onTranscriptClick: (transcript: Transcript | null) => void;
   selectedTranscript?: Transcript | null; // Add this prop to receive external selection
+  isTranscriptLoading?: boolean; // Add loading state prop
 }
 
 interface TranscriptSegment {
@@ -26,11 +31,15 @@ interface TranscriptSegment {
 const TranscriptVisualization: React.FC<TranscriptVisualizationProps> = ({
   transcripts,
   geneCoordinates,
+  assembly_id,
+  nomenclature,
   onTranscriptClick,
-  selectedTranscript: externalSelectedTranscript // Rename to avoid confusion
+  selectedTranscript: externalSelectedTranscript, // Rename to avoid confusion
+  isTranscriptLoading = false
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [internalSelectedTranscript, setInternalSelectedTranscript] = useState<Transcript | null>(null);
+  const dispatch = useAppDispatch();
 
   // Use external selection if provided, otherwise use internal
   const selectedTranscript = externalSelectedTranscript || internalSelectedTranscript;
@@ -42,8 +51,8 @@ const TranscriptVisualization: React.FC<TranscriptVisualizationProps> = ({
     const svg = d3.select(svgRef.current);
     
     if (isSelected && transcriptId) {
-      // Highlight selected transcript
-      svg.selectAll(`[data-transcript-id="${transcriptId}"]`)
+      // Highlight selected transcript (excluding click areas)
+      svg.selectAll(`[data-transcript-id="${transcriptId}"]:not(.transcript-click-area)`)
         .attr('stroke-width', function() {
           const element = d3.select(this);
           return element.classed('intron-segment') ? 4 : 3;
@@ -51,15 +60,15 @@ const TranscriptVisualization: React.FC<TranscriptVisualizationProps> = ({
         .attr('stroke', '#FF6B35')
         .attr('opacity', 1);
       
-      // Dim other transcripts
-      svg.selectAll('[data-transcript-id]')
+      // Dim other transcripts (excluding click areas)
+      svg.selectAll('[data-transcript-id]:not(.transcript-click-area)')
         .filter(function() {
           return d3.select(this).attr('data-transcript-id') !== transcriptId;
         })
         .attr('opacity', 0.3);
     } else {
-      // Reset all transcripts to normal state
-      svg.selectAll('[data-transcript-id]')
+      // Reset all transcripts to normal state (excluding click areas)
+      svg.selectAll('[data-transcript-id]:not(.transcript-click-area)')
         .attr('stroke-width', function() {
           const element = d3.select(this);
           return element.classed('intron-segment') ? 2 : 1;
@@ -295,6 +304,18 @@ const TranscriptVisualization: React.FC<TranscriptVisualizationProps> = ({
           }
         });
 
+      // Add invisible clickable rectangle over the entire transcript for easier selection
+      chart.append('rect')
+        .attr('x', margin.left)
+        .attr('y', y - 25) // Extend above and below the transcript line
+        .attr('width', width - margin.left - margin.right)
+        .attr('height', 50) // Height to cover transcript line and labels
+        .attr('fill', 'transparent')
+        .attr('stroke', 'none')
+        .attr('class', 'transcript-click-area')
+        .attr('data-transcript-id', transcript.transcript_id)
+        .style('cursor', 'pointer');
+
       // Add transcript label above the transcript
       chart.append('text')
         .attr('x', margin.left)
@@ -304,10 +325,22 @@ const TranscriptVisualization: React.FC<TranscriptVisualizationProps> = ({
         .attr('font-size', '12px')
         .attr('font-weight', '500')
         .text(transcript.transcript_id);
+      
+      // Add loading indicator if this transcript is selected and loading
+      if (selectedTranscript?.transcript_id === transcript.transcript_id && isTranscriptLoading) {
+        chart.append('text')
+          .attr('x', margin.left)
+          .attr('y', y + 25)
+          .attr('text-anchor', 'start')
+          .attr('fill', '#007bff')
+          .attr('font-size', '10px')
+          .attr('font-style', 'italic')
+          .text('Loading...');
+      }
     });
 
-    // Add click handlers and hover effects for segments
-    chart.selectAll('.exon-segment, .intron-segment')
+    // Add click handlers and hover effects for segments and transcript click areas
+    chart.selectAll('.exon-segment, .intron-segment, .transcript-click-area')
       .on('click', function(event, d) {
         const transcriptId = d3.select(this).attr('data-transcript-id');
         const transcript = transcripts.find(t => t.transcript_id === transcriptId);
@@ -319,21 +352,29 @@ const TranscriptVisualization: React.FC<TranscriptVisualizationProps> = ({
           } else {
             setInternalSelectedTranscript(transcript);
             onTranscriptClick(transcript);
+            
+            // Fetch full transcript data from the backend
+            dispatch(fetchFullTranscriptData({
+              tid: transcript.tid,
+              transcript_id: transcript.transcript_id,
+              assembly_id: assembly_id,
+              nomenclature: nomenclature
+            }));
           }
         }
       })
       .on('mouseover', function() {
         const transcriptId = d3.select(this).attr('data-transcript-id');
-        // Highlight entire transcript on hover
-        chart.selectAll(`[data-transcript-id="${transcriptId}"]`)
+        // Highlight entire transcript on hover (excluding click areas)
+        chart.selectAll(`[data-transcript-id="${transcriptId}"]:not(.transcript-click-area)`)
           .attr('opacity', 0.7)
           .style('cursor', 'pointer');
       })
       .on('mouseout', function() {
         const transcriptId = d3.select(this).attr('data-transcript-id');
-        // Reset opacity for entire transcript, but preserve selection state
+        // Reset opacity for entire transcript, but preserve selection state (excluding click areas)
         const isSelected = selectedTranscript?.transcript_id === transcriptId;
-        chart.selectAll(`[data-transcript-id="${transcriptId}"]`)
+        chart.selectAll(`[data-transcript-id="${transcriptId}"]:not(.transcript-click-area)`)
           .attr('opacity', isSelected ? 1 : (selectedTranscript ? 0.3 : 1));
       });
 

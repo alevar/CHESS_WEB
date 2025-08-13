@@ -47,6 +47,22 @@
   transition: filter 0.2s ease;
 }
 
+/* Invisible clickable transcript areas */
+.transcript-svg .transcript-click-area {
+  transition: all 0.2s ease;
+  pointer-events: auto;
+}
+
+.transcript-svg .transcript-click-area:hover {
+  /* Optional: add a subtle highlight on hover for debugging */
+  /* fill: rgba(0, 123, 255, 0.05); */
+}
+
+/* Ensure click areas don't interfere with other elements */
+.transcript-svg .transcript-click-area {
+  z-index: 1;
+}
+
 /* Strand arrow styling */
 .transcript-svg .strand-arrow {
   transition: all 0.2s ease;

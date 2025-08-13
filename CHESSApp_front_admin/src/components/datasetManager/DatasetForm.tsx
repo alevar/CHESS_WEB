@@ -26,7 +26,7 @@ export const DatasetForm: React.FC<DatasetFormProps> = ({
   dataset,
   loading = false
 }) => {
-  const { organisms, assemblies, sources } = useSelector((state: RootState) => state.globalData);
+  const { organisms, assemblies, sources, datasets: {data_types} } = useSelector((state: RootState) => state.globalData);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -98,6 +98,11 @@ export const DatasetForm: React.FC<DatasetFormProps> = ({
 
     if (!formData.description.trim()) {
       setError('Dataset description is required');
+      return;
+    }
+
+    if (!formData.data_type.trim()) {
+      setError('Data type is required');
       return;
     }
 
@@ -301,15 +306,21 @@ export const DatasetForm: React.FC<DatasetFormProps> = ({
 
           <Form.Group className="mb-3">
             <Form.Label>Data Type *</Form.Label>
-            <Form.Control
-              type="text"
+            <Form.Select
               value={formData.data_type}
               onChange={(e) => handleInputChange('data_type', e.target.value)}
-              placeholder="Enter data type (e.g., expression_level, annotation, etc.)"
               required
-            />
+              disabled={loading}
+            >
+              <option value="">Select a data type...</option>
+              {Object.values(data_types || {}).map((dataType) => (
+                <option key={dataType.data_type} value={dataType.data_type}>
+                  {dataType.data_type}
+                </option>
+              ))}
+            </Form.Select>
             <Form.Text className="text-muted">
-              This data type will be applied to all entries in the uploaded file.
+              Select a data type from the available options. If no data types exist, please create one first.
             </Form.Text>
           </Form.Group>
 

@@ -79,3 +79,40 @@ def dataset_exists_by_id(dataset_id: int):
         return result[0] > 0
     except Exception as e:
         return False
+
+def data_type_exists(data_type: str):
+    try:
+        result = db.session.execute(text("""
+            SELECT COUNT(*) FROM data_type WHERE data_type = :data_type
+        """), {"data_type": data_type}).fetchone()
+        return result[0] > 0
+    except Exception as e:
+        return False
+
+def get_all_data_types():
+    try:
+        query = text("""
+            SELECT data_type, description
+            FROM data_type
+            ORDER BY data_type
+        """)
+        
+        result = db.session.execute(query)
+        data_types = []
+        
+        for row in result:
+            data_types.append({
+                "data_type": row.data_type,
+                "description": row.description
+            })
+        
+        return {
+            "success": True,
+            "data": data_types
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Failed to get data types: {str(e)}"
+        }

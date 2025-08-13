@@ -226,11 +226,13 @@ const App: React.FC = () => {
   };
 
   return (
-    <>
+    <div className="d-flex flex-column min-vh-100">
       <Header />
-      <Outlet /> {/* Render matched child route */}
+      <main className="flex-grow-1">
+        <Outlet /> {/* Render matched child route */}
+      </main>
       <Footer />
-    </>
+    </div>
   );
 };
 

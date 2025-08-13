@@ -740,6 +740,79 @@ def confirm_annotation_upload(source_id, sv_id):
 # DATASET MANAGEMENT ROUTES
 # ============================================================================
 
+@admin_bp.route('/datasets/add_data_type', methods=['POST'])
+@require_json
+@validate_required_fields(['data_type', 'description'])
+def add_data_type():
+    """
+    Add a new data type.
+    """
+    try:
+        data = request.get_json()
+        data_type = data['data_type'].strip()
+        description = data['description'].strip()
+
+        result = dataset_admin.add_data_type(data_type, description)
+        if result["success"]:
+            db.session.commit()
+            return jsonify(result)
+        else:
+            db.session.rollback()
+            return jsonify(result), 400
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": f"Failed to add data type: {str(e)}"}), 500
+        
+@admin_bp.route('/datasets/edit_data_type', methods=['POST'])
+@require_json
+@validate_required_fields(['data_type', 'description'])
+def edit_data_type():
+    """
+    Edit a data type.
+    """
+    try:
+        data = request.get_json()
+        data_type = data['data_type'].strip()
+        description = data['description'].strip()
+
+        result = dataset_admin.edit_data_type(data_type, description)
+        if result["success"]:
+            db.session.commit()
+            return jsonify(result)
+        else:
+            db.session.rollback()
+            return jsonify(result), 400
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": f"Failed to edit data type: {str(e)}"}), 500
+
+@admin_bp.route('/datasets/delete_data_type', methods=['POST'])
+@require_json
+@validate_required_fields(['data_type'])
+def delete_data_type():
+    """
+    Delete a data type.
+    """
+    try:
+        data = request.get_json()
+        data_type = data['data_type'].strip()
+        
+        result = dataset_admin.delete_data_type(data_type)
+
+        if result["success"]:
+            db.session.commit()
+            return jsonify(result)
+        else:
+            db.session.rollback()
+            return jsonify(result), 400
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": f"Failed to delete data type: {str(e)}"}), 500
+
+
 @admin_bp.route('/datasets', methods=['POST'])
 @validate_content_length(max_size_mb=1000)
 def create_dataset():

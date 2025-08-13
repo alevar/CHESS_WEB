@@ -139,3 +139,20 @@ export const usePDBError = (td_id: number) => {
 export const usePDBDownloading = (td_id: number) => {
   return useAppSelector(state => state.pdb.downloading[td_id] || false);
 };
+
+// Transcript data hooks
+export const useTranscriptData = () => {
+  return useAppSelector((state: RootState) => state.transcript);
+};
+
+export const useCurrentTranscript = () => {
+  return useAppSelector((state: RootState) => state.transcript.currentTranscript);
+};
+
+export const useTranscriptLoading = () => {
+  return useAppSelector((state: RootState) => state.transcript.loading);
+};
+
+export const useTranscriptError = () => {
+  return useAppSelector((state: RootState) => state.transcript.error);
+};

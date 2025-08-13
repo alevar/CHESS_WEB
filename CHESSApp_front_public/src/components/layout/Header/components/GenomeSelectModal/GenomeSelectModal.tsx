@@ -69,8 +69,19 @@ const GenomeSelectModal: React.FC = () => {
                     );
                 });
             }),
-        versions: (source: Source) => 
-            source.versions ? Object.values(source.versions).sort((a, b) => a.version_rank - b.version_rank) : [],
+        versions: (source: Source) => {
+            if (!source.versions || !tempSelections.assembly) return [];
+            
+            // Filter versions to only show those that have assemblies matching the selected assembly
+            const compatibleVersions = Object.values(source.versions).filter(version => {
+                if (!version.assemblies) return false;
+                return Object.values(version.assemblies).some(sva => 
+                    sva.assembly_id === tempSelections.assembly!.assembly_id
+                );
+            });
+            
+            return compatibleVersions.sort((a, b) => a.version_rank - b.version_rank);
+        },
         defaultVersion: (source: Source) => {
             const versions = getData.versions(source);
             return versions[0];

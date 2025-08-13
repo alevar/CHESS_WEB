@@ -28,6 +28,7 @@ def global_data():
     nomenclatures = get_nomenclatures()
     genome_files = get_genome_files()
     configurations = get_all_configurations()
+    data_types = get_all_data_types()
     datasets = get_all_datasets()
 
     if not organisms["success"] or not assemblies["success"] or not sources["success"] or not nomenclatures["success"] or not genome_files["success"] or not datasets["success"]:
@@ -62,7 +63,8 @@ def global_data():
         "assemblies": assemblies["data"],
         "sources": sources,  # Now includes gene_types and transcript_types
         "configurations": configurations,
-        "datasets": datasets["data"] if isinstance(datasets, dict) and "data" in datasets else datasets
+        "datasets": {"data_types": data_types["data"], 
+                     "datasets": datasets["data"] if isinstance(datasets, dict) and "data" in datasets else datasets}
     }
 
     return jsonify(data)
@@ -376,3 +378,75 @@ def get_gene_by_gid(gid):
     except Exception as e:
         return jsonify({"success": False, "message": f"Failed to fetch gene data: {str(e)}"}), 500
 
+@public_bp.route('/transcript_data', methods=['GET'])
+def get_transcript_data():
+    """
+    Get full transcript data by tid and transcript_id
+    results example:
+    {
+        "success": true,
+        "data": {
+            "tid": 12345,
+            "transcript_id": "CHS.1000.1",
+            "transcript_type": "protein_coding",
+            "sequence_id": 17,
+            "strand": false,
+            "coordinates": {
+                "start": 43044295,
+                "end": 43170245
+            },
+            "exons": [(43044295, 43045802), (43047643, 43049194)],
+            "cds": [(43044295, 43045802), (43047643, 43049194)],
+            "nt_sequence": "GATTACA",
+            "datasets": [
+                {
+                    "dataset_id": 1,
+                    "dataset_name": "Expression Data",
+                    "dataset_description": "RNA-seq expression levels",
+                    "data_type": "expression",
+                    "data_entries": [
+                        {
+                            "td_id": 1001,
+                            "data": "15.7"
+                        }
+                    ]
+                }
+            ],
+            "attributes": {
+                "gene_id": "ENSG00000012048",
+                "gene_name": "BRCA1",
+                "gene_type": "protein_coding",
+                "transcript_type": "protein_coding",
+                "sequence_id": 17,
+            }
+    }
+    """
+    try:
+        tid = request.args.get('tid', type=int)
+        transcript_id = request.args.get('transcript_id', type=str)
+        assembly_id = request.args.get('assembly_id', type=int)
+        nomenclature = request.args.get('nomenclature', type=str)
+
+        if not tid or not transcript_id or not assembly_id or not nomenclature:
+            return jsonify({"success": False, "message": "Missing required arguments: tid, transcript_id, assembly_id, and nomenclature"}), 400
+
+        result = get_full_transcript_data(tid, transcript_id, assembly_id, nomenclature)
+        return jsonify(result), 200 if result["success"] else 404
+        
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Failed to fetch transcript data: {str(e)}"}), 500
+
+@public_bp.route('/data_types', methods=['GET'])
+def get_data_types():
+    """
+    Get all data types.
+    """
+    try:
+        result = get_all_data_types()
+        if result["success"]:
+            return jsonify(result)
+        else:
+            return jsonify(result), 400
+        
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Failed to get data types: {str(e)}"}), 500

@@ -66,7 +66,7 @@ const Header: React.FC = () => {
                                 {navItems.map((item) => (
                                     <Nav.Item key={item.to}>
                                         <Link 
-                                            to={item.to} 
+                                            to={item.to}
                                             className={`nav-link-custom ${isActive(item.to) ? 'active' : ''}`}
                                         >
                                             {item.label}

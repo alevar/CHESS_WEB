@@ -4,4 +4,4 @@ export type { AdminDataState } from './adminDataSlice';
 export type { 
   DatabaseTableInfo, 
   DatabaseTableData
-} from '../../types'; 
+} from '../../types';

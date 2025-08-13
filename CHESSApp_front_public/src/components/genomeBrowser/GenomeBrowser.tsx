@@ -184,31 +184,9 @@ const GenomeBrowser = forwardRef<any, BrowserProps>(({ currentTracks, onTracksCh
 
   return (
     <div>
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h5 className="mb-0">
-          <i className="fas fa-dna me-2"></i>
-          Genome Browser
-        </h5>
-        <small className="text-muted">
-          {currentTracks.length} track{currentTracks.length !== 1 ? 's' : ''} loaded
-        </small>
-      </div>
-
-      <div 
-        className="genome-browser-container"
-        style={{
-          width: '100%',
-          height: '600px',
-          border: '1px solid #dee2e6',
-          borderRadius: '0.375rem',
-          overflow: 'hidden',
-          backgroundColor: '#f8f9fa'
-        }}
-      >
-        <JBrowseLinearGenomeView
-          viewState={viewState}
-        />
-      </div>
+      <JBrowseLinearGenomeView
+        viewState={viewState}
+      />
     </div>
   );
 });

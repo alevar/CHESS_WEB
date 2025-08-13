@@ -6,6 +6,7 @@ import { downloadsReducer } from './dbData';
 import { geneSearchReducer } from './geneSearch';
 import { geneReducer } from './gene';
 import { pdbReducer } from './pdb';
+import { transcriptReducer } from './gene/transcriptIndex';
 
 const rootReducer = combineReducers({
   dbData: dbDataReducer,
@@ -14,6 +15,7 @@ const rootReducer = combineReducers({
   geneSearch: geneSearchReducer,
   gene: geneReducer,
   pdb: pdbReducer,
+  transcript: transcriptReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Alert, Spinner } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { useAppSelections, useSelectedAssembly, useDbData, useCurrentGene, useGeneLoading, useGeneError, useAppDispatch, usePDBDownloading } from '../../redux/hooks';
+import { useAppSelections, useSelectedAssembly, useDbData, useCurrentGene, useGeneLoading, useGeneError, useAppDispatch, usePDBDownloading, useCurrentTranscript, useTranscriptLoading, useTranscriptError } from '../../redux/hooks';
 import { fetchGeneByGid, clearGeneData } from '../../redux/gene';
+import { clearTranscriptData } from '../../redux/gene/transcriptIndex';
 import TranscriptVisualization from '../../components/TranscriptVisualization';
 import Sidebar from '../../components/common/Sidebar/Sidebar';
 import PDBViewer from '../../components/PDBViewer';
+import ExpressionBoxplot from '../../components/ExpressionBoxplot';
 import { downloadPDBFile } from '../../redux/pdb/pdbThunks';
 import './Gene.css';
 
@@ -15,6 +17,8 @@ const Gene: React.FC = () => {
   const { gid } = useParams<{ gid: string }>();
   const dispatch = useAppDispatch();
   const [selectedTranscript, setSelectedTranscript] = useState<any>(null);
+  const [boxplotSortBy, setBoxplotSortBy] = useState<'median' | 'group' | 'mean' | 'count'>('median');
+  const [boxplotSortOrder, setBoxplotSortOrder] = useState<'asc' | 'desc'>('desc');
   
   // Redux state
   const geneData = useCurrentGene();
@@ -23,6 +27,11 @@ const Gene: React.FC = () => {
   const appSelections = useAppSelections();
   const currentAssembly = useSelectedAssembly();
   const dbData = useDbData();
+  
+  // Transcript state from Redux
+  const fullTranscriptData = useCurrentTranscript();
+  const transcriptLoading = useTranscriptLoading();
+  const transcriptError = useTranscriptError();
 
   // Fetch gene data when component mounts or gid changes
   useEffect(() => {
@@ -36,6 +45,7 @@ const Gene: React.FC = () => {
     // Cleanup when component unmounts
     return () => {
       dispatch(clearGeneData());
+      dispatch(clearTranscriptData());
     };
   }, [gid, dispatch]);
 
@@ -175,6 +185,11 @@ const Gene: React.FC = () => {
   // Handle transcript selection
   const handleTranscriptClick = (transcript: any | null) => {
     setSelectedTranscript(transcript);
+    
+    // Clear transcript data when deselecting
+    if (!transcript) {
+      dispatch(clearTranscriptData());
+    }
   };
 
 
@@ -196,9 +211,9 @@ const Gene: React.FC = () => {
   
     return (
       <div className="pdb-entry mb-3">
-        <div className="entry-actions">
+        <div className="d-flex justify-content-between align-items-center mb-2">
           <button 
-            className="btn btn-outline-secondary btn-sm me-2"
+            className="btn btn-outline-secondary btn-sm"
             onClick={handleDownload}
             disabled={isDownloading}
           >
@@ -243,20 +258,20 @@ const Gene: React.FC = () => {
                     <div className="quicklink-item mb-3">
                       <a href="#transcript-details" className="quicklink-link">
                         <i className="bi bi-file-text me-2"></i>
-                        Selected Transcript
+                        Transcript Details
                       </a>
                     </div>
                     
                     {/* Dataset Quicklinks */}
-                    {selectedTranscript.datasets.length > 0 && (
+                    {(fullTranscriptData?.datasets || selectedTranscript.datasets).length > 0 && (
                       <>
                         <div className="quicklink-item mb-2">
                           <h6 className="text-muted mb-2 small">Datasets:</h6>
                         </div>
-                        {selectedTranscript.datasets.map((dataset: any, index: number) => (
+                        {(fullTranscriptData?.datasets || selectedTranscript.datasets).map((dataset: any, index: number) => (
                           <div key={index} className="quicklink-item mb-2">
                             <a href={`#dataset-${index}`} className="quicklink-link dataset-link">
-                              <i className={`bi ${dataset.data_type === 'pdb' ? 'bi-cube-fill text-primary' : 'bi-database'} me-2`}></i>
+                              <i className='bi-database me-2'></i>
                                                               <span className="small">
                                   {dataset.dataset_name}
                                 </span>
@@ -264,6 +279,16 @@ const Gene: React.FC = () => {
                           </div>
                         ))}
                       </>
+                    )}
+                    
+                    {/* Transcript Loading Indicator */}
+                    {transcriptLoading && (
+                      <div className="quicklink-item mb-2">
+                        <div className="text-muted small">
+                          <i className="bi bi-hourglass-split me-2"></i>
+                          Loading transcript data...
+                        </div>
+                      </div>
                     )}
                   </>
                 )}
@@ -285,6 +310,19 @@ const Gene: React.FC = () => {
                   >
                     <i className="bi bi-eye me-2"></i>
                     View in Browser
+                  </button>
+                </div>
+                
+                {/* Back to Top Button */}
+                <div className="quicklink-item mb-3">
+                  <button 
+                    className="btn btn-outline-secondary btn-sm w-100 back-to-top-btn"
+                    onClick={() => {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                  >
+                    <i className="bi bi-arrow-up me-2"></i>
+                    Back to Top
                   </button>
                 </div>
               </div>
@@ -344,12 +382,27 @@ const Gene: React.FC = () => {
           {/* Transcript Visualization */}
           <Row id="transcript-viz">
             <Col>
-              <TranscriptVisualization
-                transcripts={geneData.transcripts}
-                geneCoordinates={geneCoordinates}
-                onTranscriptClick={handleTranscriptClick}
-                selectedTranscript={selectedTranscript} // Add this line
-              />
+              <Card className="mb-4">
+                <Card.Header>
+                  <h4 className="mb-0">
+                    Transcript models
+                  </h4>
+                  <p className="text-muted mb-0 small">
+                    Click on transcripts to view detailed information. {transcriptCount} transcript{transcriptCount !== 1 ? 's' : ''} available.
+                  </p>
+                </Card.Header>
+                <Card.Body className="p-0">
+                  <TranscriptVisualization
+                    transcripts={geneData.transcripts}
+                    geneCoordinates={geneCoordinates}
+                    assembly_id={appSelections.assembly_id || 1}
+                    nomenclature={appSelections.nomenclature || ''}
+                    onTranscriptClick={handleTranscriptClick}
+                    selectedTranscript={selectedTranscript}
+                    isTranscriptLoading={transcriptLoading}
+                  />
+                </Card.Body>
+              </Card>
             </Col>
           </Row>
 
@@ -359,143 +412,195 @@ const Gene: React.FC = () => {
               <Col>
                 <Card className="mb-4">
                   <Card.Header>
-                    <h5>Selected Transcript</h5>
+                  <Row className="align-items-center">
+                    <Col lg={5} md={12} className="d-flex align-items-center mb-2 mb-lg-0">
+                      <h4 className="mb-0">Selected Transcript: {selectedTranscript.transcript_id}</h4>
+                    </Col>
+                    <Col lg={2} md={6} className="text-center text-lg-center mb-2 mb-lg-0">
+                      <span className="badge bg-secondary">{selectedTranscript.transcript_type}</span>
+                    </Col>
+                    <Col lg={5} md={6} className="text-end text-lg-end">
+                      <code className="bg-light p-2 rounded">
+                        {getSequenceName(selectedTranscript.sequence_id.toString())}:{selectedTranscript.coordinates.start.toLocaleString()}-{selectedTranscript.coordinates.end.toLocaleString()}
+                      </code>
+                    </Col>
+                  </Row>
                   </Card.Header>
                   <Card.Body>
-                    <Row>
-                      <Col md={6}>
-                        <div className="mb-3">
-                          <strong>Transcript ID:</strong> <code>{selectedTranscript.transcript_id}</code>
-                        </div>
-                        <div className="mb-3">
-                          <strong>Type:</strong> 
-                          <span className="badge bg-secondary ms-2">{selectedTranscript.transcript_type}</span>
-                        </div>
-                        <div className="mb-3">
-                          <strong>Coordinates:</strong> 
-                          <code className="ms-2 bg-light p-2 rounded">
-                            {selectedTranscript.coordinates.start.toLocaleString()}-{selectedTranscript.coordinates.end.toLocaleString()}
-                          </code>
-                        </div>
-                      </Col>
-                      <Col md={6}>
-                        <div className="mb-3">
-                          <strong>Exons:</strong> 
-                          <span className="badge bg-info ms-2">{selectedTranscript.exons.length}</span>
-                        </div>
-                        <div className="mb-3">
-                          <strong>CDS Regions:</strong> 
-                          <span className="badge bg-primary ms-2">{selectedTranscript.cds.length}</span>
-                        </div>
-                        <div className="mb-3">
-                          <strong>Datasets:</strong> 
-                          <span className="badge bg-warning ms-2">{selectedTranscript.datasets.length}</span>
-                        </div>
-                      </Col>
-                    </Row>
-                    
-                    {/* Exon Details */}
-                    {selectedTranscript.exons.length > 0 && (
-                      <div className="mt-3">
-                        <h6>Exon Details:</h6>
-                        <div className="table-responsive">
-                          <table className="table table-sm">
-                            <thead>
-                              <tr>
-                                <th>Exon #</th>
-                                <th>Start</th>
-                                <th>End</th>
-                                <th>Length</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {selectedTranscript.exons.map((exon: [number, number], index: number) => (
-                                <tr key={index}>
-                                  <td>{index + 1}</td>
-                                  <td>{exon[0].toLocaleString()}</td>
-                                  <td>{exon[1].toLocaleString()}</td>
-                                  <td>{(exon[1] - exon[0] + 1).toLocaleString()}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
+                    {/* Loading indicator for full transcript data */}
+                    {transcriptLoading && (
+                      <div className="text-center py-3">
+                        <Spinner animation="border" size="sm" className="me-2" />
+                        Loading full transcript data...
                       </div>
                     )}
+                    
+                    {/* Error display for transcript data */}
+                    {transcriptError && (
+                      <Alert variant="danger" className="mb-3">
+                        <i className="bi bi-exclamation-triangle me-2"></i>
+                        Error loading transcript data: {transcriptError}
+                      </Alert>
+                    )}
+
+                                         {/* Attributes */}
+                     {fullTranscriptData && !transcriptLoading && !transcriptError && (
+                       <Row>
+                         <Col>
+                           <h6 className="mb-3">Attributes</h6>
+                           <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                             {Object.entries(fullTranscriptData.attributes).map(([key, value]) => (
+                               <div key={key} className="col">
+                                 <div className="attribute-item p-2 border rounded bg-light">
+                                   <div className="attribute-key small text-muted mb-1">{key}</div>
+                                   <div className="attribute-value">
+                                     <code className="small">{String(value)}</code>
+                                   </div>
+                                 </div>
+                               </div>
+                             ))}
+                           </div>
+                         </Col>
+                       </Row>
+                     )}
+
+                     {/* Sequences */}
+                     {fullTranscriptData && !transcriptLoading && !transcriptError && (
+                       <Row>
+                         <Col>
+                           <h6 className="mb-3">Sequences</h6>
+                           
+                           {/* Nucleotide Sequence */}
+                           <div className="sequence-section">
+                             <div className="sequence-label">
+                               <span className="badge bg-primary">DNA</span>
+                               Nucleotide Sequence (Full Transcript)
+                             </div>
+                             <div className="sequence-container sequence-type-nucleotide p-2 rounded">
+                               <code className="sequence-text" style={{ fontSize: '0.8rem' }}>
+                                 {fullTranscriptData.nt_sequence}
+                               </code>
+                             </div>
+                           </div>
+                           
+                           {/* CDS Sequence */}
+                           {fullTranscriptData.cds_sequence && fullTranscriptData.cds_sequence.trim() !== '' && (
+                             <div className="sequence-section">
+                               <div className="sequence-label">
+                                 <span className="badge bg-purple">CDS</span>
+                                 CDS Sequence (Coding Region)
+                               </div>
+                               <div className="sequence-container sequence-type-cds p-2 rounded">
+                                 <code className="sequence-text" style={{ fontSize: '0.8rem' }}>
+                                   {fullTranscriptData.cds_sequence}
+                                 </code>
+                               </div>
+                             </div>
+                           )}
+                           
+                           {/* CDS Amino Acid Sequence */}
+                           {fullTranscriptData.cds_aa_sequence && fullTranscriptData.cds_aa_sequence.trim() !== '' && (
+                             <div className="sequence-section">
+                               <div className="sequence-label">
+                                 <span className="badge bg-success">AA</span>
+                                 Amino Acid Sequence (Translated)
+                               </div>
+                               <div className="sequence-container sequence-type-amino-acid p-2 rounded">
+                                 <code className="sequence-text" style={{ fontSize: '0.8rem' }}>
+                                   {fullTranscriptData.cds_aa_sequence}
+                                 </code>
+                               </div>
+                             </div>
+                           )}
+                           
+                           {/* Info message when no CDS sequences available */}
+                           {(!fullTranscriptData.cds_sequence || fullTranscriptData.cds_sequence.trim() === '') && (
+                             <div className="sequence-section">
+                               <div className="text-muted small">
+                                 <i className="bi bi-info-circle me-2"></i>
+                                 No CDS sequence available for this transcript
+                               </div>
+                             </div>
+                           )}
+                         </Col>
+                       </Row>
+                     )}
+
 
                     {/* Individual Dataset Sections */}
-                    {selectedTranscript.datasets.length > 0 && (
+                    {(fullTranscriptData?.datasets || selectedTranscript.datasets).length > 0 && (
                       <div className="mt-4">
                         <h6 className="mb-3">Available Datasets:</h6>
-                        {selectedTranscript.datasets.map((dataset: any, index: number) => (
+                        {(fullTranscriptData?.datasets || selectedTranscript.datasets).map((dataset: any, index: number) => (
                           <div key={index} id={`dataset-${index}`} className="mb-4">
-                            <Card className="dataset-card">
-                              <Card.Header className="dataset-header">
-                                <div className="d-flex justify-content-between align-items-center">
-                                  <div>
-                                    <h6 className="mb-1">{dataset.dataset_name}</h6>
-                                    <p className="mb-0 text-muted small">{dataset.dataset_description}</p>
+                            <div className="dataset-header mb-3">
+                              <h6 className="mb-2">{dataset.dataset_name}</h6>
+                              <p className="text-muted mb-0 small">{dataset.dataset_description}</p>
+                            </div>
+                            
+                            {dataset.data_type === 'pdb' && dataset.data_entries.length > 0 ? (
+                              dataset.data_entries.map((entry: any, entryIndex: number) => (
+                                <PDBEntry 
+                                  key={entryIndex} 
+                                  entry={entry} 
+                                  entryIndex={entryIndex} 
+                                  dataset={dataset} 
+                                />
+                              ))
+                            ) : dataset.data_type === 'boxplot' && dataset.data_entries.length > 0 ? (
+                              /* Expression Boxplot for boxplot data type */
+                              <div className="expression-dataset">
+                                {dataset.data_entries.map((entry: any, entryIndex: number) => (
+                                  <div key={entryIndex} className="mb-3">
+                                    <ExpressionBoxplot
+                                      data={entry.data}
+                                      width={900}
+                                      height={400}
+                                      sortBy={boxplotSortBy}
+                                      sortOrder={boxplotSortOrder}
+                                      onSortByChange={setBoxplotSortBy}
+                                      onSortOrderChange={setBoxplotSortOrder}
+                                    />
                                   </div>
-                                  <div className="dataset-badges">
-                                    <span className="badge bg-secondary me-2">{dataset.data_type}</span>
-                                    <span className="badge bg-info">{dataset.data_entries.length} entries</span>
-                                  </div>
-                                </div>
-                              </Card.Header>
-                              <Card.Body>
-                                <div className="dataset-content">
-                                  {/* PDB Viewer for PDB data types */}
-                                  {dataset.data_type === 'pdb' && dataset.data_entries.length > 0 ? (
-                                    <div className="pdb-dataset-view">
-                                      {dataset.data_entries.map((entry: any, entryIndex: number) => (
-                                        <PDBEntry 
-                                          key={entryIndex} 
-                                          entry={entry} 
-                                          entryIndex={entryIndex} 
-                                          dataset={dataset} 
-                                        />
-                                      ))}
-                                    </div>
-                                  ) : dataset.data_entries.length > 0 ? (
-                                    /* Regular data table for non-PDB types */
-                                    <div className="table-responsive">
-                                      <table className="table table-sm table-hover">
-                                        <thead>
-                                          <tr>
-                                            <th>Entry ID</th>
-                                            <th>Data Value</th>
-                                            <th>Actions</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody>
-                                          {dataset.data_entries.map((entry: any, entryIndex: number) => (
-                                            <tr key={entryIndex}>
-                                              <td>
-                                                <code className="small">{entry.td_id || `Entry ${entryIndex + 1}`}</code>
-                                              </td>
-                                              <td>
-                                                <span className="data-value">{entry.data}</span>
-                                              </td>
-                                              <td>
-                                                <button className="btn btn-outline-primary btn-sm">
-                                                  <i className="bi bi-eye me-1"></i>
-                                                  View Details
-                                                </button>
-                                              </td>
-                                            </tr>
-                                          ))}
-                                        </tbody>
-                                      </table>
-                                    </div>
-                                  ) : (
-                                    <div className="text-center text-muted py-3">
-                                      <i className="bi bi-inbox display-6"></i>
-                                      <p className="mt-2">No data entries available</p>
-                                    </div>
-                                  )}
-                                </div>
-                              </Card.Body>
-                            </Card>
+                                ))}
+                              </div>
+                            ) : dataset.data_entries.length > 0 ? (
+                              /* Regular data table for non-PDB types */
+                              <div className="table-responsive">
+                                <table className="table table-sm table-hover">
+                                  <thead>
+                                    <tr>
+                                      <th>Entry ID</th>
+                                      <th>Data Value</th>
+                                      <th>Actions</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {dataset.data_entries.map((entry: any, entryIndex: number) => (
+                                      <tr key={entryIndex}>
+                                        <td>
+                                          <code className="small">{entry.td_id || `Entry ${entryIndex + 1}`}</code>
+                                        </td>
+                                        <td>
+                                          <span className="data-value">{entry.data}</span>
+                                        </td>
+                                        <td>
+                                          <button className="btn btn-outline-primary btn-sm">
+                                            <i className="bi bi-eye me-1"></i>
+                                            View Details
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            ) : (
+                              <div className="text-center text-muted py-3">
+                                <i className="bi bi-inbox display-6"></i>
+                                <p className="mt-2">No data entries available</p>
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>

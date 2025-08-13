@@ -1,12 +1,15 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { Source, Assembly, Organism, Configuration, Dataset } from '../../types';
+import { Source, Assembly, Organism, Configuration, Dataset, DataType } from '../../types';
 
 export interface GlobalDataState {
   sources: { [source_id: number]: Source };
   assemblies: { [assembly_id: number]: Assembly };
   organisms: { [taxonomy_id: number]: Organism };
   configurations: { [configuration_id: number]: Configuration };
-  datasets: { [dataset_id: number]: Dataset };
+  datasets: {
+    data_types: { [data_type: string]: DataType };
+    datasets: { [dataset_id: number]: Dataset };
+  };
   loading: boolean;
   error: string | null;
   lastUpdated: string | null;
@@ -17,7 +20,10 @@ const initialState: GlobalDataState = {
   assemblies: {},
   organisms: {},
   configurations: {},
-  datasets: {},
+  datasets: {
+    data_types: {},
+    datasets: {},
+  },
   loading: false,
   error: null,
   lastUpdated: null,
@@ -36,7 +42,10 @@ const globalDataSlice = createSlice({
       state.assemblies = action.payload.assemblies || {};
       state.organisms = action.payload.organisms || {};
       state.configurations = action.payload.configurations || {};
-      state.datasets = action.payload.datasets || {};
+      state.datasets = action.payload.datasets || {
+        data_types: {},
+        datasets: {},
+      };
       state.loading = false;
       state.error = null;
       state.lastUpdated = new Date().toISOString();
@@ -50,7 +59,10 @@ const globalDataSlice = createSlice({
       state.assemblies = {};
       state.organisms = {};
       state.configurations = {};
-      state.datasets = {};
+      state.datasets = {
+        data_types: {},
+        datasets: {},
+      };
       state.lastUpdated = null;
       state.loading = false;
       state.error = null;

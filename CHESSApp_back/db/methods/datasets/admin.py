@@ -3,6 +3,91 @@ from db.db import db
 from .queries import *
 from .utils import *
 
+def add_data_type(data_type, description):
+    """
+    Add a new data type.
+    """
+    try:
+        if data_type_exists(data_type):
+            return {
+                "success": False,
+                "message": "Data type already exists"
+            }
+        
+        query = text("""
+            INSERT INTO data_type (data_type, description)
+            VALUES (:data_type, :description)
+        """)
+        result = db.session.execute(query, {
+            'data_type': data_type,
+            'description': description
+        })
+        return {
+            "success": True,
+            "message": "Data type added successfully"
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Failed to add data type: {str(e)}"
+        }
+
+def edit_data_type(data_type, description):
+    """
+    Edit a data type.
+    """
+    try:
+        if not data_type_exists(data_type):
+            return {
+                "success": False,
+                "message": "Data type does not exist"
+            }
+        
+        query = text("""
+            UPDATE data_type
+            SET description = :description
+            WHERE data_type = :data_type
+        """)
+        result = db.session.execute(query, {
+            'data_type': data_type,
+            'description': description
+        })
+        return {
+            "success": True,
+            "message": "Data type updated successfully"
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Failed to update data type: {str(e)}"
+        }
+
+def delete_data_type(data_type):
+    """
+    Delete a data type.
+    """
+    try:
+        if not data_type_exists(data_type):
+            return {
+                "success": False,
+                "message": "Data type does not exist"
+            }
+        
+        query = text("""
+            DELETE FROM data_type
+            WHERE data_type = :data_type
+        """)
+        result = db.session.execute(query, {'data_type': data_type})
+        return {
+            "success": True,
+            "message": "Data type deleted successfully"
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Failed to delete data type: {str(e)}"
+        }
+
 def create_dataset(data):
     """
     Create a new dataset

@@ -28,7 +28,7 @@ const GenomeBrowser: React.FC = () => {
     <Container className="py-5">
       <Row>
         <Col xs={12} md={3} lg={3} className="mb-4 mb-md-0">
-          <Sidebar title="Track Management">
+          <Sidebar title="Available Tracks">
             <TrackManager
               currentTracks={currentTracks}
               onTracksChange={handleTracksChange}

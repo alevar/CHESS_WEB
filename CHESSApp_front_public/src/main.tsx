@@ -7,6 +7,7 @@ import { store } from './redux/store';
 import App from './App';
 import Home from './pages/Home/Home';
 import About from './pages/About/About';
+import ContactUs from './pages/ContactUs/ContactUs';
 import Downloads from './pages/Downloads';
 import GenomeBrowser from './pages/GenomeBrowser';
 import Explore from './pages/Explore/Explore';
@@ -19,6 +20,7 @@ const routes = [
     children: [
       { path: '', element: <Home /> },
       { path: 'about', element: <About /> },
+      { path: 'contact', element: <ContactUs /> },
       { path: 'download', element: <Downloads /> },
       { path: 'browser', element: <GenomeBrowser /> },
       { path: 'explore', element: <Explore /> },

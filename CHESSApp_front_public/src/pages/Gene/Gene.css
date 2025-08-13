@@ -6,6 +6,19 @@
   scroll-behavior: smooth;
 }
 
+/* Sticky sidebar positioning */
+.gene-page .col-md-3.col-lg-3 {
+  position: sticky;
+  top: 2rem;
+  height: fit-content;
+  z-index: 100;
+}
+
+/* Ensure sidebar doesn't interfere with main content */
+.gene-page .col-md-9.col-lg-9 {
+  position: relative;
+}
+
 /* Page header styling */
 .gene-page h1 {
   font-weight: 700;
@@ -84,6 +97,35 @@
 
 .gene-page .badge.bg-info {
   background-color: #17a2b8 !important;
+}
+
+/* Dataset styling */
+.dataset-header {
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 1rem;
+}
+
+.dataset-header h6 {
+  color: #2c3e50;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.expression-dataset {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.expression-dataset .badge {
+  font-size: 0.75rem;
+  padding: 0.4rem 0.6rem;
+}
+
+.expression-dataset .text-muted {
+  font-size: 0.875rem;
 }
 
 /* Button styling */
@@ -240,6 +282,121 @@
   font-size: 0.9rem;
 }
 
+/* Back to Top button styling */
+.back-to-top-btn {
+  transition: all 0.3s ease;
+}
+
+.back-to-top-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.back-to-top-btn:active {
+  transform: translateY(0);
+}
+
+/* Attributes grid styling */
+.attribute-item {
+  transition: all 0.2s ease;
+  height: 100%;
+}
+
+.attribute-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-color: #007bff !important;
+}
+
+.attribute-key {
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.attribute-value code {
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+/* Sequence container styling */
+.sequence-container {
+  overflow-x: auto;
+  white-space: nowrap;
+  max-height: 3rem;
+}
+
+.sequence-text {
+  display: inline-block;
+  white-space: nowrap;
+  min-width: 100%;
+}
+
+/* Sequence type styling */
+.sequence-section {
+  margin-bottom: 1.5rem;
+}
+
+.sequence-section:last-child {
+  margin-bottom: 0;
+}
+
+.sequence-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sequence-label .badge {
+  font-size: 0.7rem;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Custom badge colors */
+.badge.bg-purple {
+  background-color: #9c27b0 !important;
+}
+
+.sequence-type-nucleotide {
+  background-color: #e3f2fd;
+  border-left: 4px solid #2196F3;
+}
+
+.sequence-type-cds {
+  background-color: #f3e5f5;
+  border-left: 4px solid #9c27b0;
+}
+
+.sequence-type-amino-acid {
+  background-color: #e8f5e8;
+  border-left: 4px solid #4caf50;
+}
+
+/* Responsive adjustments for attributes */
+@media (max-width: 767.98px) {
+  .row-cols-1 > * {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .row-cols-md-2 > * {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
+
+@media (min-width: 992px) {
+  .row-cols-lg-3 > * {
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%;
+  }
+}
+
 /* Dataset section spacing */
 #dataset-0, #dataset-1, #dataset-2, #dataset-3, #dataset-4, #dataset-5 {
   scroll-margin-top: 100px; /* Account for fixed header */
@@ -296,6 +453,18 @@
 @media (max-width: 991.98px) {
   .gene-page {
     padding: 1rem 0;
+  }
+  
+  /* Disable sticky positioning on mobile for better UX */
+  .gene-page .col-md-3.col-lg-3 {
+    position: static;
+    top: auto;
+    height: auto;
+    z-index: auto;
+  }
+  
+  .gene-page .col-md-9.col-lg-9 {
+    position: static;
   }
   
   .gene-page .card-body {

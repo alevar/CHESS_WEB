@@ -93,6 +93,11 @@ export interface Dataset {
   data_type: string;
 }
 
+export interface DataType {
+  data_type: string;
+  description: string;
+}
+
 export interface TranscriptData {
   td_id: number;
   tid: number;
@@ -108,7 +113,10 @@ export interface DbDataState {
   assemblies: { [assembly_id: number]: Assembly };
   organisms: { [taxonomy_id: number]: Organism };
   configurations: { [configuration_id: number]: Configuration };
-  datasets: { [dataset_id: number]: Dataset };
+  datasets: {
+    data_types: { [data_type: string]: DataType };
+    datasets: { [dataset_id: number]: Dataset };
+  };
   loading: boolean;
   error: string | null;
   lastUpdated: string | null;

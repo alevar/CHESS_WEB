@@ -83,6 +83,12 @@ export interface Configuration {
   sv_id: number;
 }
 
+// Data type management types
+export interface DataType {
+  data_type: string;
+  description: string;
+}
+
 // Dataset management types
 export interface Dataset {
   dataset_id: number;

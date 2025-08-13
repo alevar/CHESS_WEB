@@ -195,10 +195,14 @@ const GeneSearchResults: React.FC<GeneSearchResultsProps> = ({
                   <Button 
                     variant="outline-secondary" 
                     size="sm"
-                                          onClick={() => {
-                        // Navigate to the gene page using the gene's gid
-                        navigate(`/gene/${gene.gid}`);
-                      }}
+                    onClick={() => {
+                      // Get current URL path and replace /explore with /gene
+                      const currentPath = location.pathname;
+                      const genePath = currentPath.replace('/explore', `/gene/${gene.gid}`);
+                      
+                      // Navigate to gene page with current URL context to preserve parameters
+                      navigate(genePath);
+                    }}
                     title="View gene details"
                   >
                     Details
