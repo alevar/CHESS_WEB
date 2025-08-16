@@ -1,0 +1,32 @@
+/* LoadingSpinner component styles */
+.loading-spinner-fullscreen {
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(2px);
+}
+
+.loading-spinner-content {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ensure spinner has proper spacing */
+.loading-spinner-content .spinner-border {
+  box-shadow: 0 0 20px rgba(0, 123, 255, 0.3);
+}
+
+/* Responsive text sizing */
+@media (max-width: 768px) {
+  .loading-spinner-content .text-muted {
+    font-size: 0.9rem;
+  }
+}

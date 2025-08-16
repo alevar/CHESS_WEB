@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { DbDataState } from '../../types/dbTypes';
+import { fetchDbData } from './dbDataThunks';
 
 const initialState: DbDataState = {
   sources: {},
@@ -19,42 +20,30 @@ const dbDataSlice = createSlice({
   name: 'dbData',
   initialState,
   reducers: {
-    setLoading(state) {
-      state.loading = true;
-      state.error = null;
-    },
-    setDbData(state, action) {
-      state.sources = action.payload.sources || {};
-      state.assemblies = action.payload.assemblies || {};
-      state.organisms = action.payload.organisms || {};
-      state.configurations = action.payload.configurations || {};
-      state.datasets = action.payload.datasets || {
-        datasets: {},
-        data_types: {},
-      };
-      state.loading = false;
-      state.error = null;
-      state.lastUpdated = new Date().toISOString();
-    },
-    setError(state, action) {
-      state.loading = false;
-      state.error = action.payload;
-    },
     clearDbData(state) {
-      state.sources = {};
-      state.assemblies = {};
-      state.organisms = {};
-      state.configurations = {};
-      state.datasets = {
-        datasets: {},
-        data_types: {},
-      };
-      state.lastUpdated = null;
-      state.loading = false;
+      Object.assign(state, initialState);
+    },
+    clearError(state) {
       state.error = null;
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchDbData.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchDbData.fulfilled, (state, action) => {
+        state.loading = false;
+        Object.assign(state, action.payload);
+        state.lastUpdated = new Date().toISOString();
+      })
+      .addCase(fetchDbData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to fetch database data';
+      });
+  },
 });
 
-export const { setLoading, setDbData, setError, clearDbData } = dbDataSlice.actions;
+export const { clearDbData, clearError } = dbDataSlice.actions;
 export default dbDataSlice.reducer;

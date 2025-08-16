@@ -22,6 +22,7 @@ def global_data():
     Fetches comprehensive data about the database for UI building
     Returns: JSON object with organisms, assemblies (including nomenclatures), sources
     """
+    
     sources = get_all_source_versions()  # Now includes feature types
     organisms = get_all_organisms()
     assemblies = get_all_assemblies()

@@ -1,17 +1,10 @@
 import React from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
 import jhu_logo from '../../../assets/logos/university.shield.blue.svg';
 import som_logo from '../../../assets/logos/medicine.shield.blue.svg';
 import sph_logo from '../../../assets/logos/bloomberg.shield.blue.svg';
 
 const Footer: React.FC = () => {
-  const navItems = [
-    { to: '', label: 'Home' },
-    { to: 'about', label: 'About' },
-    { to: 'contact', label: 'Contact Us' }
-  ];
-
   return (
     <div className="bg-light border-top mt-auto">
       <footer className="py-4">
@@ -26,19 +19,10 @@ const Footer: React.FC = () => {
               <p className="text-muted mb-0">CCB &copy; {new Date().getFullYear()}</p>
             </Col>
             <Col md={4} className="text-center mb-3 mb-md-0">
-              <ul className="list-inline mb-0">
-                {navItems.map((item) => (
-                  <li key={item.to} className="list-inline-item me-3">
-                    <Link to={item.to} className="text-muted text-decoration-none">
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+              
             </Col>
             <Col md={2} className="mb-3 mb-md-0">
-              <a href="/privacy-policy" className="text-muted text-decoration-none">Privacy Policy</a> | 
-              <a href="/terms-of-service" className="text-muted text-decoration-none ms-1">Terms of Service</a>
+              <a href="https://github.com/alevar/CHESS_WEB/blob/main/LICENSE" className="text-muted text-decoration-none ms-1">License</a>
             </Col>
             <Col md={1} className="mb-3 mb-md-0">
               <a href="https://www.hopkinsmedicine.org/som/" className="d-flex align-items-center">

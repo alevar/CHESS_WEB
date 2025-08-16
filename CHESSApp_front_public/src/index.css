@@ -10,21 +10,7 @@ body {
   min-height: 100vh;
 }
 
-/* Sticky footer layout */
-.min-vh-100 {
-  min-height: 100vh !important;
-}
-
-.flex-grow-1 {
-  flex-grow: 1 !important;
-}
-
 /* Ensure main content takes available space */
 main {
   flex: 1 0 auto;
-}
-
-/* Utility classes */
-.cursor-pointer {
-  cursor: pointer;
 }

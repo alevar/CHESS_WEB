@@ -1,10 +1,9 @@
-// Updated Database Data Types - for storing general database information
 export interface Organism {
   taxonomy_id: number;
   scientific_name: string;
   common_name: string;
   information: string;
-  assemblies?: Assembly[];
+  assemblies: Assembly[];
 }
 
 export interface GenomeFile {
@@ -19,9 +18,9 @@ export interface Assembly {
   assembly_name: string;
   information: string;
   taxonomy_id: number;
-  nomenclatures?: string[];
-  genome_files?: GenomeFile[];
-  sequence_name_mappings?: {
+  nomenclatures: string[];
+  genome_files: GenomeFile[];
+  sequence_name_mappings: {
     [nomenclature: string]: {
       sequence_names_to_ids: {
         [sequence_name: string]: {
@@ -31,7 +30,7 @@ export interface Assembly {
       };
     };
   };
-  sequence_id_mappings?: {
+  sequence_id_mappings: {
     [sequence_id: string]: {
       length: number;
       nomenclatures: {
@@ -47,25 +46,24 @@ export interface Source {
   information: string;
   link: string;
   citation: string;
-  last_updated?: string;
-  versions?: { [sv_id: number]: SourceVersion };
+  last_updated: string;
+  versions: { [sv_id: number]: SourceVersion };
 }
 
 export interface SourceVersion {
   sv_id: number;
   version_name: string;
   version_rank: number;
-  last_updated?: string;
-  assemblies?: { [sva_id: number]: SourceVersionAssembly };
+  last_updated: string;
+  assemblies: { [sva_id: number]: SourceVersionAssembly };
 }
 
-// Updated interface to include feature types
 export interface SourceVersionAssembly {
   sva_id: number;
   assembly_id: number;
-  gene_types?: string[];        // New: list of gene types for this sva_id
-  transcript_types?: string[];  // New: list of transcript types for this sva_id
-  files?: { [file_key: string]: SourceFile };
+  gene_types: string[];
+  transcript_types: string[];
+  files: { [file_key: string]: SourceFile };
 }
 
 export interface SourceFile {
@@ -107,7 +105,7 @@ export interface TranscriptData {
   data: string;
 }
 
-// Database Data State Interface - unchanged
+// Database Data State Interface
 export interface DbDataState {
   sources: { [source_id: number]: Source };
   assemblies: { [assembly_id: number]: Assembly };

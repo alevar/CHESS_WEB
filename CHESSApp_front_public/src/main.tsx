@@ -5,31 +5,59 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { store } from './redux/store';
 
 import App from './App';
-import Home from './pages/Home/Home';
-import About from './pages/About/About';
-import ContactUs from './pages/ContactUs/ContactUs';
+import BaseLayout from './components/layout/BaseLayout/BaseLayout';
+import Home from './pages/Home';
+import About from './pages/About';
+import ContactUs from './pages/ContactUs';
 import Downloads from './pages/Downloads';
 import GenomeBrowser from './pages/GenomeBrowser';
-import Explore from './pages/Explore/Explore';
-import Gene from './pages/Gene/Gene';
+import Explore from './pages/Explore';
+import Gene from './pages/Gene';
 
-const routes = [
+const router = createBrowserRouter([
   {
-    path: "/:organism?/:assembly?/:source?/:version?/:nomenclature?",
+    path: "/about",
+    element: (
+      <BaseLayout>
+        <About />
+      </BaseLayout>
+    ),
+  },
+  {
+    path: "/contact",
+    element: (
+      <BaseLayout>
+        <ContactUs />
+      </BaseLayout>
+    ),
+  },
+  {
+    path: "/",
     element: <App />,
     children: [
-      { path: '', element: <Home /> },
-      { path: 'about', element: <About /> },
-      { path: 'contact', element: <ContactUs /> },
-      { path: 'download', element: <Downloads /> },
-      { path: 'browser', element: <GenomeBrowser /> },
-      { path: 'explore', element: <Explore /> },
-      { path: 'gene/:gid', element: <Gene /> },
-    ],
-  }
-];
-
-const router = createBrowserRouter(routes, { basename: import.meta.env.BASE_URL });
+      {
+        path: ":organism?/:assembly?/:source?/:version?/:nomenclature?",
+        children: [
+          { path: "", element: <Home /> },
+          { path: "downloads", element: <Downloads /> },
+          { path: "browser/:locus?", element: <GenomeBrowser /> },
+          { path: "explore", element: <Explore /> },
+          { path: "gene/:gid", element: <Gene /> },
+          { path: "about", element: <About /> },
+          { path: "contact", element: <ContactUs /> },
+        ]
+      },
+    ]
+  },
+  // Catch-all route - redirect any unmatched paths to the root app
+  {
+    path: "/*",
+    element: <App />,
+  },
+], { 
+  basename: import.meta.env.BASE_URL,
+},
+);
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
