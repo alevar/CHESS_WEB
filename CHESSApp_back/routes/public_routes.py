@@ -35,7 +35,7 @@ def global_data():
     if not organisms["success"] or not assemblies["success"] or not sources["success"] or not nomenclatures["success"] or not genome_files["success"] or not datasets["success"]:
         return jsonify({"error": "Failed to fetch organisms, assemblies, sources, nomenclatures, genome files, or datasets"}), 500
     
-    sources = organize_all_source_versions(sources["data"])  # Now handles feature types
+    sources = organize_all_source_versions(sources["data"])
     nomenclatures = organize_nomenclatures(nomenclatures["data"])
 
     # Add nomenclature data to assemblies
@@ -62,7 +62,7 @@ def global_data():
     data = {
         "organisms": organisms["data"],
         "assemblies": assemblies["data"],
-        "sources": sources,  # Now includes gene_types and transcript_types
+        "sources": sources,
         "configurations": configurations,
         "datasets": {"data_types": data_types["data"], 
                      "datasets": datasets["data"] if isinstance(datasets, dict) and "data" in datasets else datasets}

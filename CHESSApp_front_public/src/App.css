@@ -53,3 +53,18 @@
 .page-transition {
   transition: opacity 0.3s ease-in-out;
 }
+
+/* Sticky footer layout */
+.sticky-footer-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1 0 auto;
+}
+
+.footer-sticky {
+  flex-shrink: 0;
+}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Alert, Button } from 'react-bootstrap';
 
 interface ErrorBoundaryProps {
@@ -6,6 +6,28 @@ interface ErrorBoundaryProps {
 }
 
 const ErrorBoundary: React.FC<ErrorBoundaryProps> = ({ error }) => {
+  const [countdown, setCountdown] = useState(5);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          redirectToCHESS();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const redirectToCHESS = () => {
+    setIsRedirecting(true);
+    window.location.href = 'https://ccb.jhu.edu/chess/';
+  };
+
   return (
     <div className="d-flex flex-column min-vh-100">
       <div className="d-flex justify-content-center align-items-center flex-grow-1">
@@ -20,6 +42,18 @@ const ErrorBoundary: React.FC<ErrorBoundaryProps> = ({ error }) => {
             </p>
             <div className="text-muted small mb-3">
               Error: {error}
+            </div>
+            <div className="mb-3">
+              <p className="mb-2">
+                Redirecting to CHESS website in <strong>{countdown}</strong> seconds...
+              </p>
+              <Button 
+                variant="primary" 
+                onClick={redirectToCHESS}
+                disabled={isRedirecting}
+              >
+                {isRedirecting ? 'Redirecting...' : 'Go to CHESS Website Now'}
+              </Button>
             </div>
           </Alert>
         </Container>

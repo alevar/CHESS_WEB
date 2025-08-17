@@ -131,8 +131,8 @@ const Header: React.FC = () => {
                                         <span className="text-truncate">
                                             {appData.selections.source_id && appData.selections.version_id ? (
                                                 <>
-                                                    {dbData.sources[appData.selections.source_id]?.name || 'Unknown Source'} / 
-                                                    {dbData.sources[appData.selections.source_id]?.versions?.[appData.selections.version_id]?.version_name || 'Unknown Version'}
+                                                    {dbData.sources[appData.selections.source_id]?.name || 'Unknown Source'} (
+                                                    {dbData.sources[appData.selections.source_id]?.versions?.[appData.selections.version_id]?.version_name || 'Unknown Version'})
                                                 </>
                                             ) : (
                                                 'Configure Genome Settings'

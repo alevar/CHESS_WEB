@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, Row, Col, Badge, Alert, Table, Modal } from 'react-bootstrap';
+import { Button, Row, Col, Badge, Alert, Table, Modal } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../../redux/store';
 import { Organism, Assembly, Source, SourceVersion } from '../../../types/dbTypes';
 import { useDbData } from '../../../hooks';
 import SelectionCard from './SelectionCard';
+
+import { usePathManager } from '../../../hooks/usePathManager';
 
 type SelectionStep = 'organism' | 'assembly' | 'nomenclature' | 'source' | 'version';
 interface TempSelections {
@@ -25,10 +25,12 @@ interface AppSettingsModalProps {
 const AppSettingsModal: React.FC<AppSettingsModalProps> = ({ show, canClose = true, onClose }) => {
   const navigate = useNavigate();
   
-  const dbData = useSelector((state: RootState) => state.dbData);
-  
   const [currentStep, setCurrentStep] = useState<SelectionStep>('organism');
   const [tempSelections, setTempSelections] = useState<TempSelections>({});
+
+  const {
+    extractRouteFromPath
+  } = usePathManager();
 
   const steps: SelectionStep[] = ['organism', 'assembly', 'nomenclature', 'source', 'version'];
 
@@ -61,7 +63,13 @@ const AppSettingsModal: React.FC<AppSettingsModalProps> = ({ show, canClose = tr
   }, [show, canClose, onClose]);
 
   const dbDataHook = useDbData();
-  const { getAllOrganisms, getAllAssembliesForOrganism, getAllSourcesForAssembly, getAllVersionsForSource, getAllVersionsForSourceAssembly, getAllNomenclaturesForAssembly, getSequenceNamesForAssemblyNomenclature } = dbDataHook;
+  const { 
+    getAllOrganisms, 
+    getAllAssembliesForOrganism_byID, 
+    getAllSourcesForAssembly, 
+    getAllVersionsForSourceAssembly, 
+    getSequenceNamesForAssemblyNomenclature 
+  } = dbDataHook;
 
   // Selection handlers
   const handleSelection = (step: SelectionStep, value: any) => {
@@ -94,11 +102,10 @@ const AppSettingsModal: React.FC<AppSettingsModalProps> = ({ show, canClose = tr
 
   const handleConfirmSelection = () => {
     const { organism, assembly, source, version, nomenclature } = tempSelections;
+    const currentRoute = extractRouteFromPath(location.pathname);
     if (organism && assembly && source && version && nomenclature) {
-      // Build URL with new selections
-      const newUrl = `/o:${organism.taxonomy_id}/a:${assembly.assembly_id}/s:${source.source_id}/v:${version.sv_id}/n:${nomenclature}`;
+      const newUrl = `/o:${organism.taxonomy_id}/a:${assembly.assembly_id}/s:${source.source_id}/v:${version.sv_id}/n:${nomenclature}/${currentRoute}`;
       navigate(newUrl, { replace: true });
-      
       handleClose();
     }
   };
@@ -149,7 +156,7 @@ const AppSettingsModal: React.FC<AppSettingsModalProps> = ({ show, canClose = tr
         if (!tempSelections.organism) return null;
         return (
           <Row>
-            {getAllAssembliesForOrganism(tempSelections.organism.taxonomy_id).map(assembly => (
+            {getAllAssembliesForOrganism_byID(tempSelections.organism.taxonomy_id).map(assembly => (
               <Col md={6} key={assembly.assembly_id} className="mb-3">
                 <SelectionCard 
                   title={assembly.assembly_name} 
@@ -181,7 +188,7 @@ const AppSettingsModal: React.FC<AppSettingsModalProps> = ({ show, canClose = tr
               </thead>
               <tbody>
                 {assembly.nomenclatures.map(nomenclature => {
-                  const examples = dbDataHook.getSequenceNamesForAssemblyNomenclature(assembly, nomenclature);
+                  const examples = getSequenceNamesForAssemblyNomenclature(assembly, nomenclature);
                   const isSelected = tempSelections.nomenclature === nomenclature;
                   
                   return (

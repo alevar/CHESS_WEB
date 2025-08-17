@@ -5,9 +5,16 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-body {
+html, body {
   margin: 0;
+  height: 100%;
+}
+
+/* Make the root element full height */
+#root {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Ensure main content takes available space */

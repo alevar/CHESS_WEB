@@ -96,7 +96,7 @@ def get_all_source_versions():
     Returns a dictionary with success status and data or error message.
     """
     try:
-        query = text("SELECT * FROM all_source_versions ORDER BY source_name, version_name")
+        query = text("SELECT * FROM all_source_versions ORDER BY source_name, version_rank")
         res = db.session.execute(query)
         
         source_versions = []

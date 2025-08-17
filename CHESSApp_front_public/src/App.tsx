@@ -48,7 +48,6 @@ const App: React.FC = () => {
       // Check if we have a valid structured app path
       if (pathManager.isStructuredAppPath(location.pathname)) {
         const parsedPath = pathManager.parseStructuredPath(location.pathname);
-        console.log('parsedPath', parsedPath);
         if (parsedPath) {
           const urlSelections = {
             organism_id: Number(parsedPath.params.organism),
@@ -98,27 +97,53 @@ const App: React.FC = () => {
   };
 
   if (dbData.loading) {
-    return <LoadingSpinner />;
+    return (
+      <div className="d-flex flex-column min-vh-100">
+        <div className="flex-grow-1 d-flex align-items-center justify-content-center">
+          <LoadingSpinner />
+        </div>
+      </div>
+    );
   }
   
   if (dbData.error) {
-    return <ErrorBoundary error={dbData.error} />;
+    return (
+      <div className="d-flex flex-column min-vh-100">
+        <div className="flex-grow-1">
+          <ErrorBoundary error={dbData.error} />
+        </div>
+      </div>
+    );
   }
 
   if (appData.error) {
-    return <AppSettingsModal show={true} canClose={false} />;
+    return (
+      <div className="d-flex flex-column min-vh-100">
+        <div className="flex-grow-1">
+          <AppSettingsModal show={true} canClose={false} />
+        </div>
+      </div>
+    );
   }
   
   if (!appData.initialized) {
-    return <LoadingSpinner />;
+    return (
+      <div className="d-flex flex-column min-vh-100">
+        <div className="flex-grow-1 d-flex align-items-center justify-content-center">
+          <LoadingSpinner />
+        </div>
+      </div>
+    );
   }
 
   return (
-    <Container fluid>
+    <div className="d-flex flex-column min-vh-100">
       <Header />
-      <Outlet />
+      <main className="flex-grow-1">
+        <Outlet />
+      </main>
       <Footer />
-    </Container>
+    </div>
   );
 };
 

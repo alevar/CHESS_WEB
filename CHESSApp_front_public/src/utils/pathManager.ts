@@ -88,11 +88,26 @@ export class PathManager {
   }
 
   /**
+   * Strip the /chess_app prefix from a pathname
+   * This ensures consistent path parsing regardless of the base path
+   */
+  private stripChessAppPrefix(pathname: string): string {
+    const prefix = import.meta.env.BASE_URL;
+    
+    if (pathname.startsWith(prefix)) {
+      const stripped = pathname.substring(prefix.length);
+      return stripped.startsWith('/') ? stripped : `/${stripped}`;
+    }
+    
+    return pathname;
+  }
+
+  /**
    * Extract the route from a given URL pathname
    * Uses structured format: o:<organism>/a:<assembly>/s:<source>/v:<version>/n:<nomenclature>/<route>
    */
   extractRouteFromPath(pathname: string): string {
-    const segments = pathname.split('/').filter(Boolean);
+    const segments = this.stripChessAppPrefix(pathname).split('/').filter(Boolean);
     
     // Check if this looks like a structured app path
     if (segments.length >= 5 && 
@@ -128,7 +143,7 @@ export class PathManager {
    * Returns null if the path is not a valid structured app path
    */
   parseStructuredPath(pathname: string): { params: UrlParams; route: string } | null {
-    const segments = pathname.split('/').filter(Boolean);
+    const segments = this.stripChessAppPrefix(pathname).split('/').filter(Boolean);
     
     // Check if this looks like a structured app path
     if (segments.length >= 5 && 
