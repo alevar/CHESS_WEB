@@ -158,7 +158,7 @@ const GenomeBrowser: React.FC = () => {
       const state = createViewState({
         assembly: getAssembly(assemblyProps),
         tracks: tracksConfig,
-        location: locationToUse,
+        location: locationToUse || '',
         defaultSession,
         onChange: () => {},
         configuration: {
