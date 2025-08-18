@@ -150,6 +150,19 @@ export const useDbData = () => {
         return assembly ? getSequenceNamesForAssemblyNomenclature(assembly, nomenclature) : [];
     }, [dbData.assemblies]);
 
+    const getGeneTypesForSourceVersionAssembly = useCallback((source_id: number, version_id: number, assembly_id: number): string[] => {
+        const sva = getSourceVersionAssembly_byID(source_id, version_id, assembly_id);
+        return sva ? sva.gene_types : [];
+    }, [dbData.sources]);
+
+    const getSequenceNameForAssemblyNomenclature_byID = useCallback((sequence_id: string, assembly_id: number, nomenclature: string): string => {
+        const assembly = getAssembly(assembly_id);
+        const sequenceIdToName_map = assembly?.sequence_id_mappings;
+        if (!sequenceIdToName_map) return "";
+        const sequenceName = sequenceIdToName_map[sequence_id]?.nomenclatures[nomenclature];
+        return sequenceName || "";
+    }, [dbData.assemblies]);
+
     return {
         getDbData,
 
@@ -178,5 +191,8 @@ export const useDbData = () => {
         getAllVersionsForSourceAssembly_byID,
         getSequenceNamesForAssemblyNomenclature_byID,
         getSourceVersionAssembly_byID,
+
+        getGeneTypesForSourceVersionAssembly,
+        getSequenceNameForAssemblyNomenclature_byID,
     };
 }
