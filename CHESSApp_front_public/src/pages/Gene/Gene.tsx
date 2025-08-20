@@ -169,13 +169,39 @@ const Gene: React.FC = () => {
                       {isDualTranscriptMode ? 'Transcript Comparison' : 'Transcript Details'}
                     </a>
                   </div>
+                  {/* Attributes Section - Only show if attributes exist */}
+                  {primaryTranscriptDetails?.attributes && Object.keys(primaryTranscriptDetails.attributes).length > 0 && (
+                    <div className="quicklink-item mb-3">
+                      <a href="#attributes-display" className="quicklink-link">
+                        <i className="bi bi-tags me-2"></i>
+                        Attributes
+                      </a>
+                    </div>
+                  )}
                   
-                  {/* Dataset Quicklinks */}
+                  {/* Sequence Section - Only show if sequence data exists */}
+                  {(primaryTranscriptDetails?.nt_sequence || primaryTranscriptDetails?.cds_sequence || primaryTranscriptDetails?.cds_aa_sequence) && (
+                    <div className="quicklink-item mb-3">
+                      <a href="#sequence-display" className="quicklink-link">
+                        <i className="bi bi-code-slash me-2"></i>
+                        Sequence
+                      </a>
+                    </div>
+                  )}
+                  {/* Available Datasets Section - Only show if datasets exist */}
                   {((primaryTranscriptDetails?.datasets && Array.isArray(primaryTranscriptDetails.datasets) && primaryTranscriptDetails.datasets.length > 0) || 
                     (selectedPrimaryTranscript?.datasets && Array.isArray(selectedPrimaryTranscript.datasets) && selectedPrimaryTranscript.datasets.length > 0)) && (
                     <>
+                      <div className="quicklink-item mb-3">
+                        <a href="#available-datasets" className="quicklink-link">
+                          <i className="bi bi-database me-2"></i>
+                          Available Datasets
+                        </a>
+                      </div>
+                      
+                      {/* Individual Dataset Quicklinks */}
                       <div className="quicklink-item mb-2">
-                        <h6 className="text-muted mb-2 small">Available Datasets:</h6>
+                        <h6 className="text-muted mb-2 small">Quick Access to Datasets:</h6>
                       </div>
                       {(primaryTranscriptDetails?.datasets || selectedPrimaryTranscript?.datasets || []).map((dataset: any, index: number) => (
                         <div key={index} className="quicklink-item mb-2">
@@ -291,92 +317,100 @@ const Gene: React.FC = () => {
           {selectedPrimaryTranscript && (
             <Row id="transcript-details">
               <Col>
-                <Row>
-                  <h4 className="mb-3 fw-bold text-muted">
-                    <i className="bi bi-tags me-2"></i>
-                    Attributes
-                  </h4>
-                  <Col md={isDualTranscriptMode ? 6 : 12}>
-                    <Card style={{ backgroundColor: `${TRANSCRIPT_COLORS.primary.lightest}80` }}>
-                      <Card.Header className="d-flex flex-wrap align-items-center gap-3">
-                        <h5 className="mb-0">{selectedPrimaryTranscript.transcript_id}</h5>
-                        <span className="badge bg-secondary">{selectedPrimaryTranscript.transcript_type}</span>
-                      </Card.Header>
-                      <Card.Body>
-                        {/* Attributes */}
-                        {primaryTranscriptDetails && !cmpTranscriptHook.primaryLoading && !cmpTranscriptHook.primaryError && (
-                          <AttributeDisplay 
-                              transcriptData={primaryTranscriptDetails}
-                              onAttributeHover={setHoveredPrimaryAttribute}
-                              hoveredAttribute={hoveredSecondaryAttribute}
-                              layout={isDualTranscriptMode ? 'multicolumn' : 'single'}
-                          />
-                        )}
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                  {isDualTranscriptMode && (
-                    <Col md={6}>
-                      <Card style={{ backgroundColor: `${TRANSCRIPT_COLORS.secondary.lightest}80` }}>
+                {/* Attributes Display - Only show if attributes exist */}
+                {primaryTranscriptDetails?.attributes && Object.keys(primaryTranscriptDetails.attributes).length > 0 && (
+                  <Row id="attributes-display">
+                    <h4 className="mb-3 fw-bold text-muted">
+                      <i className="bi bi-tags me-2"></i>
+                      Attributes
+                    </h4>
+                    <Col md={isDualTranscriptMode ? 6 : 12}>
+                      <Card style={{ backgroundColor: `${TRANSCRIPT_COLORS.primary.lightest}80` }}>
                         <Card.Header className="d-flex flex-wrap align-items-center gap-3">
-                          <h5 className="mb-0">{selectedSecondaryTranscript.transcript_id}</h5>
+                          <h5 className="mb-0">{selectedPrimaryTranscript.transcript_id}</h5>
                           <span className="badge bg-secondary">{selectedPrimaryTranscript.transcript_type}</span>
                         </Card.Header>
                         <Card.Body>
-                          {secondaryTranscriptDetails && !cmpTranscriptHook.secondaryLoading && !cmpTranscriptHook.secondaryError && (
+                          {/* Attributes */}
+                          {primaryTranscriptDetails && !cmpTranscriptHook.primaryLoading && !cmpTranscriptHook.primaryError && (
                             <AttributeDisplay 
-                                transcriptData={secondaryTranscriptDetails}
-                                onAttributeHover={setHoveredSecondaryAttribute}
-                                hoveredAttribute={hoveredPrimaryAttribute}
+                                transcriptData={primaryTranscriptDetails}
+                                onAttributeHover={setHoveredPrimaryAttribute}
+                                hoveredAttribute={hoveredSecondaryAttribute}
                                 layout={isDualTranscriptMode ? 'multicolumn' : 'single'}
                             />
                           )}
                         </Card.Body>
                       </Card>
                     </Col>
-                  )}
-                </Row>
+                    {isDualTranscriptMode && (
+                      <Col md={6}>
+                        <Card style={{ backgroundColor: `${TRANSCRIPT_COLORS.secondary.lightest}80` }}>
+                          <Card.Header className="d-flex flex-wrap align-items-center gap-3">
+                            <h5 className="mb-0">{selectedSecondaryTranscript.transcript_id}</h5>
+                            <span className="badge bg-secondary">{selectedPrimaryTranscript.transcript_type}</span>
+                          </Card.Header>
+                          <Card.Body>
+                            {secondaryTranscriptDetails && !cmpTranscriptHook.secondaryLoading && !cmpTranscriptHook.secondaryError && (
+                              <AttributeDisplay 
+                                  transcriptData={secondaryTranscriptDetails}
+                                  onAttributeHover={setHoveredSecondaryAttribute}
+                                  hoveredAttribute={hoveredPrimaryAttribute}
+                                  layout={isDualTranscriptMode ? 'multicolumn' : 'single'}
+                              />
+                            )}
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                    )}
+                  </Row>
+                )}
                 
-                {/* Sequence Display */}
-                <Row>
-                  <h4 className="mb-3 fw-bold text-muted">
-                    <i className="bi bi-code-slash me-2"></i>
-                    Sequence
-                  </h4>
-                  <Col md={isDualTranscriptMode ? 6 : 12}>
-                    <Card style={{ backgroundColor: `${TRANSCRIPT_COLORS.primary.lightest}80` }}>
-                      <Card.Body>
-                        {primaryTranscriptDetails && !cmpTranscriptHook.primaryLoading && !cmpTranscriptHook.primaryError && (
-                          <SequenceDisplay transcriptData={primaryTranscriptDetails} />
-                        )}
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                  {isDualTranscriptMode && (
-                    <Col md={6}>
-                      <Card style={{ backgroundColor: `${TRANSCRIPT_COLORS.secondary.lightest}80` }}>
+                {/* Sequence Display - Only show if sequence data exists */}
+                {(primaryTranscriptDetails?.nt_sequence || primaryTranscriptDetails?.cds_sequence || primaryTranscriptDetails?.cds_aa_sequence) && (
+                  <Row id="sequence-display">
+                    <h4 className="mb-3 fw-bold text-muted">
+                      <i className="bi bi-code-slash me-2"></i>
+                      Sequence
+                    </h4>
+                    <Col md={isDualTranscriptMode ? 6 : 12}>
+                      <Card style={{ backgroundColor: `${TRANSCRIPT_COLORS.primary.lightest}80` }}>
                         <Card.Body>
-                          {secondaryTranscriptDetails && !cmpTranscriptHook.secondaryLoading && !cmpTranscriptHook.secondaryError && (
-                            <SequenceDisplay transcriptData={secondaryTranscriptDetails} />
+                          {primaryTranscriptDetails && !cmpTranscriptHook.primaryLoading && !cmpTranscriptHook.primaryError && (
+                            <SequenceDisplay transcriptData={primaryTranscriptDetails} />
                           )}
                         </Card.Body>
                       </Card>
                     </Col>
-                  )}
-                </Row>
+                    {isDualTranscriptMode && (
+                      <Col md={6}>
+                        <Card style={{ backgroundColor: `${TRANSCRIPT_COLORS.secondary.lightest}80` }}>
+                          <Card.Body>
+                            {secondaryTranscriptDetails && !cmpTranscriptHook.secondaryLoading && !cmpTranscriptHook.secondaryError && (
+                              <SequenceDisplay transcriptData={secondaryTranscriptDetails} />
+                            )}
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                    )}
+                  </Row>
+                )}
 
-                {/* Dataset Display */}
-                <Row>
-                  <h4 className="mb-3 fw-bold text-muted">
-                    <i className="bi bi-database me-2"></i>
-                    Available Datasets
-                  </h4>
-                  <DatasetDisplay 
-                    primaryTranscriptDetails={primaryTranscriptDetails} 
-                    secondaryTranscriptDetails={secondaryTranscriptDetails} 
-                    isSecondaryModeEnabled={!!selectedSecondaryTranscript}
-                  />
-                </Row>
+                {/* Dataset Display - Only show if datasets exist */}
+                {((primaryTranscriptDetails?.datasets && Array.isArray(primaryTranscriptDetails.datasets) && primaryTranscriptDetails.datasets.length > 0) || 
+                  (selectedPrimaryTranscript?.datasets && Array.isArray(selectedPrimaryTranscript.datasets) && selectedPrimaryTranscript.datasets.length > 0)) && (
+                  <Row id="available-datasets">
+                    <h4 className="mb-3 fw-bold text-muted">
+                      <i className="bi bi-database me-2"></i>
+                      Available Datasets
+                    </h4>
+                    <DatasetDisplay 
+                      primaryTranscriptDetails={primaryTranscriptDetails} 
+                      secondaryTranscriptDetails={secondaryTranscriptDetails} 
+                      isSecondaryModeEnabled={!!selectedSecondaryTranscript}
+                    />
+                  </Row>
+                )}
               </Col>
             </Row>
           )}

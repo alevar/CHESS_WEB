@@ -14,6 +14,50 @@ const Downloads: React.FC = () => {
   const appDataHook = useAppData();
   const appData = appDataHook.getAppData();
 
+  // Check loading states first
+  if (dbDataHook.getDbData().loading) {
+    return (
+      <Container className="py-4">
+        <div className="d-flex justify-content-center py-4">
+          <LoadingSpinner />
+        </div>
+      </Container>
+    );
+  }
+
+  if (dbDataHook.getDbData().error) {
+    return (
+      <Container className="py-4">
+        <Alert variant="danger">
+          <Alert.Heading>Database Error</Alert.Heading>
+          <p className="mb-0">{dbDataHook.getDbData().error}</p>
+        </Alert>
+      </Container>
+    );
+  }
+
+  if (appData.loading || !appData.initialized) {
+    return (
+      <Container className="py-4">
+        <div className="d-flex justify-content-center py-4">
+          <LoadingSpinner />
+        </div>
+      </Container>
+    );
+  }
+
+  if (appData.error) {
+    return (
+      <Container className="py-4">
+        <Alert variant="danger">
+          <Alert.Heading>Application Error</Alert.Heading>
+          <p className="mb-0">{appData.error}</p>
+        </Alert>
+      </Container>
+    );
+  }
+
+  // Now safely access the data
   const organism = appData.selections.organism_id 
     ? dbDataHook.getOrganism(appData.selections.organism_id)
     : undefined;
@@ -32,7 +76,8 @@ const Downloads: React.FC = () => {
   const downloads = downloadsHook.getDownloads();
 
   useEffect(() => {
-    if (assembly && nomenclature) {
+    // Only fetch downloads when we have the minimum required data
+    if (assembly && nomenclature && !downloads.loading) {
       dispatch(fetchDownloadFiles({ 
         assembly_id: assembly.assembly_id, 
         assembly_name: assembly.assembly_name,
@@ -41,7 +86,7 @@ const Downloads: React.FC = () => {
         version
       }));
     }
-  }, [assembly, nomenclature, source, version, dispatch]);
+  }, [assembly, nomenclature, source, version, dispatch, downloads.loading]);
 
   const handleFileDownload = async (file: DownloadFile) => {
     try {
@@ -74,6 +119,7 @@ const Downloads: React.FC = () => {
     return <Badge bg={variant}>{type.toUpperCase()}</Badge>;
   };
 
+  // Check if required selections are missing
   if (!assembly) {
     return (
       <Container className="py-4">

@@ -7,3 +7,34 @@
   border-color: #2196f3 !important;
   border-width: 1px !important;
 }
+
+/* Smooth scrolling for anchor links */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Quicklink styling */
+.gene-quicklinks .quicklink-link {
+  text-decoration: none;
+  color: #495057;
+  transition: color 0.2s ease;
+}
+
+.gene-quicklinks .quicklink-link:hover {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.gene-quicklinks .dataset-link {
+  font-size: 0.9em;
+  color: #6c757d;
+}
+
+.gene-quicklinks .dataset-link:hover {
+  color: #007bff;
+}
+
+/* Ensure proper spacing for anchor targets */
+[id] {
+  scroll-margin-top: 20px;
+}

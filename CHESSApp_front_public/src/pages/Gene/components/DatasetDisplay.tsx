@@ -23,7 +23,6 @@ const DatasetDisplay: React.FC<DatasetDisplayProps> = ({
   if (!primaryTranscriptDetails?.datasets) {
     return null;
   }
-  
 
   return (
     <>
@@ -34,7 +33,7 @@ const DatasetDisplay: React.FC<DatasetDisplayProps> = ({
         );
 
         return (
-          <div key={index} className="mb-4">
+          <div key={index} id={`primary-dataset-${index}`} className="mb-4">
             <Row className="mb-3">
               <Col>
                 <h5 className="fw-bold">
@@ -63,43 +62,44 @@ const DatasetDisplay: React.FC<DatasetDisplayProps> = ({
               )}
 
               {primaryDataset.data_type === 'boxplot' && primaryDataset.data_entries.length > 0 && (
-                <>
-                    {isSecondaryModeEnabled && secondaryDataset && secondaryDataset.data_type === 'boxplot' ? (
-                        <ExpressionBoxplot
-                            data={primaryDataset.data_entries[0].data}
-                            secondaryData={secondaryDataset.data_entries[0]?.data}
-                            width={900}
-                            height={400}
-                            sortBy={boxplotSortBy}
-                            sortOrder={boxplotSortOrder}
-                            sortByTranscript={boxplotSortByTranscript}
-                            onSortByChange={setBoxplotSortBy}
-                            onSortOrderChange={setBoxplotSortOrder}
-                            onSortByTranscriptChange={setBoxplotSortByTranscript}
-                            primaryColor={TRANSCRIPT_COLORS.primary.main}
-                            secondaryColor={TRANSCRIPT_COLORS.secondary.main}
-                            primaryLabel={primaryTranscriptDetails?.transcript_id || 'Primary'}
-                            secondaryLabel={secondaryTranscriptDetails?.transcript_id || 'Secondary'}
-                            comparisonMode={true}
-                        />
-                    ) : (
-                        <ExpressionBoxplot
-                            data={primaryDataset.data_entries[0].data}
-                            width={900}
-                            height={400}
-                            sortBy={boxplotSortBy}
-                            sortOrder={boxplotSortOrder}
-                            sortByTranscript={boxplotSortByTranscript}
-                            onSortByChange={setBoxplotSortBy}
-                            onSortOrderChange={setBoxplotSortOrder}
-                            onSortByTranscriptChange={setBoxplotSortByTranscript}
-                            primaryColor={TRANSCRIPT_COLORS.primary.main}
-                            secondaryColor={TRANSCRIPT_COLORS.secondary.main}
-                            />
-                    )}
-                </>
+                <Col xs={12}>
+                  <Card>
+                    <Card.Body>
+                      {isSecondaryModeEnabled && secondaryDataset && secondaryDataset.data_type === 'boxplot' ? (
+                          <ExpressionBoxplot
+                              data={primaryDataset.data_entries[0].data}
+                              secondaryData={secondaryDataset.data_entries[0]?.data}
+                              height={400}
+                              sortBy={boxplotSortBy}
+                              sortOrder={boxplotSortOrder}
+                              sortByTranscript={boxplotSortByTranscript}
+                              onSortByChange={setBoxplotSortBy}
+                              onSortOrderChange={setBoxplotSortOrder}
+                              onSortByTranscriptChange={setBoxplotSortByTranscript}
+                              primaryColor={TRANSCRIPT_COLORS.primary.main}
+                              secondaryColor={TRANSCRIPT_COLORS.secondary.main}
+                              primaryLabel={primaryTranscriptDetails?.transcript_id || 'Primary'}
+                              secondaryLabel={secondaryTranscriptDetails?.transcript_id || 'Secondary'}
+                              comparisonMode={true}
+                          />
+                      ) : (
+                          <ExpressionBoxplot
+                              data={primaryDataset.data_entries[0].data}
+                              height={400}
+                              sortBy={boxplotSortBy}
+                              sortOrder={boxplotSortOrder}
+                              sortByTranscript={boxplotSortByTranscript}
+                              onSortByChange={setBoxplotSortBy}
+                              onSortOrderChange={setBoxplotSortOrder}
+                              onSortByTranscriptChange={setBoxplotSortByTranscript}
+                              primaryColor={TRANSCRIPT_COLORS.primary.main}
+                              secondaryColor={TRANSCRIPT_COLORS.secondary.main}
+                              />
+                      )}
+                    </Card.Body>
+                  </Card>
+                </Col>
               )}
-              
             </Row>
           </div>
         );
