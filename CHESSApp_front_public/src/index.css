@@ -1,0 +1,23 @@
+/* Minimal base styles for Bootstrap */
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+}
+
+/* Make the root element full height */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure main content takes available space */
+main {
+  flex: 1 0 auto;
+}

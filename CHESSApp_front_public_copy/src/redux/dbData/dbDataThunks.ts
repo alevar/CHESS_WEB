@@ -1,0 +1,34 @@
+import { createAsyncThunk } from '@reduxjs/toolkit';
+import { setLoading, setDbData, setError } from './dbDataSlice';
+
+const API_BASE_URL = 'http://localhost:5000/api';
+
+export const fetchDbData = createAsyncThunk(
+  'dbData/fetchDbData',
+  async (_, { dispatch }) => {
+    dispatch(setLoading());
+    try {
+      const response = await fetch(`${API_BASE_URL}/public/globalData`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      const dbData = {
+        organisms: data.organisms || {},
+        assemblies: data.assemblies || {},
+        sources: data.sources || {},
+        configurations: data.configurations || {},
+        datasets: data.datasets || {},
+      };
+      
+      dispatch(setDbData(dbData));
+      return dbData;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch database data';
+      dispatch(setError(errorMessage));
+      throw error;
+    }
+  }
+);

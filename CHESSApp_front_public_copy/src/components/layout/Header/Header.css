@@ -1,0 +1,307 @@
+/* Header Styles - Cleaner & More Organized */
+.header {
+  font-family: 'Inter', sans-serif;
+  background-color: #ffffff;
+}
+
+/* Brand Section */
+.brand-section {
+  padding: 0;
+  margin-right: 3rem;
+  flex-shrink: 0;
+}
+
+.brand-logo {
+  height: 45px;
+  width: auto;
+  margin-right: 12px;
+}
+
+.brand-text {
+  line-height: 1.2;
+}
+
+.brand-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.brand-subtitle {
+  font-size: 0.75rem;
+  color: #6c757d;
+  font-weight: 400;
+  margin: 0;
+}
+
+/* Center Navigation */
+.nav-center {
+  gap: 0.75rem;
+  margin: 0 2rem;
+}
+
+.nav-link-custom {
+  display: block;
+  padding: 0.5rem 1rem;
+  color: #495057;
+  text-decoration: none;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.nav-link-custom:hover {
+  background-color: #f8f9fa;
+  color: #007bff;
+  text-decoration: none;
+}
+
+.nav-link-custom.active {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Right Section */
+.right-section {
+  gap: 0.5rem;
+  margin-left: auto;
+  padding-left: 1rem;
+}
+
+.search-btn {
+  background: none !important;
+  border: none !important;
+  color: #6c757d !important;
+  font-size: 1.1rem;
+  padding: 0.5rem !important;
+  border-radius: 50% !important;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  box-shadow: none !important;
+}
+
+.search-btn:hover {
+  background-color: #f8f9fa !important;
+  color: #007bff !important;
+  transform: scale(1.05);
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.search-btn:focus {
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15) !important;
+  outline: none !important;
+  border: none !important;
+}
+
+.search-btn:active {
+  border: none !important;
+  box-shadow: none !important;
+  background-color: #f8f9fa !important;
+}
+
+/* Override Bootstrap button styles completely */
+.search-btn.btn-outline-secondary {
+  border-color: transparent !important;
+  background-color: transparent !important;
+}
+
+.search-btn.btn-outline-secondary:hover {
+  border-color: transparent !important;
+  background-color: #f8f9fa !important;
+  color: #007bff !important;
+}
+
+.search-btn.btn-outline-secondary:focus {
+  border-color: transparent !important;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15) !important;
+}
+
+.search-btn.btn-outline-secondary:active {
+  border-color: transparent !important;
+  background-color: #f8f9fa !important;
+}
+
+.ccb-link {
+  display: block;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.ccb-link:hover {
+  opacity: 1;
+}
+
+.ccb-logo {
+  height: 35px;
+  width: auto;
+}
+
+/* Custom Navbar Toggle */
+.custom-toggler {
+  background: none !important;
+  border: 1px solid #dee2e6 !important;
+  border-radius: 6px;
+  padding: 0.5rem;
+  color: #6c757d;
+  transition: all 0.2s ease;
+}
+
+.custom-toggler:hover {
+  background-color: #f8f9fa !important;
+  border-color: #007bff !important;
+  color: #007bff;
+}
+
+.custom-toggler:focus {
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15) !important;
+}
+
+/* Hide default Bootstrap toggle icon */
+.custom-toggler .navbar-toggler-icon {
+  display: none;
+}
+
+/* Search Dropdown */
+.search-dropdown {
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  animation: slideDown 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.search-dropdown .form-control {
+  border-radius: 25px;
+  border: 1px solid #dee2e6;
+  font-size: 0.9rem;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.search-dropdown .form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.search-dropdown .btn {
+  border-radius: 25px;
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+}
+
+/* Mobile Navigation */
+.mobile-nav {
+  border-top: 1px solid #e9ecef;
+  background-color: #f8f9fa;
+  padding: 1rem 0;
+}
+
+.mobile-nav form {
+  margin-top: 1rem;
+  padding: 0 1rem;
+}
+
+.nav-link-mobile {
+  display: block;
+  padding: 0.75rem 0;
+  color: #495057;
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 1px solid #e9ecef;
+  transition: color 0.2s ease;
+}
+
+.nav-link-mobile:hover {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.nav-link-mobile.active {
+  color: #007bff;
+  font-weight: 600;
+}
+
+/* Container and Layout */
+.header .container-fluid {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 991.98px) {
+  .brand-title {
+    font-size: 1.3rem;
+  }
+  
+  .brand-subtitle {
+    font-size: 0.7rem;
+  }
+  
+  .brand-logo {
+    height: 40px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .brand-section {
+    margin-right: 1rem;
+  }
+  
+  .brand-title {
+    font-size: 1.2rem;
+  }
+  
+  .brand-subtitle {
+    font-size: 0.65rem;
+  }
+  
+  .brand-logo {
+    height: 35px;
+    margin-right: 8px;
+  }
+  
+  .ccb-logo {
+    height: 30px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .header .container-fluid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .brand-section {
+    margin-right: 1rem;
+  }
+  
+  .nav-center {
+    margin: 0 1rem;
+  }
+}
+
+/* Bootstrap Override for Navbar Collapse */
+.navbar-collapse {
+  border-top: 1px solid #dee2e6;
+}
+
+.navbar-collapse.show {
+  background-color: #f8f9fa;
+}

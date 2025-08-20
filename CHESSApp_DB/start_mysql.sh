@@ -1,0 +1,1 @@
+/ccb/salz7-home/avaraby1/soft/mysql/mysql-8.4.1-linux-glibc2.28-x86_64/bin/mysqld --basedir=/home/avaraby1/MySQL --datadir=/home/avaraby1/MySQL/data --socket=/home/avaraby1/MySQL/socket --user=avaraby1 --explicit_defaults_for_timestamp

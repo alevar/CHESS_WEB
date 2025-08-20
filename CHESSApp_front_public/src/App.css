@@ -1,0 +1,70 @@
+/* App-specific styles for Bootstrap */
+
+/* Custom Bootstrap overrides */
+.btn-primary {
+  --bs-btn-bg: #007bff;
+  --bs-btn-border-color: #007bff;
+  --bs-btn-hover-bg: #0056b3;
+  --bs-btn-hover-border-color: #0056b3;
+}
+
+.navbar-brand {
+  font-weight: 600;
+}
+
+/* Loading states */
+.loading-spinner {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Enhanced loading states for consistency */
+.loading-overlay {
+  position: relative;
+  min-height: 200px;
+}
+
+.loading-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.loading-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Utility classes */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Page transitions */
+.page-transition {
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Sticky footer layout */
+.sticky-footer-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1 0 auto;
+}
+
+.footer-sticky {
+  flex-shrink: 0;
+}
