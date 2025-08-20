@@ -26,7 +26,7 @@ const geneSearchSlice = createSlice({
     updateFilters(state, action: PayloadAction<Partial<GeneSearchParams>>) {
       state.filters = { ...state.filters, ...action.payload };
     },
-    clearGeneSearch(state) {
+    clearGeneSearch() {
       return { ...initialState, filters: { ...defaultFilters } };
     },
   },

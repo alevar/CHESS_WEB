@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Alert, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, Card, Alert } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import LoadingSpinner from '../../components/common/LoadingSpinner/LoadingSpinner';
@@ -21,8 +21,6 @@ import {
 
 import { fetchGeneByGid, clearGeneData } from '../../redux/gene';
 import { 
-  setPrimaryTranscriptData,
-  setSecondaryTranscriptData,
   clearPrimaryTranscriptData,
   clearSecondaryTranscriptData,
  } from '../../redux/gene/cmpTranscriptSlice';
@@ -32,7 +30,7 @@ import { pathManager } from '../../utils/pathManager';
 import { TRANSCRIPT_COLORS } from './constants';
 
 import './Gene.css';
-import { FullTranscriptData, GeneCoordinates, Transcript } from '../../types/geneTypes';
+import { GeneCoordinates, Transcript } from '../../types/geneTypes';
 
 const Gene: React.FC = () => {
   const navigate = useNavigate();

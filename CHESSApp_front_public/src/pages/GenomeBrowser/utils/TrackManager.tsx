@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, ListGroup, Badge, Button, Container, Row, Col } from 'react-bootstrap';
+import { Card, ListGroup, Container, Row, Col } from 'react-bootstrap';
 import { useDbData } from '../../../hooks';
 import { Source, SourceVersion, SourceVersionAssembly } from '../../../types/dbTypes';
 

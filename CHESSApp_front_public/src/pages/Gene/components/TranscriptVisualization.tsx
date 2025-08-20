@@ -319,7 +319,7 @@ const TranscriptVisualization: React.FC<TranscriptVisualizationProps> = ({
 
     // Handlers for click/contextmenu/hover
     chart.selectAll('.exon-segment, .intron-segment, .transcript-click-area')
-      .on('click', function(event) {
+      .on('click', function() {
         const transcriptId = d3.select(this).attr('data-transcript-id');
         const transcript = getTranscriptById(transcriptId);
         if (transcript) {

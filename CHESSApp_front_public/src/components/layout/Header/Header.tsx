@@ -32,7 +32,6 @@ import './Header.css';
 const Header: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const [expanded, setExpanded] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
     
@@ -61,7 +60,6 @@ const Header: React.FC = () => {
                 navigate(`/?q=${encodeURIComponent(searchTerm.trim())}`);
             }
             setShowSearch(false);
-            setExpanded(false);
         }
     };
 

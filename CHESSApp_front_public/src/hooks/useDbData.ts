@@ -10,8 +10,7 @@ import {
   SourceVersionAssembly,
   Configuration,
   Dataset,
-  DataType,
-  TranscriptData
+  DataType
 } from '../types/dbTypes';
 
 export const useDbData = () => {

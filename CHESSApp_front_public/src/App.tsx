@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { Outlet, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Container } from 'react-bootstrap';
 
 import ErrorBoundary from './components/common/ErrorBoundary/ErrorBoundary';
 import LoadingSpinner from './components/common/LoadingSpinner/LoadingSpinner';
@@ -13,7 +12,7 @@ import { RootState, AppDispatch } from './redux/store';
 import { fetchDbData, selectActiveConfigurationDefaults } from './redux/dbData';
 import { setAppSelections, setError } from './redux/appData/appDataSlice';
 import { validateSelections } from './utils/validationUtils';
-import { UrlParams, AppSettings } from './types/appTypes';
+import { UrlParams } from './types/appTypes';
 import { pathManager } from './utils/pathManager';
 
 import './App.css';

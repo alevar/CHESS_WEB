@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Row, Col, Card } from 'react-bootstrap';
+import { Container, Row, Col } from 'react-bootstrap';
 import CardGrid from './components/CardGrid/CardGrid';
 import build_penguin from "../../assets/images/build.penguin.2.jpeg";
 import download_penguin from '../../assets/images/download.penguin.1.jpeg';

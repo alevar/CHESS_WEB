@@ -5,9 +5,7 @@ import {
   setPrimaryTranscriptData, 
   setSecondaryTranscriptData,
   setPrimaryError, 
-  setSecondaryError,
-  clearPrimaryTranscriptData, 
-  clearSecondaryTranscriptData } from './cmpTranscriptSlice';
+  setSecondaryError } from './cmpTranscriptSlice';
 import { TranscriptResponse } from '../../types/geneTypes';
 
 const API_BASE_URL = 'http://localhost:5000/api';
