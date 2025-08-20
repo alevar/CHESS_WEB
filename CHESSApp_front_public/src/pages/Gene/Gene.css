@@ -1,0 +1,9 @@
+.attribute-card:hover {
+  border-color: #2196f3 !important;
+  border-width: 1px !important;
+}
+
+.attribute-card.matching {
+  border-color: #2196f3 !important;
+  border-width: 1px !important;
+}

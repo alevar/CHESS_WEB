@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { GeneSearchState, GeneSearchResponse, GeneSearchParams } from '../../types/geneTypes';
+import { GeneSearchState, GeneSearchParams } from '../../types/geneTypes';
 import { searchGenes } from './geneSearchThunks';
 
 const defaultFilters: GeneSearchParams = {
